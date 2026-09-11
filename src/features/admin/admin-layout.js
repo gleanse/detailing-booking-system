@@ -380,5 +380,70 @@ const AdminLayout = (() => {
       + ' ' + d.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
   }
 
-  return { init, statusBadge, formatCurrency, formatDate, formatDateTime };
+  // SKELETON HELPERS
+function skeletonTableRows(colCount, rowCount = 5) {
+  const cell = (w) => `<td><div class="skeleton skeleton-text" style="width:${w}"></div></td>`;
+  const widths = ['70%', '90%', '60%', '50%', '40%', '55%', '65%', '30%'];
+  let rows = '';
+  for (let i = 0; i < rowCount; i++) {
+    rows += `<tr class="skeleton-row">${
+      Array.from({ length: colCount }, (_, c) => cell(widths[c % widths.length])).join('')
+    }</tr>`;
+  }
+  return rows;
+}
+
+function skeletonCards(count = 3) {
+  let cards = '';
+  for (let i = 0; i < count; i++) {
+    cards += `
+      <div class="service-card skeleton-card">
+        <div class="service-card-header">
+          <div class="skeleton skeleton-text" style="width:50%;height:18px;"></div>
+        </div>
+        <div class="service-card-body">
+          <div class="skeleton skeleton-text" style="width:90%"></div>
+          <div class="skeleton skeleton-text" style="width:75%"></div>
+        </div>
+      </div>`;
+  }
+  return cards;
+}
+
+function skeletonListItems(count = 3) {
+  let items = '';
+  for (let i = 0; i < count; i++) {
+    items += `
+      <div class="rs-bk-item" style="pointer-events:none;">
+        <div class="skeleton" style="width:18px;height:18px;border-radius:4px;flex-shrink:0;"></div>
+        <div class="rs-bk-info" style="flex:1;">
+          <div class="skeleton skeleton-text" style="width:60%;height:14px;"></div>
+          <div class="skeleton skeleton-text" style="width:80%;height:12px;margin-top:6px;"></div>
+        </div>
+      </div>`;
+  }
+  return items;
+}
+
+function skeletonStats(count = 4) {
+  let stats = '';
+  for (let i = 0; i < count; i++) {
+    stats += `
+      <div class="stat-card">
+        <div class="skeleton" style="width:40px;height:40px;border-radius:10px;"></div>
+        <div class="stat-info">
+          <div class="skeleton skeleton-text" style="width:50px;height:24px;"></div>
+          <div class="skeleton skeleton-text" style="width:80px;margin-top:6px;"></div>
+        </div>
+      </div>`;
+  }
+  return stats;
+}
+
+function delayedSkeleton(renderSkeletonFn, delay = 200) {
+  const timer = setTimeout(renderSkeletonFn, delay);
+  return () => clearTimeout(timer);
+}
+
+  return { init, statusBadge, formatCurrency, formatDate, formatDateTime, skeletonTableRows, skeletonCards, skeletonStats, skeletonListItems, delayedSkeleton };
 })();

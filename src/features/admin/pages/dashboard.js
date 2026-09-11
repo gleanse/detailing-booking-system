@@ -6,7 +6,7 @@ const greetEl = document.getElementById('greetingTime');
 if (greetEl) greetEl.textContent = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
 
 // Helpers
-const { statusBadge, formatCurrency } = AdminLayout;
+const { statusBadge, formatCurrency, formatDate, skeletonTableRows } = AdminLayout;
 const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
 //  Status Modal 
@@ -156,11 +156,16 @@ function renderPickupTable(bookings) {
 
 //  Load 
 async function loadDashboard() {
+  const tbody = document.getElementById('todayTableBody');
+  const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
+    tbody.innerHTML = skeletonTableRows(6, 5);
+  });
   try {
     const [bookingsRes, statsRes] = await Promise.all([
       fetch('/api/admin/bookings/today'),
       fetch('/api/admin/stats/today'),
     ]);
+    cancelSkeleton();
     if (statsRes.ok) {
       const stats = await statsRes.json();
       if (stats.success) {
@@ -188,6 +193,7 @@ async function loadDashboard() {
       }
     }
   } catch (err) {
+    cancelSkeleton();
     console.error('Dashboard load error:', err);
   }
 }

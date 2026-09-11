@@ -1,5 +1,5 @@
 AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
-  const { formatCurrency } = AdminLayout;
+  const { formatCurrency, skeletonListItems } = AdminLayout;
 
   //  State 
   const today = new Date().toISOString().split('T')[0];
@@ -36,34 +36,42 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
 
   //  Load Today's Capacity 
   async function loadTodayCapacity() {
-    const list = document.getElementById('todayCapList');
-    try {
-      const res  = await fetch('/api/admin/availability?date=' + today);
-      const data = await res.json();
-      const caps = data.data || [];
+  const list = document.getElementById('todayCapList');
 
-      if (!caps.length) {
-        list.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-calendar-times"></i><p>No capacity set for today</p></div>`;
-        return;
-      }
+  const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
+    list.innerHTML = skeletonListItems(3);
+  });
 
-      const allFull = caps.every(c => (parseInt(c.bookings_count)||0) >= c.capacity);
-      isTodayFull   = allFull;
+  try {
+    const res  = await fetch('/api/admin/availability?date=' + today);
+    const data = await res.json();
+    const caps = data.data || [];
 
-      list.innerHTML = caps.map(c => {
-        const booked    = parseInt(c.bookings_count) || 0;
-        const remaining = c.capacity - booked;
-        const cls       = remaining <= 0 ? 'full' : remaining <= 2 ? 'mid' : 'ok';
-        const label     = remaining <= 0 ? 'Full' : `${remaining} / ${c.capacity}`;
-        return `<div class="cap-item">
-          <span class="cap-name">${c.service_name}</span>
-          <span class="cap-badge ${cls}">${label}</span>
-        </div>`;
-      }).join('');
-    } catch (_) {
-      list.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-exclamation-triangle"></i><p>Failed to load capacity</p></div>`;
+    cancelSkeleton(); 
+
+    if (!caps.length) {
+      list.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-calendar-times"></i><p>No capacity set for today</p></div>`;
+      return;
     }
+
+    const allFull = caps.every(c => (parseInt(c.bookings_count)||0) >= c.capacity);
+    isTodayFull   = allFull;
+
+    list.innerHTML = caps.map(c => {
+      const booked    = parseInt(c.bookings_count) || 0;
+      const remaining = c.capacity - booked;
+      const cls       = remaining <= 0 ? 'full' : remaining <= 2 ? 'mid' : 'ok';
+      const label     = remaining <= 0 ? 'Full' : `${remaining} / ${c.capacity}`;
+      return `<div class="cap-item">
+        <span class="cap-name">${c.service_name}</span>
+        <span class="cap-badge ${cls}">${label}</span>
+      </div>`;
+    }).join('');
+  } catch (_) {
+    cancelSkeleton();
+    list.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-exclamation-triangle"></i><p>Failed to load capacity</p></div>`;
   }
+}
 
   //  Service Change 
   async function onServiceChange() {
@@ -128,33 +136,40 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
   }
 
   async function loadFutureDates(svcId) {
-    const list = document.getElementById('futureCapList');
-    list.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-spinner fa-spin"></i></div>`;
-    try {
-      const res  = await fetch('/api/admin/availability');
-      const data = await res.json();
-      const slots = (data.data || [])
-        .filter(c => c.service_id === svcId && c.date > today && (c.capacity - (parseInt(c.bookings_count)||0)) > 0)
-        .sort((a,b) => a.date.localeCompare(b.date))
-        .slice(0, 8);
+  const list = document.getElementById('futureCapList');
 
-      if (!slots.length) {
-        list.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-calendar-times"></i><p>No upcoming available dates</p></div>`;
-        return;
-      }
+  const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
+    list.innerHTML = skeletonListItems(3);
+  });
 
-      list.innerHTML = slots.map(c => {
-        const rem   = c.capacity - (parseInt(c.bookings_count)||0);
-        const label = new Date(c.date + 'T00:00:00').toLocaleDateString('en-PH', {weekday:'short', month:'short', day:'numeric'});
-        return `<div class="fut-date-item" id="fdi_${c.date}" onclick="selectFutureDate('${c.date}')">
-          <span>${label}</span>
-          <span class="cap-badge ok">${rem} slot${rem>1?'s':''} left</span>
-        </div>`;
-      }).join('');
-    } catch (_) {
-      list.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-exclamation-triangle"></i><p>Failed to load</p></div>`;
+  try {
+    const res  = await fetch('/api/admin/availability');
+    const data = await res.json();
+    const slots = (data.data || [])
+      .filter(c => c.service_id === svcId && c.date > today && (c.capacity - (parseInt(c.bookings_count)||0)) > 0)
+      .sort((a,b) => a.date.localeCompare(b.date))
+      .slice(0, 8);
+
+    cancelSkeleton(); 
+
+    if (!slots.length) {
+      list.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-calendar-times"></i><p>No upcoming available dates</p></div>`;
+      return;
     }
+
+    list.innerHTML = slots.map(c => {
+      const rem   = c.capacity - (parseInt(c.bookings_count)||0);
+      const label = new Date(c.date + 'T00:00:00').toLocaleDateString('en-PH', {weekday:'short', month:'short', day:'numeric'});
+      return `<div class="fut-date-item" id="fdi_${c.date}" onclick="selectFutureDate('${c.date}')">
+        <span>${label}</span>
+        <span class="cap-badge ok">${rem} slot${rem>1?'s':''} left</span>
+      </div>`;
+    }).join('');
+  } catch (_) {
+    cancelSkeleton(); 
+    list.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-exclamation-triangle"></i><p>Failed to load</p></div>`;
   }
+}
 
   function selectFutureDate(dateStr) {
     // Deselect all, select clicked

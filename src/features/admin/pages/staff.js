@@ -1,6 +1,6 @@
  AdminLayout.init({ activePage: 'staff', breadcrumb: 'Staff Accounts' });
 
-  const { statusBadge, formatDate } = AdminLayout;
+  const { statusBadge, formatDate, skeletonTableRows } = AdminLayout;
 
   //  Helpers 
   function openOverlay(id)  { document.getElementById(id).classList.remove('hidden'); }
@@ -50,9 +50,13 @@
   //  Load Staff Table 
   async function loadStaff() {
     const tbody = document.getElementById('staffTableBody');
+    const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
+    tbody.innerHTML = skeletonTableRows(5, 5);
+    });
     try {
       const res  = await fetch('/api/admin/staff');
       const data = await res.json();
+      cancelSkeleton();
       if (!data.success || !data.data.length) {
         tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-users"></i><p>No staff accounts found. Click "Add Account" to create one.</p></div></td></tr>`;
         return;
@@ -78,6 +82,7 @@
           </td>
         </tr>`).join('');
     } catch (err) {
+      cancelSkeleton();
       console.error('Load staff error:', err);
       tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load staff</p></div></td></tr>`;
     }

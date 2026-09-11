@@ -1,13 +1,19 @@
 AdminLayout.init({ activePage: 'payments', breadcrumb: 'Payments' });
 
-  const { statusBadge, formatCurrency, formatDateTime } = AdminLayout;
+  const { statusBadge, formatCurrency, formatDateTime, skeletonTableRows } = AdminLayout; 
   const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
   async function loadPayments() {
     const tbody = document.getElementById('paymentsTableBody');
+
+    const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
+    tbody.innerHTML = skeletonTableRows(8, 6);
+   }); 
+
     try {
       const res  = await fetch('/api/admin/payments');
       const data = await res.json();
+      cancelSkeleton();
       if (!data.success || !data.data.length) {
         tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-receipt"></i><p>No payment records</p></div></td></tr>`;
         return;
@@ -35,6 +41,7 @@ AdminLayout.init({ activePage: 'payments', breadcrumb: 'Payments' });
       setText('statPaidTotal',   formatCurrency(totalPaid));
       setText('statUnpaidTotal', formatCurrency(totalBalance));
     } catch (err) {
+      cancelSkeleton();
       console.error('Load payments error:', err);
       tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load payments</p></div></td></tr>`;
     }

@@ -1,6 +1,6 @@
  AdminLayout.init({ activePage: 'bookings', breadcrumb: 'Bookings' });
 
-  const { statusBadge, formatCurrency, formatDate } = AdminLayout;
+  const { statusBadge, formatCurrency, formatDate, skeletonTableRows } = AdminLayout;
 
   let currentBookingId  = null;
   let selectedStatus    = null;
@@ -144,11 +144,14 @@
     if (search) params.set('search', search);
 
     const tbody = document.getElementById('bookingsTableBody');
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading...</p></div></td></tr>`;
+    const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
+    tbody.innerHTML = AdminLayout.skeletonTableRows(8, 6);
+    });
 
     try {
       const res  = await fetch('/api/admin/bookings?' + params.toString());
       const data = await res.json();
+      cancelSkeleton();
       if (!data.success || !data.data.length) {
         tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-search"></i><p>No bookings found</p></div></td></tr>`;
         return;
@@ -171,6 +174,7 @@
           </td>
         </tr>`).join('');
     } catch (err) {
+      cancelSkeleton();
       console.error('Load bookings error:', err);
     }
   }
