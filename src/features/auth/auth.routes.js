@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require('../../config/database');
 const bcrypt = require('bcrypt');
 const path = require('path');
+const { checkLoginBlock, recordFailedAttempt, clearLoginAttempts } = require('../../shared/utils/rateLimiter');
 
 router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'login.html'));
@@ -99,13 +100,31 @@ router.post('/login', async (req, res) => {
         .json({ success: false, message: 'Email and password are required' });
     }
 
+    const normalizedEmail = email.toLowerCase();
+    const ip = req.ip;
+
+    // ── ITO YUNG DINAGDAG: suriin muna kung naka-block ──
+    const emailBlock = await checkLoginBlock(normalizedEmail);
+    const ipBlock    = await checkLoginBlock(ip);
+
+    if (emailBlock.blocked || ipBlock.blocked) {
+      const retryAfter = Math.max(emailBlock.retryAfterSeconds, ipBlock.retryAfterSeconds);
+      const minutes = Math.ceil(retryAfter / 60);
+      return res.status(429).json({
+        success: false,
+        message: `Too many failed login attempts. Please try again in ${minutes} minute(s).`,
+      });
+    }
+
     // find user
     const result = await pool.query(
       'SELECT id, name, email, password, role FROM users WHERE email = $1',
-      [email.toLowerCase()]
+      [normalizedEmail]
     );
 
     if (result.rows.length === 0) {
+      await recordFailedAttempt(normalizedEmail); // ← dagdag
+      await recordFailedAttempt(ip);               // ← dagdag
       return res
         .status(401)
         .json({ success: false, message: 'Invalid email or password' });
@@ -121,10 +140,16 @@ router.post('/login', async (req, res) => {
     // check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      await recordFailedAttempt(normalizedEmail); // ← dagdag
+      await recordFailedAttempt(ip);               // ← dagdag
       return res
         .status(401)
         .json({ success: false, message: 'Invalid email or password' });
     }
+
+    // ── ITO YUNG DINAGDAG: i-clear ang attempts pag successful ──
+    await clearLoginAttempts(normalizedEmail);
+    await clearLoginAttempts(ip);
 
     // save session
     req.session.user = {
