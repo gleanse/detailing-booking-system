@@ -19,20 +19,20 @@ const {
 
 // STATIC assets
 router.get('/booking.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'booking.js'));
+  res.sendFile(path.join(__dirname, 'views', 'booking.js'));
 });
 router.get('/details', getBookingDetails);
 router.get('/success', (req, res) => {
-  res.sendFile(path.join(__dirname, 'booking-success.html'));
+  res.sendFile(path.join(__dirname, 'views', 'booking-success.html'));
 });
 router.get('/failed', (req, res) => {
-  res.sendFile(path.join(__dirname, 'booking-failed.html'));
+  res.sendFile(path.join(__dirname, 'views', 'booking-failed.html'));
 });
 router.get('/booking-track.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'booking-track.js'));
+  res.sendFile(path.join(__dirname, 'views', 'booking-track.js'));
 });
 router.get('/booking-success.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'booking-success.js'));
+  res.sendFile(path.join(__dirname, 'views', 'booking-success.js'));
 });
 
 // public tracking - must be BEFORE /:serviceId wildcard

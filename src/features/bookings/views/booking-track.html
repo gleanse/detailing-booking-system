@@ -8,19 +8,19 @@
   <link rel="stylesheet" href="/styles/custom.css">
   <link rel="stylesheet" href="/phosphor/regular/style.css">
 </head>
-<body class="bg-[#0a0a0a] min-h-screen text-white overflow-x-hidden">
+<body class="bg-ink-black min-h-screen text-white overflow-x-hidden">
 
   <!--  NAVBAR -->
   <header
-    class="sticky top-0 z-50 border-b border-red-500/20 bg-[#0a0a0a]/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(229,53,53,0.1)] animate-slideDown">
+    class="sticky top-0 z-50 border-b border-red-500/20 bg-ink-black/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(229,53,53,0.1)] animate-slideDown">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
       <div class="flex items-center justify-between h-16">
 
         <!-- Logo -->
         <a href="/" class="flex items-center gap-3 group">
-          <div class="w-[3px] h-7 bg-red-500 rounded-full transition-all duration-300 group-hover:h-9"></div>
+          <div class="w-0.75 h-7 bg-red-500 rounded-full transition-all duration-300 group-hover:h-9"></div>
           <span
-            class="text-xl sm:text-2xl tracking-widest uppercase font-bold bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent"
+            class="text-xl sm:text-2xl tracking-widest uppercase font-bold bg-linear-to-r from-white to-white/50 bg-clip-text text-transparent"
             style="font-family:'Bebas Neue',sans-serif;">
             Herco Detailing Garage
           </span>
@@ -45,7 +45,7 @@
 
         <!-- Mobile hamburger -->
         <button id="menu-toggle"
-          class="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-[5px] cursor-pointer">
+          class="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.25 cursor-pointer">
           <span class="w-5 h-px bg-white/60" id="bar1"></span>
           <span class="w-5 h-px bg-white/60" id="bar2"></span>
           <span class="w-5 h-px bg-white/60" id="bar3"></span>
@@ -124,7 +124,7 @@
         <div class="flex flex-col gap-4">
 
           <!-- Booking Details -->
-          <div class="track-card bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-card card-1">
+          <div class="track-card bg-white/3 border border-white/10 rounded-2xl p-5 animate-card card-1">
             <p class="card-title text-xs text-white/30 uppercase tracking-widest mb-4">Booking Details</p>
 
             <!-- Queue Number - hero within card -->
@@ -137,7 +137,7 @@
               <i class="ph ph-ticket text-red-400/30 text-3xl"></i>
             </div>
 
-            <div class="flex flex-col divide-y divide-white/[0.06]">
+            <div class="flex flex-col divide-y divide-white/6">
               <div class="flex justify-between items-center py-2.5 gap-3">
                 <span class="text-white/40 text-xs shrink-0">Reference</span>
                 <span id="ref-code" class="text-white font-mono font-bold tracking-widest text-xs text-right"></span>
@@ -158,9 +158,9 @@
           </div>
 
           <!-- Motorcycle Details -->
-          <div class="track-card bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-card card-2">
+          <div class="track-card bg-white/3 border border-white/10 rounded-2xl p-5 animate-card card-2">
             <p class="card-title text-xs text-white/30 uppercase tracking-widest mb-4">Motorcycle</p>
-            <div class="flex flex-col divide-y divide-white/[0.06]">
+            <div class="flex flex-col divide-y divide-white/6">
               <div class="flex justify-between items-center py-2.5 gap-3">
                 <span class="text-white/40 text-xs shrink-0">Plate</span>
                 <span id="moto-plate" class="text-white font-mono font-bold tracking-widest text-xs"></span>
@@ -187,11 +187,11 @@
 
           <!-- Recommended Arrival -->
           <div id="arrival-card"
-            class="hidden track-card bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-card card-4">
+            class="hidden track-card bg-white/3 border border-white/10 rounded-2xl p-5 animate-card card-4">
             <p class="card-title text-xs text-white/30 uppercase tracking-widest mb-4">Recommended Arrival</p>
             <div class="flex items-center gap-4 mb-4">
               <div
-                class="w-14 h-14 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                class="w-14 h-14 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
                 <i class="ph ph-clock text-red-400 text-2xl"></i>
               </div>
               <div>
@@ -199,7 +199,7 @@
                 <p id="arrival-time" class="text-red-400 text-sm font-semibold mt-0.5 tabular-nums"></p>
               </div>
             </div>
-            <div class="bg-yellow-500/[0.04] border border-yellow-500/10 rounded-xl p-3">
+            <div class="bg-yellow-500/4 border border-yellow-500/10 rounded-xl p-3">
               <p class="text-xs text-white/25 leading-relaxed">
                 <i class="ph ph-info text-yellow-400/50 mr-1.5"></i>
                 Lower queue numbers are served first. Arrive within your block for best experience.
@@ -208,7 +208,7 @@
           </div>
 
           <!-- Service Status Timeline -->
-          <div class="track-card bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-card card-5">
+          <div class="track-card bg-white/3 border border-white/10 rounded-2xl p-5 animate-card card-5">
             <p class="card-title text-xs text-white/30 uppercase tracking-widest mb-6">Service Timeline</p>
             <div id="timeline" class="flex flex-col"></div>
           </div>
@@ -220,9 +220,9 @@
         <div class="flex flex-col gap-4 md:col-span-2 lg:col-span-1">
 
           <!-- Payment -->
-          <div class="track-card bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-card card-3">
+          <div class="track-card bg-white/3 border border-white/10 rounded-2xl p-5 animate-card card-3">
             <p class="card-title text-xs text-white/30 uppercase tracking-widest mb-4">Payment</p>
-            <div class="flex flex-col divide-y divide-white/[0.06]">
+            <div class="flex flex-col divide-y divide-white/6">
               <div class="flex justify-between items-center py-2.5 gap-3">
                 <span class="text-white/40 text-xs shrink-0">Type</span>
                 <span id="payment-type" class="text-white font-medium text-xs text-right"></span>
@@ -247,25 +247,25 @@
           </div>
 
           <!-- Important Reminders -->
-          <div class="track-card bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 animate-card card-6">
+          <div class="track-card bg-white/2 border border-white/6 rounded-2xl p-5 animate-card card-6">
             <p class="card-title text-xs text-white/20 uppercase tracking-widest mb-4">Reminders</p>
             <div class="flex flex-col gap-3">
               <div class="flex items-start gap-3">
-                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
                   <i class="ph ph-calendar-check text-white/30 text-sm"></i>
                 </div>
                 <p class="text-white/30 text-xs leading-relaxed">Arrive on your <span
                     class="text-white/50 font-medium">scheduled date</span> within your recommended time block.</p>
               </div>
               <div class="flex items-start gap-3">
-                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
                   <i class="ph ph-identification-card text-white/30 text-sm"></i>
                 </div>
                 <p class="text-white/30 text-xs leading-relaxed">Have your <span class="text-white/50 font-medium">queue
                     number</span> ready when you arrive.</p>
               </div>
               <div class="flex items-start gap-3">
-                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
                   <i class="ph ph-motorcycle text-white/30 text-sm"></i>
                 </div>
                 <p class="text-white/30 text-xs leading-relaxed">Make sure your <span

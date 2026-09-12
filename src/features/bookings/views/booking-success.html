@@ -8,18 +8,18 @@
   <link rel="stylesheet" href="/styles/custom.css">
   <link rel="stylesheet" href="/phosphor/regular/style.css">
 </head>
-<body class="bg-[#0a0a0a] min-h-screen text-white overflow-x-hidden">
+<body class="bg-ink-black min-h-screen text-white overflow-x-hidden">
 
   <!--  NAVBAR -->
   <header
-    class="sticky top-0 z-50 border-b border-red-500/20 bg-[#0a0a0a]/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(229,53,53,0.1)] animate-slideDown">
+    class="sticky top-0 z-50 border-b border-red-500/20 bg-ink-black/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(229,53,53,0.1)] animate-slideDown">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
       <div class="flex items-center justify-between h-16">
 
         <a href="/" class="flex items-center gap-3 group">
-          <div class="w-[3px] h-7 bg-red-500 rounded-full transition-all duration-300 group-hover:h-9"></div>
+          <div class="w-0.75 h-7 bg-red-500 rounded-full transition-all duration-300 group-hover:h-9"></div>
           <span
-            class="text-xl sm:text-2xl tracking-widest uppercase font-bold bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent"
+            class="text-xl sm:text-2xl tracking-widest uppercase font-bold bg-linear-to-r from-white to-white/50 bg-clip-text text-transparent"
             style="font-family:'Bebas Neue',sans-serif;">
             Herco Detailing
           </span>
@@ -43,7 +43,7 @@
         </a>
 
         <button id="menu-toggle"
-          class="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-[5px] cursor-pointer">
+          class="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.25 cursor-pointer">
           <span class="w-5 h-px bg-white/60" id="bar1"></span>
           <span class="w-5 h-px bg-white/60" id="bar2"></span>
           <span class="w-5 h-px bg-white/60" id="bar3"></span>
@@ -128,7 +128,7 @@
         <div class="flex flex-col gap-4">
 
           <!-- BOOKING DETAILS -->
-          <div class="track-card bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-card card-1">
+          <div class="track-card bg-white/3 border border-white/10 rounded-2xl p-5 animate-card card-1">
             <p class="card-title text-xs text-white/30 uppercase tracking-widest mb-4">Booking Details</p>
 
             <!-- Queue badge -->
@@ -141,7 +141,7 @@
               <i class="ph ph-ticket text-red-400/30 text-3xl"></i>
             </div>
 
-            <div class="flex flex-col divide-y divide-white/[0.06]">
+            <div class="flex flex-col divide-y divide-white/6">
               <div class="flex justify-between items-center py-2.5 gap-3">
                 <span class="text-white/40 text-xs shrink-0">Reference</span>
                 <span id="referenceCode"
@@ -163,12 +163,12 @@
           </div>
 
           <!-- WHAT'S NEXT -->
-          <div class="track-card bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-card card-2">
+          <div class="track-card bg-white/3 border border-white/10 rounded-2xl p-5 animate-card card-2">
             <p class="card-title text-xs text-white/30 uppercase tracking-widest mb-4">What's Next</p>
             <div class="flex flex-col gap-4">
               <div class="flex items-start gap-3">
                 <div
-                  class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
                   <i class="ph ph-envelope text-white/40 text-sm"></i>
                 </div>
                 <div>
@@ -179,7 +179,7 @@
               </div>
               <div class="flex items-start gap-3">
                 <div
-                  class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
                   <i class="ph ph-clock text-white/40 text-sm"></i>
                 </div>
                 <div>
@@ -190,7 +190,7 @@
               </div>
               <div class="flex items-start gap-3">
                 <div
-                  class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
                   <i class="ph ph-motorcycle text-white/40 text-sm"></i>
                 </div>
                 <div>
@@ -201,7 +201,7 @@
               </div>
               <div id="remainingNextItem" class="hidden items-start gap-3">
                 <div
-                  class="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  class="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center shrink-0 mt-0.5">
                   <i class="ph ph-cash-register text-yellow-400 text-sm"></i>
                 </div>
                 <div>
@@ -220,7 +220,7 @@
 
           <!-- QR CODE -->
           <div id="qrContainer"
-            class="hidden track-card bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-card card-4 flex-col items-center gap-3 text-center">
+            class="hidden track-card bg-white/3 border border-white/10 rounded-2xl p-5 animate-card card-4 flex-col items-center gap-3 text-center">
             <p class="card-title text-xs text-white/30 uppercase tracking-widest mb-3 self-start">Your QR Code</p>
             <div class="bg-white p-3 rounded-xl mx-auto">
               <img id="qrCode" src="" alt="QR Code" class="w-40 h-40 rounded-lg block" />
@@ -231,11 +231,11 @@
 
           <!-- RECOMMENDED ARRIVAL -->
           <div id="arrivalCard"
-            class="track-card bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-card card-5">
+            class="track-card bg-white/3 border border-white/10 rounded-2xl p-5 animate-card card-5">
             <p class="card-title text-xs text-white/30 uppercase tracking-widest mb-4">Recommended Arrival</p>
             <div class="flex items-center gap-4 mb-4">
               <div
-                class="w-14 h-14 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                class="w-14 h-14 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
                 <i class="ph ph-clock text-red-400 text-2xl"></i>
               </div>
               <div>
@@ -243,7 +243,7 @@
                 <p id="arrivalTime" class="text-red-400 text-sm font-semibold mt-0.5 tabular-nums"></p>
               </div>
             </div>
-            <div class="bg-yellow-500/[0.04] border border-yellow-500/10 rounded-xl p-3">
+            <div class="bg-yellow-500/4 border border-yellow-500/10 rounded-xl p-3">
               <p class="text-xs text-white/25 leading-relaxed">
                 <i class="ph ph-info text-yellow-400/50 mr-1.5"></i>
                 Lower queue numbers are served first. Arrive within your block for best experience.
@@ -257,14 +257,14 @@
         <div class="flex flex-col gap-4 md:col-span-2 lg:col-span-1">
 
           <!-- PAYMENT -->
-          <div class="track-card bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-card card-3">
+          <div class="track-card bg-white/3 border border-white/10 rounded-2xl p-5 animate-card card-3">
             <p class="card-title text-xs text-white/30 uppercase tracking-widest mb-4">Payment</p>
-            <div class="flex flex-col divide-y divide-white/[0.06]">
+            <div class="flex flex-col divide-y divide-white/6">
               <div class="flex justify-between items-center py-2.5 gap-3">
                 <span class="text-white/40 text-xs shrink-0">Type</span>
                 <span id="paymentType" class="text-white font-medium text-xs text-right"></span>
               </div>
-              <div class="flex justify-between items-center py-2.5 gap-3">
+              <div id="amountRow" class="flex justify-between items-center py-2.5 gap-3">
                 <span class="text-white/40 text-xs shrink-0">Amount Paid</span>
                 <span id="amountPaid" class="text-green-400 font-bold text-sm"></span>
               </div>
@@ -276,25 +276,25 @@
           </div>
 
           <!-- REMINDERS -->
-          <div class="track-card bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 animate-card card-6">
+          <div class="track-card bg-white/2 border border-white/6 rounded-2xl p-5 animate-card card-6">
             <p class="card-title text-xs text-white/20 uppercase tracking-widest mb-4">Reminders</p>
             <div class="flex flex-col gap-3">
               <div class="flex items-start gap-3">
-                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
                   <i class="ph ph-calendar-check text-white/30 text-sm"></i>
                 </div>
                 <p class="text-white/30 text-xs leading-relaxed">Arrive on your <span
                     class="text-white/50 font-medium">scheduled date</span> within your recommended time block.</p>
               </div>
               <div class="flex items-start gap-3">
-                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
                   <i class="ph ph-ticket text-white/30 text-sm"></i>
                 </div>
                 <p class="text-white/30 text-xs leading-relaxed">Have your <span class="text-white/50 font-medium">queue
                     number</span> ready when you arrive.</p>
               </div>
               <div class="flex items-start gap-3">
-                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
                   <i class="ph ph-motorcycle text-white/30 text-sm"></i>
                 </div>
                 <p class="text-white/30 text-xs leading-relaxed">Make sure your <span

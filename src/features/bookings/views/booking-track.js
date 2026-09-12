@@ -240,7 +240,7 @@ function renderTimeline(logs, currentStatus) {
     }
 
     const lineHtml = !isLast
-      ? `<div class="w-px flex-1 mt-1 ml-[9px] absolute top-6 bottom-0 ${
+      ? `<div class="w-px flex-1 mt-1 ml-2.25 absolute top-6 bottom-0 ${
           isDone ? 'bg-green-500/20' : 'bg-white/5'
         }"></div>`
       : '';

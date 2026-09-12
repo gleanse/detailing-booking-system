@@ -18,10 +18,10 @@ const {
 } = require('./queries');
 
 const getBookingPage = (req, res) => {
-  res.sendFile(path.join(__dirname, 'booking.html'));
+  res.sendFile(path.join(__dirname, 'views', 'booking.html'));
 };
 const getPublicTrackingPage = (req, res) => {
-  res.sendFile(path.join(__dirname, 'booking-track.html'));
+  res.sendFile(path.join(__dirname, 'views', 'booking-track.html'));
 };
 
 const getServiceDetails = async (req, res) => {
