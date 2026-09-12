@@ -649,7 +649,7 @@ function renderCalendar() {
 
     if (isSelected) {
       cell.className +=
-        'bg-red-500 text-white cursor-pointer ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a]';
+        'bg-red-500 text-white cursor-pointer ring-2 ring-white ring-offset-2 ring-offset-ink-black';
     } else if (isAvailable) {
       cell.className +=
         'bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white cursor-pointer border border-green-500/40';
