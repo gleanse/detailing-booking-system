@@ -24,14 +24,15 @@
 }
 
 @layer components {
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus {
-    -webkit-text-fill-color: #f0f0f0;
-    -webkit-box-shadow: 0 0 0px 1000px #222222 inset;
-    box-shadow: 0 0 0px 1000px #222222 inset;
+  body.bg-ink-black input:-webkit-autofill,
+  body.bg-ink-black input:-webkit-autofill:hover,
+  body.bg-ink-black input:-webkit-autofill:focus,
+  body.bg-ink-black input:-webkit-autofill:active {
+    -webkit-text-fill-color: #f0f0f0 !important;
+    -webkit-box-shadow: 0 0 0px 1000px #222222 inset !important;
+    box-shadow: 0 0 0px 1000px #222222 inset !important;
     transition: background-color 5000s ease-in-out 0s;
-    caret-color: #f0f0f0;
+    caret-color: #f0f0f0 !important;
   }
 
   input.is-valid {
