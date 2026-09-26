@@ -24,20 +24,20 @@ const {
   postWalkIn,
   downloadSlip,
   getDoneList,
-} = require('./staff.controller');
+} = require('./controller');
 
 // STATIC ASSETS
 router.get('/staff.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'staff.css'));
+  res.sendFile(path.join(__dirname, 'views/staff.css'));
 });
 router.get('/scan.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'scan.js'));
+  res.sendFile(path.join(__dirname, 'views/scan.js'));
 });
 router.get('/dashboard.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dashboard.js'));
+  res.sendFile(path.join(__dirname, 'views/dashboard.js'));
 });
 router.get('/walkin.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'walkin.js'));
+  res.sendFile(path.join(__dirname, 'views/walkin.js'));
 });
 
 // PAGE ROUTES
