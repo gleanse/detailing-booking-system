@@ -14,7 +14,7 @@ const adminPages = require('../features/admin/admin.pages');
 const trackRoutes = require('../features/track/track.routes');
 const customerRoutes = require('../features/customer/routes');
 const staffRoutes = require('../features/staff/staff.routes');
-const landingRoutes = require('../features/landing/landing.routes');
+const landingRoutes = require('../features/landing/routes');
 
 // PAGE router serves HTML pages
 const pagesRouter = express.Router();
