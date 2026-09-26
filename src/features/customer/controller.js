@@ -1,42 +1,60 @@
-// CONTROLLER OF CUSTOMER AUTH
+// ACCOUNT CONTROLLER
 const path = require('path');
+const redis = require('../../config/redis');
 const pool = require('../../config/database');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
-const redis = require('../../config/redis');
-const { sendPasswordResetEmail } = require('../../shared/utils/email');
+const { sendEmailVerificationEmail } = require('../../shared/utils/email');
+const {
+  getBookingsByUserId,
+  getBookingByReferenceCode,
+  updateUserEmail,
+  getLastBookingByUserId,
+} = require('./queries');
 
-const getLoginPage = (req, res) => {
-  // redirect to account if already logged in as customer
-  if (req.session?.user?.role === 'customer') {
-    return res.redirect('/customer/account');
-  }
-  res.sendFile(path.join(__dirname, 'login.html'));
+const getAccountPage = (req, res) => {
+  res.sendFile(path.join(__dirname, 'views/account.html'));
 };
 
-const getRegisterPage = (req, res) => {
-  if (req.session?.user?.role === 'customer') {
-    return res.redirect('/customer/account');
-  }
-  res.sendFile(path.join(__dirname, 'register.html'));
-};
-
-const register = async (req, res) => {
+const getBookings = async (req, res) => {
   try {
-    const { name, email, phone, password } = req.body;
+    const userId = req.session.user.id;
+    const bookings = await getBookingsByUserId(userId);
+    res.json({ success: true, data: bookings });
+  } catch (err) {
+    console.error('Get bookings error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 
-    // validation
+const getBooking = async (req, res) => {
+  try {
+    const { referenceCode } = req.params;
+    const userId = req.session.user.id;
+    const booking = await getBookingByReferenceCode(referenceCode, userId);
+
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Booking not found.' });
+    }
+
+    res.json({ success: true, data: booking });
+  } catch (err) {
+    console.error('Get booking error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { name, phone } = req.body;
+
     if (!name || name.trim().length < 2) {
       return res.status(400).json({
         success: false,
         message: 'Name must be at least 2 characters.',
       });
-    }
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Enter a valid email address.' });
     }
 
     if (!phone || !phone.trim()) {
@@ -52,304 +70,208 @@ const register = async (req, res) => {
       });
     }
 
-    if (!password || password.length < 8) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must be at least 8 characters.',
-      });
-    }
-
-    // check if email already exists
-    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [
-      email.toLowerCase(),
-    ]);
-    if (existing.rows.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'An account with this email already exists.',
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const result = await pool.query(
-      `INSERT INTO users (name, email, phone, password, role)
-       VALUES ($1, $2, $3, $4, 'customer')
+      `UPDATE users SET name = $1, phone = $2 WHERE id = $3
        RETURNING id, name, email, phone, role`,
-      [name.trim(), email.toLowerCase(), phone.trim(), hashedPassword],
+      [name.trim(), phone.trim(), userId],
     );
 
     const user = result.rows[0];
 
+    // update session with new details
     req.session.user = {
-      id: user.id,
+      ...req.session.user,
       name: user.name,
-      email: user.email,
       phone: user.phone,
-      role: user.role,
     };
 
-    res.json({
-      success: true,
-      message: 'Account created successfully.',
-      redirect: '/customer/account',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    res.json({ success: true, message: 'Profile updated.', user });
   } catch (err) {
-    console.error('Customer register error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
+    console.error('Update profile error:', err);
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
-const login = async (req, res) => {
+const requestEmailChange = async (req, res) => {
   try {
-    const { email, password, rememberMe } = req.body;
-
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Email and password are required.' });
-    }
-
-    const result = await pool.query(
-      'SELECT id, name, email, phone, password, role FROM users WHERE email = $1',
-      [email.toLowerCase()],
-    );
-
-    if (result.rows.length === 0) {
-      return res
-        .status(401)
-        .json({ success: false, message: 'Invalid email or password.' });
-    }
-
-    const user = result.rows[0];
-
-    if (user.role !== 'customer') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Invalid email or password.' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res
-        .status(401)
-        .json({ success: false, message: 'Invalid email or password.' });
-    }
-
-    req.session.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-    };
-
-    // remember me: 30 days, otherwise 8 hours
-    req.session.cookie.maxAge = rememberMe
-      ? 1000 * 60 * 60 * 24 * 30
-      : 1000 * 60 * 60 * 8;
-
-    res.json({
-      success: true,
-      message: 'Login successful.',
-      redirect: '/customer/account',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (err) {
-    console.error('Customer login error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
-  }
-};
-
-const logout = (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ success: false, message: 'Logout failed.' });
-    }
-    res.json({ success: true, redirect: '/customer/login' });
-  });
-};
-
-const getMe = (req, res) => {
-  if (!req.session?.user) {
-    return res
-      .status(401)
-      .json({ success: false, message: 'Not authenticated.' });
-  }
-  res.json({ success: true, user: req.session.user });
-};
-
-const verifyOtp = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    if (!email || !otp) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Email and code are required.' });
-    }
-
-    const storedOtp = await redis.get(`pw_reset:${email.toLowerCase()}`);
-
-    if (!storedOtp) {
-      return res.status(400).json({
-        success: false,
-        message: 'Reset code has expired. Please request a new one.',
-      });
-    }
-
-    if (String(storedOtp) !== String(otp)) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Incorrect reset code.' });
-    }
-    res.json({ success: true, message: 'Code verified.' });
-  } catch (err) {
-    console.error('Verify OTP error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
-  }
-};
-
-const forgotPassword = async (req, res) => {
-  try {
+    const userId = req.session.user.id;
     const { email } = req.body;
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (!email || !email.trim()) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Email is required.' });
+    }
+
+    const normalized = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalized)) {
       return res
         .status(400)
         .json({ success: false, message: 'Enter a valid email address.' });
     }
 
-    const result = await pool.query(
-      'SELECT id, name, email, role FROM users WHERE email = $1',
-      [email.toLowerCase()],
+    // check if already taken by another user
+    const existing = await pool.query(
+      `SELECT id FROM users WHERE email = $1 AND id != $2`,
+      [normalized, userId],
     );
+    if (existing.rows.length) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Email is already in use.' });
+    }
 
-    if (result.rows.length === 0 || result.rows[0].role !== 'customer') {
-      return res.status(404).json({
+    // check if same as current email
+    if (normalized === req.session.user.email.toLowerCase()) {
+      return res.status(400).json({
         success: false,
-        message: 'No account found with that email address.',
+        message: 'This is already your current email.',
       });
     }
 
-    const user = result.rows[0];
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const key = `email_otp:${userId}`;
 
-    const otp = crypto.randomInt(100000, 999999).toString();
+    // store otp and pending email together, expire in 10 minutes
+    await redis.set(
+      key,
+      JSON.stringify({ otp, newEmail: normalized }),
+      'EX',
+      600,
+    );
 
-    // key: pw_reset:<email>, TTL: 10 minutes
-    await redis.set(`pw_reset:${user.email}`, otp, 'EX', 600);
-
-    await sendPasswordResetEmail({ email: user.email, name: user.name, otp });
+    await sendEmailVerificationEmail({
+      email: normalized,
+      name: req.session.user.name,
+      otp,
+    });
 
     res.json({
       success: true,
-      message: 'If that email exists, a reset code has been sent.',
+      message: 'Verification code sent to your new email.',
     });
   } catch (err) {
-    console.error('Forgot password error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
+    console.error('Request email change error:', err);
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
-const resetPassword = async (req, res) => {
+const verifyEmailChange = async (req, res) => {
   try {
-    const { email, otp, password } = req.body;
+    const userId = req.session.user.id;
+    const { otp } = req.body;
 
-    if (!email || !otp || !password) {
+    if (!otp || !otp.trim()) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Verification code is required.' });
+    }
+
+    const key = `email_otp:${userId}`;
+    const stored = await redis.get(key);
+
+    if (!stored) {
       return res.status(400).json({
         success: false,
-        message: 'Email, code, and new password are required.',
+        message: 'Verification code expired or not found. Request a new one.',
       });
     }
 
-    if (!/^\d{6}$/.test(otp)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Enter the 6-digit code from your email.',
-      });
+    const { otp: storedOtp, newEmail } = JSON.parse(stored);
+
+    if (otp.trim() !== storedOtp) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid verification code.' });
     }
 
-    if (password.length < 8) {
+    const user = await updateUserEmail(userId, newEmail);
+
+    await redis.del(key);
+
+    req.session.user = {
+      ...req.session.user,
+      email: user.email,
+    };
+
+    res.json({ success: true, message: 'Email updated successfully.', user });
+  } catch (err) {
+    console.error('Verify email change error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+const getLastBooking = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const booking = await getLastBookingByUserId(userId);
+    res.json({ success: true, data: booking });
+  } catch (err) {
+    console.error('Get last booking error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'All fields are required.' });
+    }
+
+    if (newPassword.length < 8) {
       return res.status(400).json({
         success: false,
         message: 'Password must be at least 8 characters.',
       });
     }
 
-    const storedOtp = await redis.get(`pw_reset:${email.toLowerCase()}`);
+    const result = await pool.query(
+      'SELECT password FROM users WHERE id = $1',
+      [userId],
+    );
 
-    if (!storedOtp) {
+    const user = result.rows[0];
+
+    if (!user || !user.password) {
       return res.status(400).json({
         success: false,
-        message: 'Reset code has expired. Please request a new one.',
+        message: 'Password change is not available for this account.',
       });
     }
 
-    if (String(storedOtp) !== String(otp)) {
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
       return res
         .status(400)
-        .json({ success: false, message: 'Incorrect reset code.' });
+        .json({ success: false, message: 'Current password is incorrect.' });
     }
 
-    const result = await pool.query(
-      'SELECT id FROM users WHERE email = $1 AND role = $2',
-      [email.toLowerCase(), 'customer'],
-    );
-
-    if (result.rows.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Account not found.' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await pool.query('UPDATE users SET password = $1 WHERE email = $2', [
-      hashedPassword,
-      email.toLowerCase(),
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [
+      hashed,
+      userId,
     ]);
 
-    // delete OTP immediately after successful reset so it can't be reused
-    await redis.del(`pw_reset:${email.toLowerCase()}`);
-
-    res.json({ success: true, message: 'Password reset successfully.' });
+    res.json({ success: true, message: 'Password changed successfully.' });
   } catch (err) {
-    console.error('Reset password error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
+    console.error('Change password error:', err);
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
 module.exports = {
-  getLoginPage,
-  getRegisterPage,
-  register,
-  login,
-  logout,
-  getMe,
-  forgotPassword,
-  verifyOtp,
-  resetPassword,
+  getAccountPage,
+  getBookings,
+  getBooking,
+  updateProfile,
+  requestEmailChange,
+  verifyEmailChange,
+  getLastBooking,
+  changePassword,
 };

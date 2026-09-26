@@ -13,7 +13,7 @@ const {
   forgotPassword,
   verifyOtp,
   resetPassword,
-} = require('./controller');
+} = require('./auth/controller');
 const {
   getAccountPage,
   getBookings,
@@ -23,19 +23,19 @@ const {
   verifyEmailChange,
   getLastBooking,
   changePassword,
-} = require('./account.controller');
+} = require('./controller');
 
 // STATIC ASSETS
 router.get('/customer.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'customer.css'));
+  res.sendFile(path.join(__dirname, 'views/customer.css'));
 });
 
 router.get('/customer-auth.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'customer-auth.js'));
+  res.sendFile(path.join(__dirname, 'views/customer-auth.js'));
 });
 
 router.get('/account.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'account.js'));
+  res.sendFile(path.join(__dirname, 'views/account.js'));
 });
 
 // PAGE ROUTES
