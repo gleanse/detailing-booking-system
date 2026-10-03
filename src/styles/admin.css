@@ -503,8 +503,8 @@
   .notif-empty i { @apply text-2xl opacity-30; }
 
   .notif-item {
-    @apply flex items-start gap-3 px-4 py-3 border-b border-admin-border transition-colors duration-150;
-    cursor: default;
+     @apply flex items-start gap-3 px-4 py-3 border-b border-admin-border transition-colors duration-150;
+    cursor: pointer;
   }
   .notif-item:last-child { @apply border-b-0; }
   .notif-item:hover { @apply bg-admin-dark-3; }
