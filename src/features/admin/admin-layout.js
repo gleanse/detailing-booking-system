@@ -226,7 +226,7 @@ const AdminLayout = (() => {
     } catch (_) {}
   }
 
-  async function loadNotifications() {
+    async function loadNotifications() {
     const list = document.getElementById('notifList');
     if (!list) return;
 
@@ -256,62 +256,62 @@ const AdminLayout = (() => {
         return;
       }
 
+      const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+
+      const notifItem = (b, iconClass, icon, line) => {
+        const ref = b.reference_code || '';
+        const href = ref
+          ? `/admin/bookings?ref=${encodeURIComponent(ref)}`
+          : '/admin/bookings';
+        return `
+          <a href="${href}" class="notif-item notif-link">
+            <div class="notif-icon ${iconClass}"><i class="${icon}"></i></div>
+            <div class="notif-content">
+              <strong>${esc(b.guest_name || 'Guest')}</strong>
+              <p>${line}</p>
+              <span class="notif-ref">${esc(ref)}</span>
+            </div>
+          </a>`;
+      };
+
       let html = '';
 
       // New bookings today
       if (newBookings?.length) {
         html += `<div class="notif-section-label"><i class="fas fa-calendar-plus" style="margin-right:5px;color:#10b981"></i> New Today <span class="notif-count-badge">${newBookings.length}</span></div>`;
-        html += newBookings.map(b => `
-          <div class="notif-item">
-            <div class="notif-icon new-booking"><i class="fas fa-calendar-check"></i></div>
-            <div class="notif-content">
-              <strong>${b.guest_name || 'Guest'}</strong>
-              <p>${b.service_name || '-'} ${b.variant_name ? `(${b.variant_name})` : ''}</p>
-              <span class="notif-ref">${b.reference_code || ''}</span>
-            </div>
-          </div>`).join('');
+        html += newBookings.map(b => notifItem(
+          b, 'new-booking', 'fas fa-calendar-check',
+          `${esc(b.service_name || '-')} ${b.variant_name ? `(${esc(b.variant_name)})` : ''}`
+        )).join('');
       }
 
       // Pending bookings (not yet started)
       if (pending?.length) {
         html += `<div class="notif-section-label"><i class="fas fa-clock" style="margin-right:5px;color:#f59e0b"></i> Pending Action <span class="notif-count-badge" style="background:#f59e0b">${pending.length}</span></div>`;
-        html += pending.map(b => `
-          <div class="notif-item">
-            <div class="notif-icon pending"><i class="fas fa-clock"></i></div>
-            <div class="notif-content">
-              <strong>${b.guest_name || 'Guest'}</strong>
-              <p>Waiting to be marked In Progress</p>
-              <span class="notif-ref">${b.reference_code || ''}</span>
-            </div>
-          </div>`).join('');
+        html += pending.map(b => notifItem(
+          b, 'pending', 'fas fa-clock',
+          'Waiting to be marked In Progress'
+        )).join('');
       }
 
       // Done - waiting for pickup
       if (pickup?.length) {
         html += `<div class="notif-section-label"><i class="fas fa-motorcycle" style="margin-right:5px;color:#3b82f6"></i> Ready for Pickup <span class="notif-count-badge" style="background:#3b82f6">${pickup.length}</span></div>`;
-        html += pickup.map(b => `
-          <div class="notif-item">
-            <div class="notif-icon pickup"><i class="fas fa-motorcycle"></i></div>
-            <div class="notif-content">
-              <strong>${b.guest_name || 'Guest'}</strong>
-              <p>${b.service_name || '-'} - Done, awaiting pickup</p>
-              <span class="notif-ref">${b.reference_code || ''}</span>
-            </div>
-          </div>`).join('');
+        html += pickup.map(b => notifItem(
+          b, 'pickup', 'fas fa-motorcycle',
+          `${esc(b.service_name || '-')} - Done, awaiting pickup`
+        )).join('');
       }
 
       // Expired bookings today
       if (expired?.length) {
         html += `<div class="notif-section-label"><i class="fas fa-times-circle" style="margin-right:5px;color:#ef4444"></i> Expired Today <span class="notif-count-badge">${expired.length}</span></div>`;
-        html += expired.map(b => `
-          <div class="notif-item">
-            <div class="notif-icon expired"><i class="fas fa-times-circle"></i></div>
-            <div class="notif-content">
-              <strong>${b.guest_name || 'Guest'}</strong>
-              <p>Booking expired without payment</p>
-              <span class="notif-ref">${b.reference_code || ''}</span>
-            </div>
-          </div>`).join('');
+        html += expired.map(b => notifItem(
+          b, 'expired', 'fas fa-times-circle',
+          'Booking expired without payment'
+        )).join('');
       }
 
       list.innerHTML = html;

@@ -183,4 +183,10 @@
     document.getElementById(id)?.addEventListener('input', loadBookings);
   });
 
+  const refParam = new URLSearchParams(location.search).get('ref');
+  if (refParam) {
+    const searchInput = document.getElementById('bookingSearch');
+    if (searchInput) searchInput.value = refParam;
+  }
+
   loadBookings();
