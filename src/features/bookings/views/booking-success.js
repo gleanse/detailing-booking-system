@@ -18,7 +18,7 @@ async function loadBookingDetails() {
   }
 
   try {
-    const res = await fetch(`/api/booking/details?external_id=${externalId}`);
+    const res = await fetch(`/api/payments/details?external_id=${externalId}`);
     const data = await res.json();
 
     if (!data.success) throw new Error(data.message);

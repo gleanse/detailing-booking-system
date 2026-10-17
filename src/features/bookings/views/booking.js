@@ -973,7 +973,7 @@ document.getElementById('btn-pay').addEventListener('click', async () => {
   btn.disabled = true;
   btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Processing...';
 
-  const res = await fetch('/api/booking/pay', {
+  const res = await fetch('/api/payments/gcash', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ bookingId: state.bookingId, paymentType }),
@@ -982,7 +982,7 @@ document.getElementById('btn-pay').addEventListener('click', async () => {
   const json = await res.json();
   if (json.success) {
     clearSession();
-    window.location.href = json.invoiceUrl;
+    window.location.href = json.redirectUrl;
   } else {
     btn.disabled = false;
     btn.innerHTML = '<i class="ph ph-lock"></i> Proceed to Payment';
