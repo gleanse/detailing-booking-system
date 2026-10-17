@@ -15,6 +15,7 @@ const trackRoutes = require('../features/track/routes');
 const customerRoutes = require('../features/customer/routes');
 const staffRoutes = require('../features/staff/routes');
 const landingRoutes = require('../features/landing/routes');
+const paymentRoutes = require('../features/payments/routes');
 
 // PAGE router serves HTML pages
 const pagesRouter = express.Router();
@@ -35,5 +36,6 @@ apiRouter.use('/booking', bookingRoutes);
 apiRouter.use('/admin', isAdmin, adminRoutes);
 apiRouter.use('/customer', customerRoutes);
 apiRouter.use('/staff', staffRoutes);
+apiRouter.use('/payments', paymentRoutes);
 
 module.exports = { apiRouter, pagesRouter };
