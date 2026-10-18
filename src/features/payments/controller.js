@@ -77,12 +77,19 @@ const createGCashPayment = async (req, res) => {
 
 const handleWebhook = async (req, res) => {
   try {
-    console.log('XENDIT WEBHOOK', { tokenMatches: req.headers['x-callback-token'] === process.env.XENDIT_WEBHOOK_TOKEN }, JSON.stringify(req.body));
+    console.log(
+      'XENDIT WEBHOOK',
+      {
+        tokenMatches:
+          req.headers['x-callback-token'] === process.env.XENDIT_WEBHOOK_TOKEN,
+      },
+      JSON.stringify(req.body),
+    );
     if (req.headers['x-callback-token'] !== process.env.XENDIT_WEBHOOK_TOKEN)
       return res.sendStatus(401);
     const { event, data } = req.body;
 
-    if (event !== 'payment.capture' || data.status !== 'SUCCEEDED') {
+    if (event !== 'payment.succeeded' || data.status !== 'SUCCEEDED') {
       return res.json({ success: true });
     }
 
@@ -97,7 +104,7 @@ const handleWebhook = async (req, res) => {
 
     await confirmBooking({
       bookingId: payment.booking_id,
-      xenditInvoiceId: data.payment_id,
+      xenditInvoiceId: data.id,
     });
 
     const bookingDetails = await getBookingByPaymentId(paymentId);
