@@ -1,10 +1,10 @@
 // CONTROLLER OF CUSTOMER AUTH
 const path = require('path');
-const pool = require('../../config/database');
+const pool = require('../../../config/database');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const redis = require('../../config/redis');
-const { sendPasswordResetEmail } = require('../../shared/utils/email');
+const redis = require('../../../config/redis');
+require('../../../shared/utils/email');
 
 const getLoginPage = (req, res) => {
   // redirect to account if already logged in as customer
