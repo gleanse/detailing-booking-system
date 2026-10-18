@@ -201,13 +201,14 @@ const confirmBooking = async ({ bookingId, xenditInvoiceId }) => {
         AND booking_status = 'confirmed'
       ),
       updated_at = NOW()
-    WHERE id = $1
+      WHERE id = $1 AND booking_status <> 'confirmed'
     RETURNING *
   `,
     [bookingId],
   );
 
   const booking = result.rows[0];
+  if (!booking) return null;
   const qrDataUrl = await QRCode.toDataURL(
     `${process.env.APP_URL}/track/${booking.reference_code}`,
     {

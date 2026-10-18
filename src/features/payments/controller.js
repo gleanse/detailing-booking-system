@@ -77,16 +77,9 @@ const createGCashPayment = async (req, res) => {
 
 const handleWebhook = async (req, res) => {
   try {
-    console.log(
-      'XENDIT WEBHOOK',
-      {
-        tokenMatches:
-          req.headers['x-callback-token'] === process.env.XENDIT_WEBHOOK_TOKEN,
-      },
-      JSON.stringify(req.body),
-    );
     if (req.headers['x-callback-token'] !== process.env.XENDIT_WEBHOOK_TOKEN)
       return res.sendStatus(401);
+
     const { event, data } = req.body;
 
     if (event !== 'payment.succeeded' || data.status !== 'SUCCEEDED') {
@@ -97,18 +90,23 @@ const handleWebhook = async (req, res) => {
     const payment = await getPaymentById(paymentId);
 
     if (!payment) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'Payment not found' });
+      console.warn('Webhook for unknown payment:', paymentId);
+      return res.json({ success: true });
     }
 
-    await confirmBooking({
+    const confirmed = await confirmBooking({
       bookingId: payment.booking_id,
       xenditInvoiceId: data.id,
     });
 
-    const bookingDetails = await getBookingByPaymentId(paymentId);
-    await sendBookingConfirmationEmail(bookingDetails);
+    if (!confirmed) return res.json({ success: true });
+
+    try {
+      const bookingDetails = await getBookingByPaymentId(paymentId);
+      await sendBookingConfirmationEmail(bookingDetails);
+    } catch (emailError) {
+      console.error('Confirmation email failed:', emailError);
+    }
 
     res.json({ success: true });
   } catch (error) {
@@ -116,7 +114,6 @@ const handleWebhook = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 const getBookingDetails = async (req, res) => {
   try {
     const { external_id } = req.query;
