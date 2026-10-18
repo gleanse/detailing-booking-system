@@ -60,16 +60,15 @@ const createGCashPayment = async (req, res) => {
       },
     });
 
-    console.log('XENDIT RESPONSE', JSON.stringify(response));
     const redirectAction = response.actions?.find(
-      (action) => action.type === 'REDIRECT_CUSTOMER',
+      (action) => action.urlType === 'WEB',
     );
 
     if (!redirectAction) {
       throw new Error('No redirect action returned from Xendit');
     }
 
-    res.json({ success: true, redirectUrl: redirectAction.value });
+    res.json({ success: true, redirectUrl: redirectAction.url });
   } catch (error) {
     console.error('Create GCash payment error:', error);
     res.status(500).json({ success: false, message: error.message });
@@ -78,6 +77,7 @@ const createGCashPayment = async (req, res) => {
 
 const handleWebhook = async (req, res) => {
   try {
+    console.log('XENDIT WEBHOOK', { tokenMatches: req.headers['x-callback-token'] === process.env.XENDIT_WEBHOOK_TOKEN }, JSON.stringify(req.body));
     if (req.headers['x-callback-token'] !== process.env.XENDIT_WEBHOOK_TOKEN)
       return res.sendStatus(401);
     const { event, data } = req.body;
