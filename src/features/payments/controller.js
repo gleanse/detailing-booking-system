@@ -60,6 +60,7 @@ const createGCashPayment = async (req, res) => {
       },
     });
 
+    console.log('XENDIT RESPONSE', JSON.stringify(response));
     const redirectAction = response.actions?.find(
       (action) => action.type === 'REDIRECT_CUSTOMER',
     );
