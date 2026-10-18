@@ -27,11 +27,13 @@
 ## Payments - Xendit
 - Dashboard: https://dashboard.xendit.co
 - Used for: booking payments
-- `.env` variables: `XENDIT_SECRET_KEY`, `XENDIT_PUBLIC_KEY`
+- `.env` variables: `XENDIT_SECRET_KEY`, `XENDIT_PUBLIC_KEY`, `XENDIT_WEBHOOK_TOKEN`
 - Currently using TEST/sandbox keys
-- Webhook URL must be manually set in Xendit dashboard (Settings > Webhooks/Callbacks)
-  - Format: `{APP_URL}/api/booking/webhook`
-  - Example: `https://carita-solar-darci.ngrok-free.dev/api/booking/webhook`
+- Webhook URL must be manually set in Xendit dashboard (Settings > Developers > Webhooks) 
+  - Format: `{APP_URL}/api/payments/webhook`, set ONLY in "Payment Succeeded" under PAYMENT REQUESTS V2 (event: `payment.succeeded`)  
+  - Example: `https://carita-solar-darci.ngrok-free.dev/api/payments/webhook`
+  - `XENDIT_WEBHOOK_TOKEN` is the verification token on the same Webhooks page; test and live modes have different tokens, and a mismatch makes every webhook return 401
+  - v1 (`stable-v1`) still uses the "Invoices paid" field pointing at `{APP_URL}/api/booking/webhook`; leave it set while v1 is deployed
   - IMPORTANT: does NOT auto-sync with `.env`'s `APP_URL` - if `APP_URL` changes (new ngrok tunnel, new deploy), update it manually in Xendit's dashboard too, or payment confirmations won't reach the app
 
 ## Email - Brevo
