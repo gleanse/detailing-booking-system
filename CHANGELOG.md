@@ -8,6 +8,42 @@ All notable changes to this project are documented in this file.
 
 ---
 
+## [2.0.0-alpha.1] - 2026-10-19
+
+Early v2 checkpoint. Payments extracted into their own feature on the Xendit Payment Requests API.
+
+### Added
+
+| Change | Area |
+|---|---|
+| `payments/` feature mounted at `/api/payments` | Payments |
+| GCash checkout through Xendit Payment Requests, redirecting straight to GCash | Payments |
+| Webhook verification with `x-callback-token` | Payments |
+| Idempotent booking confirmation, a repeated webhook cannot change the queue number or resend the email | Payments, Bookings |
+
+### Changed
+
+| Change | Area |
+|---|---|
+| Feature folders restructured into `controller.js`, `queries.js`, `routes.js`, `views/` | Codebase |
+| Booking payment step shows a GCash row and calls `/api/payments/gcash` | Booking UI |
+| Xendit webhook moved to `/api/payments/webhook` (event `payment.succeeded`), dashboard URL must be set manually | Payments |
+
+### Removed
+
+| Change | Area |
+|---|---|
+| Invoice checkout and the unauthenticated `/api/booking/webhook`, `/pay`, `/details` routes | Bookings |
+| Unused Xendit invoice and generic clients | Config |
+
+### Fixed
+
+| Change | Area |
+|---|---|
+| Wrong relative requires in the customer auth controller | Customer |
+
+---
+
 ## [1.0.0] - 2026-09-11
 
 Defended baseline, stabilized after panel feedback.
