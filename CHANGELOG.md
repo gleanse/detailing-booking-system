@@ -25,7 +25,6 @@ Early v2 checkpoint. Payments extracted into their own feature on the Xendit Pay
 
 | Change | Area |
 |---|---|
-| Feature folders restructured into `controller.js`, `queries.js`, `routes.js`, `views/` | Codebase |
 | Booking payment step shows a GCash row and calls `/api/payments/gcash` | Booking UI |
 | Xendit webhook moved to `/api/payments/webhook` (event `payment.succeeded`), dashboard URL must be set manually | Payments |
 
@@ -41,6 +40,19 @@ Early v2 checkpoint. Payments extracted into their own feature on the Xendit Pay
 | Change | Area |
 |---|---|
 | Wrong relative requires in the customer auth controller | Customer |
+
+---
+
+## [2.0.0-alpha] - 2026-09-26
+
+Structural refactor only, no behavior changes.
+
+### Changed
+
+| Change | Area |
+|---|---|
+| Feature folders restructured into `controller.js`, `queries.js`, `routes.js` and `views/` | Codebase |
+| Customer account and auth logic split, auth lives in `customer/auth/` | Customer |
 
 ---
 
