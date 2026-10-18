@@ -9,9 +9,6 @@ const {
   lockBookingSlot,
   releaseBookingSlot,
   updateBooking,
-  createInvoice,
-  handleWebhook,
-  getBookingDetails,
   getPublicTrackingPage,
   getPublicBookingDetails,
   getBookingSession,
@@ -21,7 +18,6 @@ const {
 router.get('/booking.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'booking.js'));
 });
-router.get('/details', getBookingDetails);
 router.get('/success', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'booking-success.html'));
 });
@@ -46,8 +42,6 @@ router.get('/availability/:serviceId', getAvailability);
 router.post('/lock', lockBookingSlot);
 router.patch('/release', releaseBookingSlot);
 router.post('/release', releaseBookingSlot);
-router.post('/pay', createInvoice);
-router.post('/webhook', handleWebhook);
 router.patch('/:bookingId', updateBooking);
 
 // PAGE route
