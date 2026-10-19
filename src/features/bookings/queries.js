@@ -240,6 +240,14 @@ const confirmBooking = async ({ bookingId, xenditInvoiceId }) => {
   return { ...booking, qr_code: qrUrl };
 };
 
+const getBookingSessionById = async (bookingId) => {
+  const result = await pool.query(
+    `SELECT booking_status, expires_at FROM bookings WHERE id = $1`,
+    [bookingId],
+  );
+  return result.rows[0] || null;
+};
+
 const getBookingByReferenceCode = async (referenceCode) => {
   const bookingResult = await pool.query(
     `SELECT 
@@ -304,5 +312,6 @@ module.exports = {
   releaseSlot,
   updateBookingDetails,
   confirmBooking,
+  getBookingSessionById,
   getBookingByReferenceCode,
 };

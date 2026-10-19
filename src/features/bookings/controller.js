@@ -1,6 +1,5 @@
 // BOOKING CONTROLLER
 const path = require('path');
-const pool = require('../../config/database');
 const redis = require('../../config/redis');
 const { incrementAbuseCounter } = require('../../shared/utils/cron');
 const {
@@ -10,6 +9,7 @@ const {
   releaseSlot,
   updateBookingDetails,
   getBookingByReferenceCode,
+  getBookingSessionById,
 } = require('./queries');
 
 const getBookingPage = (req, res) => {
@@ -237,18 +237,15 @@ const getPublicBookingDetails = async (req, res) => {
 const getBookingSession = async (req, res) => {
   try {
     const { bookingId } = req.params;
-    const result = await pool.query(
-      `SELECT booking_status, expires_at FROM bookings WHERE id = $1`,
-      [bookingId],
-    );
+    const session = await getBookingSessionById(bookingId);
 
-    if (!result.rows.length) {
+    if (!session) {
       return res
         .status(404)
         .json({ success: false, message: 'Booking not found' });
     }
 
-    res.json({ success: true, data: result.rows[0] });
+    res.json({ success: true, data: session });
   } catch (error) {
     console.error('Get booking session error:', error);
     res.status(500).json({ success: false, message: error.message });
