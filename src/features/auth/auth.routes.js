@@ -9,18 +9,7 @@ router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'login.html'));
 });
 
-router.get('/signup', (req, res) => {
-  if (!req.session?.user || req.session.user.role !== 'admin') {
-    return res.redirect('/auth/login?error=Signup+is+disabled');
-  }
-  res.sendFile(path.join(__dirname, 'signup.html'));
-});
-
 // STATIC assets
-router.get('/auth.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'auth.css'));
-});
-
 router.get('/auth.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'auth.js'));
 });
