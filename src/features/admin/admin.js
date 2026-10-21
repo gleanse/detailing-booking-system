@@ -429,7 +429,7 @@ function deleteClosedDate(id) { if (confirm('Remove this closure?')) alert('Dele
 
 async function loadStaff() {
   try {
-    const res  = await fetch('/api/admin/staff');
+    const res  = await fetch('/api/admin/accounts'); 
     const data = await res.json();
 
     const tbody = document.getElementById('staffTableBody');

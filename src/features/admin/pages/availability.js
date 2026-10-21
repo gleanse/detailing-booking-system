@@ -66,7 +66,7 @@ AdminLayout.init({ activePage: 'availability', breadcrumb: 'Availability' });
 
     let staffCount = 0;
     try {
-      const sr = await fetch('/api/admin/staff');
+      const sr = await fetch('/api/admin/accounts'); 
       const sd = await sr.json();
       staffCount = sd.success ? sd.data.length : 0;
     } catch (_) {}

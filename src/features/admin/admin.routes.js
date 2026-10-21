@@ -880,8 +880,8 @@ router.post('/accounts', async (req, res) => {
   }
 });
 
-// GET /api/admin/staff
-router.get('/staff', async (req, res) => {
+// GET /api/admin/accounts
+router.get('/accounts', async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id,name,email,role,created_at FROM users WHERE role IN ('admin','staff') ORDER BY created_at DESC`
@@ -1291,7 +1291,7 @@ router.get('/notifications/list', async (req, res) => {
   }
 });
 
-router.delete('/staff/:id', async (req, res) => {
+router.delete('/accounts/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
