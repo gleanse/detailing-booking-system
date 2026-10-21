@@ -54,7 +54,7 @@
     tbody.innerHTML = skeletonTableRows(5, 5);
     });
     try {
-      const res  = await fetch('/api/admin/staff');
+      const res  = await fetch('/api/admin/accounts'); 
       const data = await res.json();
       cancelSkeleton();
       if (!data.success || !data.data.length) {
@@ -183,7 +183,7 @@
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
 
     try {
-      const res  = await fetch(`/api/admin/staff/${deletingStaffId}`, { method: 'DELETE' });
+      const res  = await fetch(`/api/admin/accounts/${deletingStaffId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         closeOverlay('deleteStaffModal');
