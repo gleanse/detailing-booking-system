@@ -827,6 +827,59 @@ router.get('/closed-dates', async (req, res) => {
   }
 });
 
+// POST /api/admin/accounts
+router.post('/accounts', async (req, res) => {
+  try {
+    const { name, email, role, password } = req.body;
+
+    if (!name || !email || !role || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'All fields are required' });
+    }
+
+    if (!['admin', 'staff'].includes(role)) {
+      return res.status(400).json({ success: false, message: 'Invalid role' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters',
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase();
+
+    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [
+      normalizedEmail,
+    ]);
+    if (existing.rows.length > 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Email already in use' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const result = await pool.query(
+      `INSERT INTO users (name, email, password, role)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, name, email, role`,
+      [name, normalizedEmail, hashedPassword, role]
+    );
+
+    res.json({
+      success: true,
+      message: 'Account created successfully',
+      user: result.rows[0],
+    });
+  } catch (err) {
+    console.error('Create account error:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // GET /api/admin/staff
 router.get('/staff', async (req, res) => {
   try {
