@@ -2,9 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 ![Status](https://img.shields.io/badge/status-stable-brightgreen)
-![Release Date](https://img.shields.io/badge/released-2026--09--11-informational)
+![Release Date](https://img.shields.io/badge/released-2026--10--22-informational)
 
 ---
 
