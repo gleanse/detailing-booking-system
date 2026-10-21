@@ -8,6 +8,30 @@ All notable changes to this project are documented in this file.
 
 ---
 
+## [2.0.0-alpha.2] - 2026-10-22
+
+Security fix and account route cleanup, carried over from `stable-v1`.
+
+### Changed
+
+| Change | Area |
+|---|---|
+| Staff account routes renamed from `/api/admin/staff` to `/api/admin/accounts` | Admin |
+
+### Removed
+
+| Change | Area |
+|---|---|
+| Unused signup page, its route and its script | Auth |
+
+### Fixed
+
+| Change | Area |
+|---|---|
+| Account creation was open to anyone without logging in, now admin-only at `POST /api/admin/accounts` | Auth, Admin |
+
+---
+
 ## [2.0.0-alpha.1] - 2026-10-19
 
 Early v2 checkpoint. Payments extracted into their own feature on the Xendit Payment Requests API.
@@ -53,6 +77,35 @@ Structural refactor only, no behavior changes.
 |---|---|
 | Feature folders restructured into `controller.js`, `queries.js`, `routes.js` and `views/` | Codebase |
 | Customer account and auth logic split, auth lives in `customer/auth/` | Customer |
+
+---
+
+## [1.1.0] - 2026-10-22
+
+Security and polish release for the v1 line, released from `stable-v1`.
+
+### Changed
+
+| Change | Area |
+|---|---|
+| Staff account routes renamed from `/api/admin/staff` to `/api/admin/accounts` | Admin |
+| Admin notifications are clickable and open the booking with the search prefilled | Admin UI |
+| Chrome autofill no longer turns login inputs white | Auth UI |
+| `XENDIT_WEBHOOK_TOKEN` is now required by the invoice webhook and documented in the env example | Bookings, Config |
+| Prettier config added so formatting matches `main` | Tooling |
+
+### Removed
+
+| Change | Area |
+|---|---|
+| Unused signup page, its route and its script | Auth |
+
+### Fixed
+
+| Change | Area |
+|---|---|
+| Account creation was open to anyone without logging in, now admin-only at `POST /api/admin/accounts` | Auth, Admin |
+| Invoice webhook accepted unauthenticated requests, now verifies `x-callback-token` | Bookings |
 
 ---
 
