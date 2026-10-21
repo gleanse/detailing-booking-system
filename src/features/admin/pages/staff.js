@@ -140,7 +140,7 @@
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
 
     try {
-      const res  = await fetch('/api/auth/signup', {
+      const res  = await fetch('/api/admin/accounts', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email: email.toLowerCase(), role, password }),
