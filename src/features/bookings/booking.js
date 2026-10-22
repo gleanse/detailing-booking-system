@@ -326,25 +326,7 @@ function handleTimerExpired() {
   );
 }
 
-// Beacon release for browser close, refresh, back
-function beaconRelease(bookingId) {
-  const blob = new Blob([JSON.stringify({ bookingId })], {
-    type: 'application/json',
-  });
-  navigator.sendBeacon('/api/booking/release', blob);
-}
-
-// beforeunload fires on tab close, refresh, and browser back
-window.addEventListener('beforeunload', (e) => {
-  if (state.bookingId && state.currentStep >= 3) {
-    beaconRelease(state.bookingId);
-    clearSession();
-    e.preventDefault();
-    e.returnValue = '';
-  }
-});
-
-// verify slot is still locked when page becomes visible again after a refresh cancel
+// verify slot is still locked when the page becomes visible again
 document.addEventListener('visibilitychange', async () => {
   if (
     document.visibilityState === 'visible' &&
