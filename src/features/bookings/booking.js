@@ -14,6 +14,7 @@ let state = {
 };
 
 const SESSION_KEY = 'hrc_booking_state';
+const FORM_KEY = 'hrc_booking_form';
 
 // Session storage
 function saveSession() {
@@ -33,6 +34,7 @@ function saveSession() {
 
 function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(FORM_KEY);
 }
 
 function loadSession() {
@@ -273,7 +275,54 @@ function validateStep3() {
   });
 });
 
-// Timer
+// form persistence
+const FORM_FIELDS = [
+  'input-name',
+  'input-email',
+  'input-phone',
+  'input-plate',
+  'input-model',
+  'input-color',
+  'input-description',
+];
+
+function saveForm() {
+  const data = {};
+  FORM_FIELDS.forEach((id) => {
+    data[id] = document.getElementById(id).value;
+  });
+  data.paymentType = document.querySelector(
+    'input[name="payment_type"]:checked',
+  ).value;
+  sessionStorage.setItem(FORM_KEY, JSON.stringify(data));
+}
+
+function restoreForm() {
+  try {
+    const raw = sessionStorage.getItem(FORM_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    FORM_FIELDS.forEach((id) => {
+      if (id in data) document.getElementById(id).value = data[id];
+    });
+    document
+      .querySelector(`input[name="payment_type"][value="${data.paymentType}"]`)
+      ?.closest('.payment-option')
+      ?.click();
+  } catch {
+    sessionStorage.removeItem(FORM_KEY);
+  }
+}
+
+FORM_FIELDS.forEach((id) => {
+  document.getElementById(id).addEventListener('input', saveForm);
+});
+
+document.querySelectorAll('.payment-option').forEach((opt) => {
+  opt.addEventListener('click', () => setTimeout(saveForm, 0));
+});
+
+// timer
 function startTimerFromSeconds(seconds) {
   stopTimer();
   state.timerSeconds = seconds;
@@ -402,7 +451,7 @@ async function loadService() {
   if (!json.success) return;
   state.service = json.data;
   // fetch user data in background for autofill and navbar
-  loadUserAutofill();
+  const autofillDone = loadUserAutofill();
 
   document.getElementById('service-skeleton').classList.add('hidden');
   document.getElementById('service-heading').classList.remove('hidden');
@@ -426,6 +475,7 @@ async function loadService() {
     }
 
     showStep(restored.step);
+    autofillDone.then(restoreForm);
 
     if (restored.step >= 3) {
       startTimerFromSeconds(restored.remainingSeconds);
