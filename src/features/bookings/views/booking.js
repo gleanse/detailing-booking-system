@@ -322,6 +322,70 @@ document.querySelectorAll('.payment-option').forEach((opt) => {
   opt.addEventListener('click', () => setTimeout(saveForm, 0));
 });
 
+// back button handling
+// 1 extra history entry (the catcher) sits on top while step is 2 or higher
+// a back press eats it and fires popstate, we use that to change step
+let undoingForward = false;
+
+function ensureCatcher() {
+  // only push if we're not already on one
+  if (!history.state || !history.state.catcher) {
+    history.pushState({ catcher: true }, '');
+  }
+}
+
+window.addEventListener('popstate', (e) => {
+  // this one comes from our own history.back() below, skip it
+  if (undoingForward) {
+    undoingForward = false;
+    return;
+  }
+
+  // landed on a catcher so the forward button was used, undo it
+  if (e.state && e.state.catcher) {
+    undoingForward = true;
+    history.back();
+    return;
+  }
+
+  // modal is open, put the catcher back and ignore the press
+  const modal = document.getElementById('modal-confirm');
+  if (!modal.classList.contains('hidden')) {
+    ensureCatcher();
+    return;
+  }
+
+  // from here a back press ate the catcher
+  const step = state.currentStep;
+
+  if (step === 1) {
+    // leftover catcher after a refresh on step 1, just leave the page
+    history.back();
+    return;
+  }
+
+  if (step === 2) {
+    // step 1 has no catcher
+    showStep(1);
+    return;
+  }
+
+  // step 3 and 4 stay guarded so put the catcher back
+  ensureCatcher();
+
+  if (step === 4) {
+    showStep(3);
+    return;
+  }
+
+  // step 3 reuses the release dialog from the in-page back button
+  if (state.bookingId) {
+    document.getElementById('btn-step3-back').click();
+  } else {
+    showStep(2);
+  }
+});
+
 // timer
 function startTimerFromSeconds(seconds) {
   stopTimer();
@@ -476,6 +540,8 @@ async function loadService() {
 
     showStep(restored.step);
     autofillDone.then(restoreForm);
+    // a refresh keeps the catcher when we're past step 1
+    if (restored.step > 1) ensureCatcher();
 
     if (restored.step >= 3) {
       startTimerFromSeconds(restored.remainingSeconds);
@@ -863,12 +929,16 @@ document.getElementById('btn-back-services').addEventListener('click', () => {
 });
 
 document.getElementById('btn-step1-next').addEventListener('click', () => {
+  // leaving step 1 so add the catcher
+  ensureCatcher();
   showStep(2);
   loadDates();
 });
 
 document.getElementById('btn-step2-back').addEventListener('click', () => {
-  showStep(1);
+  // go back through the browser so popstate does the step change
+  if (history.state && history.state.catcher) history.back();
+  else showStep(1);
 });
 
 document
