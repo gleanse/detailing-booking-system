@@ -325,7 +325,21 @@ document.querySelectorAll('.payment-option').forEach((opt) => {
 // back button handling
 // 1 extra history entry (the catcher) sits on top while step is 2 or higher
 // a back press eats it and fires popstate, we use that to change step
-let undoingForward = false;
+// we never push a new catcher on a back press, chrome android skips entries pushed without a tap
+// the eaten catcher is still one step ahead in history, so we walk forward onto it again
+let selfMove = false;
+
+function moveSelf(move) {
+  // our own history moves fire popstate too, this flag makes the handler skip that one
+  selfMove = true;
+  move();
+  // popstate clears the flag, the timer only covers the case where no popstate came
+  setTimeout(() => {
+    selfMove = false;
+    // forward found nothing so put a catcher back, better than having none
+    if (state.currentStep > 1) ensureCatcher();
+  }, 500);
+}
 
 function ensureCatcher() {
   // only push if we're not already on one
@@ -335,23 +349,22 @@ function ensureCatcher() {
 }
 
 window.addEventListener('popstate', (e) => {
-  // this one comes from our own history.back() below, skip it
-  if (undoingForward) {
-    undoingForward = false;
+  // our own history move, skip it
+  if (selfMove) {
+    selfMove = false;
     return;
   }
 
   // landed on a catcher so the forward button was used, undo it
   if (e.state && e.state.catcher) {
-    undoingForward = true;
-    history.back();
+    moveSelf(() => history.back());
     return;
   }
 
-  // modal is open, put the catcher back and ignore the press
+  // modal is open, walk forward onto the catcher and ignore the press
   const modal = document.getElementById('modal-confirm');
   if (!modal.classList.contains('hidden')) {
-    ensureCatcher();
+    moveSelf(() => history.forward());
     return;
   }
 
@@ -370,8 +383,8 @@ window.addEventListener('popstate', (e) => {
     return;
   }
 
-  // step 3 and 4 stay guarded so put the catcher back
-  ensureCatcher();
+  // step 3 and 4 stay guarded so walk forward onto the catcher again
+  moveSelf(() => history.forward());
 
   if (step === 4) {
     showStep(3);
