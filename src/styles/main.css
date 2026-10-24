@@ -1,3 +1,11 @@
 @import 'tailwindcss';
 @import './auth.css';
 @import './admin.css';
+
+@theme {
+  --font-heading: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
+  --color-brand: #e53535;
+  --color-brand-dark: #b91c1c;
+  --shadow-glow: 0 0 40px rgba(229, 53, 53, 0.25);
+  --shadow-glow-sm: 0 0 20px rgba(229, 53, 53, 0.3);
+}
