@@ -1030,3 +1030,25 @@
 .skeleton-card {
   height: 220px;
 }
+
+@layer components {
+  .report-grid { @apply grid grid-cols-1 gap-4 md:grid-cols-[2fr_1fr]; }
+  .report-grid > * { @apply min-w-0; }
+  .report-full { @apply md:col-span-full; }
+
+  .report-card {
+    @apply bg-admin-dark-2 border border-admin-border rounded-xl p-5 transition-colors;
+  }
+  .report-card:hover { border-color: rgba(255,255,255,0.12); }
+
+  .report-head { @apply flex items-center justify-between mb-4; }
+  .report-head h3 { @apply text-sm font-semibold text-admin-text m-0; }
+
+  .report-select {
+    @apply bg-admin-dark-3 border border-admin-border text-admin-muted rounded-lg px-2 py-1 text-xs outline-none cursor-pointer;
+  }
+  .report-select:focus { @apply border-red-600; }
+  .report-select option { @apply bg-admin-dark-2; }
+
+  .chart-box { @apply relative h-60; }
+}

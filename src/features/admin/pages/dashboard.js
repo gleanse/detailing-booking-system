@@ -154,12 +154,72 @@ function renderPickupTable(bookings) {
     </tr>`).join('');
 }
 
+const charts = {};
+const STATUS_COLORS = { pending:'#f59e0b', in_progress:'#3b82f6', done:'#10b981', picked_up:'#6b7280', expired:'#ef4444', confirmed:'#8b5cf6' };
+
+// Dark theme defaults para sa lahat ng charts
+if (window.Chart) {
+  Chart.defaults.color = '#888888';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+  Chart.defaults.font.family = "'DM Sans', sans-serif";
+}
+
+function drawChart(key, canvasId, config) {
+  charts[key]?.destroy();
+  const ctx = document.getElementById(canvasId);
+  if (ctx) charts[key] = new Chart(ctx, config);
+}
+
+const shortDate = (str) =>
+  new Date(str + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+
+async function loadReports() {
+  const days = document.getElementById('trendRange')?.value || 7;
+  try {
+    const res = await fetch(`/api/admin/reports/summary?days=${days}`);
+    const { success, data } = await res.json();
+    if (!success) return;
+
+    const base = { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } };
+    const grid = { color:'rgba(255,255,255,0.06)' };
+
+    drawChart('trend', 'trendChart', {
+      type:'line',
+      data:{ labels:data.trend.map(r => shortDate(r.date)),
+        datasets:[{ data:data.trend.map(r => r.count), borderColor:'#dc2626',
+          backgroundColor:'rgba(220,38,38,.12)', fill:true, tension:.35, pointRadius:3,
+          pointBackgroundColor:'#dc2626' }] },
+      options:{ ...base, scales:{
+        x:{ grid:{ display:false }, ticks:{ maxRotation:0, autoSkip:true, maxTicksLimit:7 } },
+        y:{ beginAtZero:true, ticks:{ precision:0 }, grid }
+      } }
+    });
+
+    drawChart('status', 'statusChart', {
+      type:'doughnut',
+      data:{ labels:data.status.map(r => r.status.replace('_',' ')),
+        datasets:[{ data:data.status.map(r => r.count),
+          backgroundColor:data.status.map(r => STATUS_COLORS[r.status] || '#9ca3af'), borderWidth:0 }] },
+      options:{ ...base, cutout:'70%', plugins:{ legend:{ display:true, position:'bottom', labels:{ boxWidth:10, font:{ size:11 } } } } }
+    });
+
+    drawChart('services', 'servicesChart', {
+      type:'bar',
+      data:{ labels:data.services.map(r => r.service_name),
+        datasets:[{ data:data.services.map(r => r.count), backgroundColor:'#dc2626', borderRadius:6, barThickness:18 }] },
+      options:{ ...base, indexAxis:'y', scales:{ x:{ beginAtZero:true, ticks:{ precision:0 }, grid }, y:{ grid:{ display:false } } } }
+    });
+  } catch (err) { console.error('Reports load error:', err); }
+}
+
+document.getElementById('trendRange')?.addEventListener('change', loadReports);
 //  Load 
 async function loadDashboard() {
   const tbody = document.getElementById('todayTableBody');
   const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
     tbody.innerHTML = skeletonTableRows(6, 5);
   });
+  loadReports(); 
   try {
     const [bookingsRes, statsRes] = await Promise.all([
       fetch('/api/admin/bookings/today'),
