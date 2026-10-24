@@ -98,10 +98,28 @@ function updateStepIndicator(activeStep) {
   }
 }
 
-function showModal(title, message, onConfirm, confirmLabel = 'Yes, go back') {
+function showModal(
+  title,
+  message,
+  onConfirm,
+  confirmLabel = 'Yes, go back',
+  isNotice = false,
+) {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-message').innerHTML = message;
-  document.getElementById('modal-confirm-btn').textContent = confirmLabel;
+  // drop listeners left by a popup that was opened before this one
+  ['modal-confirm-btn', 'modal-cancel'].forEach((id) => {
+    const old = document.getElementById(id);
+    old.replaceWith(old.cloneNode(true));
+  });
+
+  // notice = one full width button and no cancel
+  const cancelEl = document.getElementById('modal-cancel');
+  const confirmEl = document.getElementById('modal-confirm-btn');
+  cancelEl.classList.toggle('hidden', isNotice);
+  confirmEl.classList.toggle('w-full', isNotice);
+  confirmEl.classList.toggle('w-1/2', !isNotice);
+  confirmEl.textContent = confirmLabel;
   const modal = document.getElementById('modal-confirm');
   modal.classList.remove('hidden');
   modal.classList.add('flex');
@@ -437,7 +455,7 @@ function handleTimerExpired() {
   clearSession();
   showModal(
     'Time Expired',
-    'Your slot reservation has expired. You will be redirected to select a new date.',
+    'Your slot reservation has expired. Select a new date to continue.',
     async () => {
       await fetch('/api/booking/release', {
         method: 'PATCH',
@@ -449,6 +467,8 @@ function handleTimerExpired() {
       showStep(2);
       loadDates();
     },
+    'Select new date',
+    true,
   );
 }
 
@@ -477,6 +497,7 @@ document.addEventListener('visibilitychange', async () => {
             loadDates();
           },
           'Okay',
+          true,
         );
       }
     } catch {
@@ -846,7 +867,13 @@ async function lockSlot() {
   const json = await res.json();
 
   if (json.blocked) {
-    showModal('Booking Temporarily Blocked', json.message, () => {}, 'Okay');
+    showModal(
+      'Booking Temporarily Blocked',
+      json.message,
+      () => {},
+      'Okay',
+      true,
+    );
     return false;
   }
 
@@ -990,6 +1017,7 @@ document.getElementById('btn-step3-back').addEventListener('click', () => {
             loadDates();
           },
           'Understood',
+          true,
         );
       } else {
         showStep(2);
