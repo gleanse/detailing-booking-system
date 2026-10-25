@@ -75,6 +75,12 @@ app.use(
   '/gsap',
   express.static(path.join(__dirname, '../node_modules/gsap/dist')),
 );
+app.use(
+  '/fonts/big-shoulders',
+  express.static(
+    path.join(__dirname, '../node_modules/@fontsource/big-shoulders-display'),
+  ),
+);
 
 // DATABASE test
 pool.query('SELECT NOW()', (err, res) => {
