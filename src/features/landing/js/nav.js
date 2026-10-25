@@ -27,7 +27,7 @@ async function updateNav() {
         accountLink.href = '/customer/account';
         accountLink.innerHTML = `<i class="ph ph-user-circle text-red-500 text-base"></i> ${firstName}`;
         accountLink.className =
-          'nav-link text-sm tracking-wide flex items-center gap-1.5';
+          'nav-link text-sm text-white flex items-center gap-1.5';
       }
     }
 
@@ -38,7 +38,7 @@ async function updateNav() {
         accountLink.href = '/customer/account';
         accountLink.textContent = `Hi, ${firstName}`;
         accountLink.className =
-          'text-sm text-white py-3 border-b border-white/5';
+          'py-4 text-base text-white border-b border-white/5';
       }
     }
   } catch {
