@@ -19,6 +19,10 @@ router.get('/nav.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'js', 'nav.js'));
 });
 
+router.get('/motion.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'js', 'motion.js'));
+});
+
 router.get('/hero-animation.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'js', 'hero-animation.js'));
 });
