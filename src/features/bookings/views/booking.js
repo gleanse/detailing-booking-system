@@ -506,16 +506,36 @@ document.addEventListener('visibilitychange', async () => {
   }
 });
 
-// Session restore on page load
+// session restore on page load
+// ask the server about the saved booking, retry a few times when it cannot answer
+async function fetchBookingSession(bookingId) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(`/api/booking/session/${bookingId}`);
+      // a 5xx means the server could not answer, treat it like a failed request
+      if (res.status < 500) return { res, json: await res.json() };
+    } catch {
+      // network error or a reply that is not json, try again
+    }
+    if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  return null;
+}
+
 async function tryRestoreSession() {
   const saved = loadSession();
   if (!saved || !saved.bookingId) return false;
 
-  try {
-    const res = await fetch(`/api/booking/session/${saved.bookingId}`);
-    const json = await res.json();
+  const answer = await fetchBookingSession(saved.bookingId);
 
-    if (!json.success || json.data.booking_status !== 'locked') {
+  // could not ask the server, keep the saved booking and let the caller show a retry popup
+  if (!answer) return 'unreachable';
+
+  try {
+    const { res, json } = answer;
+
+    // the server answered and the booking is gone, expired or confirmed
+    if (!res.ok || !json.success || json.data.booking_status !== 'locked') {
       clearSession();
       return false;
     }
@@ -542,7 +562,7 @@ async function tryRestoreSession() {
   }
 }
 
-// Load service
+// load service
 async function loadService() {
   const res = await fetch(`/api/booking/service/${serviceId}`);
   const json = await res.json();
@@ -556,6 +576,18 @@ async function loadService() {
   document.getElementById('service-name').textContent = state.service.name;
 
   const restored = await tryRestoreSession();
+
+  // could not reach the server, the saved booking is kept so just ask to retry
+  if (restored === 'unreachable') {
+    showModal(
+      'Could Not Check Your Booking',
+      'Your booking details are saved on this device, nothing was lost.<br><br>We could not reach our server. It may be your internet connection or our server being slow, so please try again. Your slot is only held for a limited time, so try again soon.',
+      () => location.reload(),
+      'Try again',
+      true,
+    );
+    return;
+  }
 
   if (restored) {
     renderVariants(state.service.variants);
