@@ -27,7 +27,7 @@ function playHero() {
     .from('[data-card]', { y: 28, opacity: 0, duration: 0.9 }, '-=0.7')
     .to(
       '[data-progress]',
-      { scaleX: 0.5, duration: 1.1, ease: 'power2.inOut' },
+      { width: '50%', duration: 1.1, ease: 'power2.inOut' },
       '-=0.2',
     )
     .fromTo(
@@ -49,7 +49,7 @@ const title = document.querySelector('[data-split]');
 if (title) splitWords(title);
 
 if (reduceMotion) {
-  gsap.set('[data-progress]', { scaleX: 0.5 });
+  gsap.set('[data-progress]', { width: '50%' });
   const status = document.querySelector('[data-status]');
   if (status) status.textContent = 'In progress';
 } else {

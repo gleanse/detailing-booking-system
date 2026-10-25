@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/phosphor/regular/style.css">
   <link rel="stylesheet" href="/landing.css">
   <link rel="stylesheet" href="/fonts/big-shoulders/latin-800.css">
-  <link rel="stylesheet" href="/hero-animation.css">
+
 </head>
 <body class="bg-ink-black min-h-screen text-white overflow-x-hidden">
 
@@ -117,71 +117,109 @@
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="hero-glow relative overflow-hidden" id="heroGlow">
-    <div class="wind-layer" id="windLayer"></div>
-    <div class="hero-sweep"></div>
-
-    <main class="max-w-6xl mx-auto px-6 relative z-10">
-      <div class="grid md:grid-cols-2 gap-14 items-center pt-24 pb-28">
-        <div class="text-center md:text-left" id="heroContent">
-          <div id="heroContentTremble">
-            <p
-              class="text-red-400 text-xs uppercase tracking-[0.2em] mb-4 font-medium flex items-center justify-center md:justify-start gap-2">
-              <span class="pulse-dot"></span> Now booking online
-            </p>
-            <h1 class="text-6xl sm:text-7xl font-bold tracking-wide mb-6 leading-[0.92]"
-              style="font-family:'Bebas Neue',sans-serif;">
-              Your ride deserves a <span class="text-red-500">real</span> detail - booked in minutes.
-            </h1>
-            <p class="text-white/40 text-base leading-relaxed max-w-md mx-auto md:mx-0 mb-9">
-              Skip the walk-in queue. Pick a service, pick a slot, and track your bike's status from drop-off to pickup
-              -
-              all from your phone.
-            </p>
-            <div class="flex flex-wrap justify-center md:justify-start gap-3 mb-6">
-              <a href="/services"
-                class="book-now-btn bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-7 py-3.5 rounded-xl transition-colors duration-200 flex items-center gap-2">
-                <i class="ph ph-calendar-plus"></i> Book Now
-              </a>
-              <a href="#services"
-                class="border border-white/10 hover:border-white/25 text-white text-sm font-semibold px-7 py-3.5 rounded-xl transition-colors duration-200">
-                See Services
-              </a>
-            </div>
-            <p class="text-white/25 text-xs flex items-center justify-center md:justify-start gap-2">
-              <i class="ph ph-lightning text-red-500/70"></i> Slots update in real time - no double-booking.
-            </p>
+    <!-- HERO -->
+  <section class="relative overflow-hidden">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6 relative z-10">
+      <div
+        class="grid lg:grid-cols-2 gap-12 items-center pt-12 pb-20 md:pt-20 md:pb-28"
+      >
+        <div>
+          <h1
+            data-split
+            class="font-heading font-extrabold text-6xl sm:text-7xl xl:text-8xl leading-none text-white"
+          >
+            Detailing for your motorcycle, booked in minutes.
+          </h1>
+          <p
+            data-reveal
+            class="mt-6 max-w-md text-base leading-relaxed text-white/60"
+          >
+            Pick a service, choose a slot, and follow your motorcycle from
+            drop-off to pickup.
+          </p>
+          <div data-reveal class="mt-8 flex flex-col sm:flex-row gap-3">
+            <a
+              href="#services"
+              class="book-now-btn flex h-13 items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-7 text-base font-semibold text-white shadow-glow transition-colors duration-200"
+            >
+              <i class="ph ph-calendar-plus text-lg"></i>
+              Choose a service
+            </a>
+            <a
+              href="/track"
+              class="flex h-13 items-center justify-center rounded-xl border border-white/15 hover:border-white/30 px-7 text-base font-semibold text-white transition-colors duration-200"
+            >
+              Track a booking
+            </a>
           </div>
+          <p
+            data-reveal
+            class="mt-5 flex items-center gap-2 text-sm text-white/50"
+          >
+            <i class="ph ph-lightning text-brand"></i>
+            Slots update in real time, so no double bookings.
+          </p>
         </div>
 
-        <!-- TICKET STUB HERO VISUAL (unchanged, keeps its own fade-up) -->
-        <div class="max-w-sm mx-auto w-full animate-fadeUp">
-          <div class="ticket-stub status-glow">
-            <div class="ticket-top">
-              <p class="text-white/30 text-[10px] uppercase tracking-widest mb-1.5 font-mono">Work Order</p>
-              <p class="text-2xl font-mono font-semibold tracking-wide">HRC-000000</p>
-              <span
-                class="inline-block mt-3 text-[10px] uppercase tracking-widest px-3 py-1 rounded-full bg-red-500/10 border border-red-500/25 text-red-400 font-mono">
-                In Queue
-              </span>
-            </div>
-            <div class="perf-line"></div>
-            <div class="ticket-bottom flex items-center justify-between">
+        <div
+          data-card
+          class="relative mx-auto lg:mx-0 lg:ml-auto w-full max-w-sm"
+        >
+          <div
+            class="absolute -inset-4 rounded-full bg-brand/25 blur-3xl"
+            aria-hidden="true"
+          ></div>
+          <div
+            class="relative overflow-hidden rounded-2xl border border-white/10 bg-ink-900 p-6 shadow-glow"
+          >
+            <span
+              data-gloss
+              class="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-linear-to-r from-transparent via-white/10 to-transparent"
+            ></span>
+            <div class="flex items-start justify-between gap-4">
               <div>
-                <p class="text-white/30 text-[10px] uppercase tracking-widest mb-1">Service</p>
-                <p class="text-sm font-semibold mb-3">Full Detail</p>
-                <p class="text-white/30 text-[10px] uppercase tracking-widest mb-1">Slot</p>
-                <p class="text-sm font-semibold text-white/50 font-mono">-:-- placeholder</p>
+                <p class="text-xs text-white/50">Booking reference</p>
+                <p
+                  class="mt-1 font-mono text-2xl font-semibold tracking-wide text-white"
+                >
+                  HRC-3F9A12C4
+                </p>
               </div>
-              <div class="qr-box">
-                <i class="ph ph-qr-code text-3xl text-white/25"></i>
+              <span
+                data-status
+                class="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-medium text-red-400"
+                >In queue</span
+              >
+            </div>
+            <div class="mt-6 h-1 rounded-full bg-white/10">
+              <div
+                data-progress
+                class="h-full w-0 rounded-full bg-brand"
+              ></div>
+            </div>
+            <div class="mt-3 flex justify-between text-xs text-white/50">
+              <span>In queue</span>
+              <span>In progress</span>
+              <span>Ready</span>
+            </div>
+            <div
+              class="mt-6 flex items-center justify-between border-t border-white/10 pt-5"
+            >
+              <div>
+                <p class="text-xs text-white/50">Service</p>
+                <p class="mt-1 text-sm font-semibold text-white">
+                  Ceramic coating
+                </p>
               </div>
+              <i
+                class="ph ph-qr-code text-4xl text-white/30"
+                aria-hidden="true"
+              ></i>
             </div>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   </section>
 
   <main class="max-w-6xl mx-auto px-6 relative z-10">
@@ -340,7 +378,7 @@
 
   <script src="/gsap/gsap.min.js"></script>
   <script src="/gsap/ScrollTrigger.min.js"></script>
-  <script src="/hero-animation.js"></script>
+  <script src="/motion.js"></script>
   <script src="/nav.js"></script>
 
 </body>
