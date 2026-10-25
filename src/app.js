@@ -91,9 +91,6 @@ pool.query('SELECT NOW()', (err, res) => {
   }
 });
 
-// PAGE routes
-app.use('/', pagesRouter);
-
 const singleSession = require('./shared/middlewares/singleSession');
 
 // PAGE routes
@@ -103,8 +100,6 @@ app.use('/', pagesRouter);
 app.use('/api/admin', singleSession);
 app.use('/api/staff', singleSession);
 
-// API routes
-app.use('/api', apiRouter);
 // API routes
 app.use('/api', apiRouter);
 

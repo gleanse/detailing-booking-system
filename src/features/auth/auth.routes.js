@@ -4,6 +4,7 @@ const pool = require('../../config/database');
 const bcrypt = require('bcrypt');
 const path = require('path');
 const { checkLoginBlock, recordFailedAttempt, clearLoginAttempts } = require('../../shared/utils/rateLimiter');
+const redis = require('../../config/redis');
 
 router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'login.html'));
@@ -16,7 +17,7 @@ router.get('/auth.js', (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, force } = req.body;
 
     if (!email || !password) {
       return res
@@ -71,24 +72,53 @@ router.post('/login', async (req, res) => {
         .json({ success: false, message: 'Invalid email or password' });
     }
 
-    // single-session: i-claim ang account kung walang ibang active
+    // single-session: i-claim ang account
     const maxAge = req.session.cookie.maxAge || 1000 * 60 * 60 * 2;
     const expires = new Date(Date.now() + maxAge);
 
-    const claim = await pool.query(
-      `UPDATE users
-          SET active_session_id = $1, active_session_expires = $2
-        WHERE id = $3
-          AND (active_session_id IS NULL
-               OR active_session_id = $1
-               OR active_session_expires < NOW())
-        RETURNING id`,
-      [req.sessionID, expires, user.id]
-    );
+    let claimed = false;
 
-    if (claim.rowCount === 0) {
+    if (force === true) {
+      // pinili ng user na i-logout ang kabilang device
+      const old = await pool.query(
+        'SELECT active_session_id FROM users WHERE id = $1',
+        [user.id]
+      );
+      const oldSid = old.rows[0]?.active_session_id;
+
+      await pool.query(
+        `UPDATE users
+            SET active_session_id = $1, active_session_expires = $2
+          WHERE id = $3`,
+        [req.sessionID, expires, user.id]
+      );
+
+      if (oldSid && oldSid !== req.sessionID) {
+        try {
+          await redis.del(`sess:${oldSid}`);
+        } catch (e) {
+          console.error('Failed to remove old session:', e);
+        }
+      }
+      claimed = true;
+    } else {
+      const claim = await pool.query(
+        `UPDATE users
+            SET active_session_id = $1, active_session_expires = $2
+          WHERE id = $3
+            AND (active_session_id IS NULL
+                 OR active_session_id = $1
+                 OR active_session_expires < NOW())
+          RETURNING id`,
+        [req.sessionID, expires, user.id]
+      );
+      claimed = claim.rowCount > 0;
+    }
+
+    if (!claimed) {
       return res.status(409).json({
         success: false,
+        code: 'ALREADY_LOGGED_IN',
         message: 'This account is already logged in on another device.',
       });
     }

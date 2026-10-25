@@ -1,3 +1,22 @@
+// Kapag natapos ang session (na-logout sa ibang device, nag-expire), balik sa login
+(() => {
+  const originalFetch = window.fetch;
+  let redirecting = false;
+
+  window.fetch = async (...args) => {
+    const res = await originalFetch(...args);
+    if (
+      res.status === 401 &&
+      !redirecting &&
+      !window.location.pathname.startsWith('/auth/login')
+    ) {
+      redirecting = true;
+      window.location.href = '/auth/login';
+    }
+    return res;
+  };
+})();
+
 const AdminLayout = (() => {
 
   const NAV_SECTIONS = [

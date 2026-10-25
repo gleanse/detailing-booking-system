@@ -116,20 +116,14 @@ if (isLoginPage) {
     });
   });
 
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const emailOk = validateLoginField('email');
-    const passwordOk = validateLoginField('password');
-
-    if (!emailOk || !passwordOk) return;
-
+  async function doLogin(force = false) {
     setLoading(true);
     document.getElementById('formMessage').style.display = 'none';
 
     const payload = {
       email: document.getElementById('email').value.trim().toLowerCase(),
       password: document.getElementById('password').value,
+      force,
     };
 
     try {
@@ -146,13 +140,33 @@ if (isLoginPage) {
         setTimeout(() => {
           window.location.href = data.redirect || '/admin/dashboard.html';
         }, 1000);
-      } else {
-        showMessage('error', data.message || 'Invalid email or password');
-        setLoading(false);
+        return;
       }
+
+      setLoading(false);
+
+      if (res.status === 409 && data.code === 'ALREADY_LOGGED_IN') {
+        const ok = confirm(
+          'This account is already logged in on another device. Log out that device and continue here?'
+        );
+        if (ok) return doLogin(true);
+      }
+
+      showMessage('error', data.message || 'Invalid email or password');
     } catch (err) {
       showMessage('error', 'Network error. Please try again.');
       setLoading(false);
     }
+  }
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const emailOk = validateLoginField('email');
+    const passwordOk = validateLoginField('password');
+
+    if (!emailOk || !passwordOk) return;
+
+    doLogin(false);
   });
 }
