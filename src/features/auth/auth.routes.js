@@ -27,7 +27,7 @@ router.post('/login', async (req, res) => {
     const normalizedEmail = email.toLowerCase();
     const ip = req.ip;
 
-    // ── ITO YUNG DINAGDAG: suriin muna kung naka-block ──
+    // check if blocked (rate limit)
     const emailBlock = await checkLoginBlock(normalizedEmail);
     const ipBlock    = await checkLoginBlock(ip);
 
@@ -47,8 +47,8 @@ router.post('/login', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      await recordFailedAttempt(normalizedEmail); // ← dagdag
-      await recordFailedAttempt(ip);               // ← dagdag
+      await recordFailedAttempt(normalizedEmail);
+      await recordFailedAttempt(ip);
       return res
         .status(401)
         .json({ success: false, message: 'Invalid email or password' });
@@ -64,14 +64,36 @@ router.post('/login', async (req, res) => {
     // check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      await recordFailedAttempt(normalizedEmail); // ← dagdag
-      await recordFailedAttempt(ip);               // ← dagdag
+      await recordFailedAttempt(normalizedEmail);
+      await recordFailedAttempt(ip);
       return res
         .status(401)
         .json({ success: false, message: 'Invalid email or password' });
     }
 
-    // ── ITO YUNG DINAGDAG: i-clear ang attempts pag successful ──
+    // single-session: i-claim ang account kung walang ibang active
+    const maxAge = req.session.cookie.maxAge || 1000 * 60 * 60 * 2;
+    const expires = new Date(Date.now() + maxAge);
+
+    const claim = await pool.query(
+      `UPDATE users
+          SET active_session_id = $1, active_session_expires = $2
+        WHERE id = $3
+          AND (active_session_id IS NULL
+               OR active_session_id = $1
+               OR active_session_expires < NOW())
+        RETURNING id`,
+      [req.sessionID, expires, user.id]
+    );
+
+    if (claim.rowCount === 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'This account is already logged in on another device.',
+      });
+    }
+
+    // successful login: clear failed attempts
     await clearLoginAttempts(normalizedEmail);
     await clearLoginAttempts(ip);
 
@@ -111,7 +133,22 @@ router.get('/me', (req, res) => {
   res.json({ success: true, user: req.session.user });
 });
 
-router.post('/logout', (req, res) => {
+router.post('/logout', async (req, res) => {
+  const userId = req.session?.user?.id;
+
+  try {
+    if (userId) {
+      await pool.query(
+        `UPDATE users
+            SET active_session_id = NULL, active_session_expires = NULL
+          WHERE id = $1 AND active_session_id = $2`,
+        [userId, req.sessionID]
+      );
+    }
+  } catch (e) {
+    console.error('Logout cleanup error:', e);
+  }
+
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).json({ success: false, message: 'Logout failed' });

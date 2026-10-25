@@ -7,7 +7,8 @@ CREATE TABLE users (
   phone VARCHAR(20) NULL,
   password VARCHAR(255), -- null for google oauth customers, required for admin and staff
   role VARCHAR(50) DEFAULT 'customer', -- customer, admin, staff
-  created_at TIMESTAMP DEFAULT NOW()
+  active_session_id TEXT, -- single-session login (admin/staff)
+  active_session_expires TIMESTAMPTZ,  created_at TIMESTAMP DEFAULT NOW()
 );
 
 -- SERVICES
