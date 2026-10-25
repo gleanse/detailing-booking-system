@@ -149,11 +149,11 @@
   .stat-card {
     @apply bg-admin-dark-2 border border-admin-border rounded-xl p-5 flex items-center gap-4 transition relative overflow-hidden;
   }
-  .stat-card::before {
+.stat-card::before {
     content: '';
     @apply absolute top-0 left-0 right-0 h-[3px] bg-red-600 rounded-t-xl;
     background: var(--accent, #dc2626);
-  }
+}
   .stat-card:hover { @apply -translate-y-0.5; border-color: rgba(255,255,255,0.12); }
   .stat-icon {
     @apply w-11 h-11 min-w-11 rounded-xl flex items-center justify-center text-lg;
@@ -1051,4 +1051,33 @@
   .report-select option { @apply bg-admin-dark-2; }
 
   .chart-box { @apply relative h-60; }
+}
+/* ===== FIX: RESPONSIVE STAT CARDS ===== */
+@layer components {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  }
+  .stat-card {
+    @apply min-w-0;
+  }
+  .stat-info {
+    @apply min-w-0;
+  }
+  .stat-value {
+    font-size: clamp(20px, 6vw, 28px);
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .stat-card { @apply p-4 gap-3; }
+    .stat-icon { @apply w-10 h-10 min-w-10 text-base; }
+  }
+  @media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+  }
+}
+/* ===== REMOVE TOP BORDER OF STAT CARDS ===== */
+.stat-card::before {
+  display: none;
 }
