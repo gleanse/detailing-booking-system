@@ -506,12 +506,42 @@ document.addEventListener('visibilitychange', async () => {
   }
 });
 
-// session restore on page load
-// ask the server about the saved booking, retry a few times when it cannot answer
-async function fetchBookingSession(bookingId) {
+// error page, retry helper and session restore
+// full page error state, hides everything the page drew so far
+function showPageError({
+  icon,
+  label,
+  title,
+  message,
+  buttonLabel,
+  onButton,
+  showLink,
+}) {
+  document
+    .querySelectorAll('main > *')
+    .forEach((el) => el.classList.add('hidden'));
+
+  document.getElementById('page-error-icon').className =
+    `ph ${icon} text-red-400 text-5xl`;
+  document.getElementById('page-error-label').textContent = label;
+  document.getElementById('page-error-title').textContent = title;
+  document.getElementById('page-error-message').innerHTML = message;
+
+  const button = document.getElementById('page-error-button');
+  button.textContent = buttonLabel;
+  button.onclick = onButton;
+  document
+    .getElementById('page-error-link')
+    .classList.toggle('hidden', !showLink);
+
+  document.getElementById('page-error').classList.remove('hidden');
+}
+
+// get json from the server, retry a few times when it cannot answer
+async function fetchJsonWithRetry(url) {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await fetch(`/api/booking/session/${bookingId}`);
+      const res = await fetch(url);
       // a 5xx means the server could not answer, treat it like a failed request
       if (res.status < 500) return { res, json: await res.json() };
     } catch {
@@ -526,9 +556,11 @@ async function tryRestoreSession() {
   const saved = loadSession();
   if (!saved || !saved.bookingId) return false;
 
-  const answer = await fetchBookingSession(saved.bookingId);
+  const answer = await fetchJsonWithRetry(
+    `/api/booking/session/${saved.bookingId}`,
+  );
 
-  // could not ask the server, keep the saved booking and let the caller show a retry popup
+  // could not ask the server, keep the saved booking and let the caller show the error page
   if (!answer) return 'unreachable';
 
   try {
@@ -564,9 +596,42 @@ async function tryRestoreSession() {
 
 // load service
 async function loadService() {
-  const res = await fetch(`/api/booking/service/${serviceId}`);
-  const json = await res.json();
-  if (!json.success) return;
+  const answer = await fetchJsonWithRetry(`/api/booking/service/${serviceId}`);
+
+  // could not reach the server, nothing is drawn yet so show the error page
+  if (!answer) {
+    showPageError({
+      icon: 'ph-wifi-slash',
+      label: 'Connection problem',
+      title: 'Could Not Load This Service',
+      message:
+        'We could not reach our server. It may be your internet connection or our server being slow, so please try again.',
+      buttonLabel: 'Try again',
+      onButton: () => location.reload(),
+      showLink: true,
+    });
+    return;
+  }
+
+  const { res, json } = answer;
+
+  // the server answered but this service does not exist anymore
+  if (!res.ok || !json.success) {
+    showPageError({
+      icon: 'ph-magnifying-glass',
+      label: 'Not found',
+      title: 'Service Not Available',
+      message:
+        'This service is no longer available. Please choose another one.',
+      buttonLabel: 'Back to services',
+      onButton: () => {
+        window.location.href = '/services';
+      },
+      showLink: false,
+    });
+    return;
+  }
+
   state.service = json.data;
   // fetch user data in background for autofill and navbar
   const autofillDone = loadUserAutofill();
@@ -577,15 +642,18 @@ async function loadService() {
 
   const restored = await tryRestoreSession();
 
-  // could not reach the server, the saved booking is kept so just ask to retry
+  // could not reach the server, the saved booking is kept so show the error page
   if (restored === 'unreachable') {
-    showModal(
-      'Could Not Check Your Booking',
-      'Your booking details are saved on this device, nothing was lost.<br><br>We could not reach our server. It may be your internet connection or our server being slow, so please try again. Your slot is only held for a limited time, so try again soon.',
-      () => location.reload(),
-      'Try again',
-      true,
-    );
+    showPageError({
+      icon: 'ph-wifi-slash',
+      label: 'Connection problem',
+      title: 'Could Not Check Your Booking',
+      message:
+        'Your booking details are saved on this device, nothing was lost.<br><br>We could not reach our server. It may be your internet connection or our server being slow, so please try again. Your slot is only held for a limited time, so try again soon.',
+      buttonLabel: 'Try again',
+      onButton: () => location.reload(),
+      showLink: true,
+    });
     return;
   }
 

@@ -70,6 +70,25 @@
   <!-- Main -->
   <main class="max-w-3xl mx-auto px-6 py-12 relative z-10">
 
+    <!-- Page error state -->
+    <div id="page-error" class="hidden animate-fadeUp">
+      <div class="flex flex-col items-center gap-6 py-8 text-center sm:flex-row sm:gap-12 sm:text-left">
+        <div class="shrink-0 w-28 h-28 rounded-full bg-red-500/10 border border-red-500/25 flex items-center justify-center">
+          <i id="page-error-icon" class="ph ph-wifi-slash text-red-400 text-5xl"></i>
+        </div>
+        <div>
+          <p id="page-error-label" class="text-white/40 text-xs uppercase tracking-widest mb-1"></p>
+          <h2 id="page-error-title" class="text-4xl sm:text-5xl font-bold tracking-wide mb-3" style="font-family:'Bebas Neue',sans-serif;"></h2>
+          <p id="page-error-message" class="text-white/50 text-sm leading-relaxed mb-6"></p>
+          <div class="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
+            <button id="page-error-button"
+              class="cursor-pointer w-full sm:w-auto bg-red-600 hover:bg-red-700 active:scale-95 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200"></button>
+            <a id="page-error-link" href="/services" class="text-sm text-red-400 hover:text-red-300 transition-colors duration-200">Back to services</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Back to Services -->
     <button id="btn-back-services"
       class="cursor-pointer flex items-center gap-2 text-white/40 hover:text-white text-sm mb-8 transition-colors duration-200 group">
