@@ -2,7 +2,7 @@ const redis = require('../../config/redis');
 
 const MAX_ATTEMPTS = 5;
 const WINDOW_SECONDS = 15 * 60; // 15 minutes
-const BLOCK_SECONDS = 15 * 60;  // 15 minutes
+const BLOCK_SECONDS = 30; // TEMP for QA, ibalik sa 15 * 60
 
 function loginAttemptKey(identifier) {
   return `login_attempts:${identifier}`;
