@@ -1,4 +1,4 @@
- AdminLayout.init({ activePage: 'staff', breadcrumb: 'Staff Accounts' });
+ AdminLayout.init({ activePage: 'staff', breadcrumb: 'Users Accounts' });
 
   const { statusBadge, formatDate, skeletonTableRows } = AdminLayout;
 

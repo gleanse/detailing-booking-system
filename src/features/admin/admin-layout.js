@@ -33,7 +33,7 @@ const AdminLayout = (() => {
       items: [
         { page: 'services',     icon: 'fas fa-spray-can',      label: 'Services' },
         { page: 'availability', icon: 'fas fa-calendar-alt',   label: 'Availability' },
-        { page: 'staff',        icon: 'fas fa-users',          label: 'Staff' },
+        { page: 'staff',        icon: 'fas fa-users',          label: 'User' },
         { page: 'reschedule', icon: 'fas fa-calendar-alt', label: 'Reschedule' },
       ]
     },
@@ -156,8 +156,37 @@ const AdminLayout = (() => {
     }
   }
 
-  function initLogout() {
-    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    function initLogout() {
+    const btn = document.getElementById('logoutBtn');
+    if (!btn) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay hidden';
+    overlay.id = 'logoutModal';
+    overlay.innerHTML = `
+      <div class="logout-modal">
+        <h4>Log out?</h4>
+        <p>Are you sure you want to log out of your account?</p>
+        <div class="logout-actions">
+          <button class="lm-btn lm-cancel" id="logoutCancel">Cancel</button>
+          <button class="lm-btn lm-confirm" id="logoutConfirm">Logout</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const open  = () => overlay.classList.remove('hidden');
+    const close = () => overlay.classList.add('hidden');
+
+    btn.addEventListener('click', open);
+    overlay.querySelector('#logoutCancel').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+    overlay.querySelector('#logoutConfirm').addEventListener('click', async (e) => {
+      const confirmBtn = e.currentTarget;
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Logging out...';
       try { await fetch('/api/auth/logout', { method: 'POST' }); } catch (_) {}
       window.location.href = '/auth/login';
     });

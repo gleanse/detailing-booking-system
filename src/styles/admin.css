@@ -1081,3 +1081,36 @@
 .stat-card::before {
   display: none;
 }
+/* ===== LOGOUT CONFIRM MODAL ===== */
+@layer components {
+  .logout-modal {
+    @apply bg-admin-dark-2 border border-admin-border rounded-[10px] w-full max-w-[340px] p-5;
+  }
+  .logout-modal h4 {
+    @apply text-base font-semibold text-admin-text mb-1.5;
+  }
+  .logout-modal p {
+    @apply text-[13px] text-admin-muted mb-[18px];
+  }
+  .logout-actions {
+    @apply flex justify-end gap-2;
+  }
+  .lm-btn {
+    @apply font-body px-4 py-2 rounded-md text-[13px] font-medium cursor-pointer border border-transparent transition-colors;
+  }
+  .lm-cancel {
+    @apply bg-transparent border-admin-border text-admin-muted;
+  }
+  .lm-cancel:hover {
+    @apply bg-admin-dark-3 text-admin-text;
+  }
+  .lm-confirm {
+    @apply bg-red-600 text-white;
+  }
+  .lm-confirm:hover {
+    @apply bg-red-700;
+  }
+  .lm-confirm:disabled {
+    @apply opacity-60 cursor-default;
+  }
+}
