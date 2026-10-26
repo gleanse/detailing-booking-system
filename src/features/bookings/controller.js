@@ -57,9 +57,7 @@ const lockBookingSlot = async (req, res) => {
   try {
     const { availabilityId, serviceId, variantId } = req.body;
     const userId = req.session?.user?.id || null;
-    const ipAddress =
-      req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
-      req.socket.remoteAddress;
+    const ipAddress = req.ip;
 
     if (!availabilityId || !serviceId) {
       return res
