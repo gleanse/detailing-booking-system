@@ -159,8 +159,7 @@ function render(b) {
   }
 
   // payment
-  document.getElementById('payment-type').textContent =
-    b.payment_type === 'full' ? 'Full Payment' : '50% Down Payment';
+  document.getElementById('payment-type').textContent = 'Reservation Deposit';
   document.getElementById('total-amount').textContent = fmtMoney(
     b.total_amount,
   );

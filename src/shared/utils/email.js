@@ -15,7 +15,6 @@ const sendBookingConfirmationEmail = async (booking) => {
     booking_date,
     amount_paid,
     remaining_balance,
-    payment_type,
     qr_code,
   } = booking;
 
@@ -39,8 +38,7 @@ const sendBookingConfirmationEmail = async (booking) => {
   const serviceLabel = variant_name
     ? `${service_name} - ${variant_name}`
     : service_name;
-  const paymentLabel =
-    payment_type === 'full' ? 'Full Payment' : '50% Down Payment';
+  const paymentLabel = 'Reservation Deposit';
 
   const html = `
 <!DOCTYPE html>
@@ -173,7 +171,7 @@ const sendBookingConfirmationEmail = async (booking) => {
                   ? `
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="font-size:12px;color:rgba(255,255,255,0.4);">Remaining Balance</td>
+                  <td style="font-size:12px;color:rgba(255,255,255,0.4);">Estimated Remaining Balance</td>
                   <td align="right" style="font-size:13px;font-weight:700;color:#facc15;">${formattedRemaining}</td>
                 </tr>
               </table>
