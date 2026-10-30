@@ -275,8 +275,17 @@ const createInvoice = async (req, res) => {
         successRedirectUrl: `${process.env.APP_URL}/booking/success?external_id=${payment.id}`,
         failureRedirectUrl: `${process.env.APP_URL}/booking/failed`,
         currency: 'PHP',
+        invoiceDuration: 900,
       },
     });
+
+    // payment started so push the hold out, the invoice stops taking payment a minute before it ends
+    await pool.query(
+      `UPDATE bookings
+       SET expires_at = NOW() + INTERVAL '16 minutes'
+       WHERE id = $1 AND booking_status = 'locked'`,
+      [bookingId],
+    );
 
     res.json({ success: true, invoiceUrl: invoice.invoiceUrl });
   } catch (error) {
