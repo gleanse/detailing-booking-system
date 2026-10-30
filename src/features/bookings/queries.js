@@ -11,6 +11,7 @@ const getServiceById = async (serviceId) => {
       s.name,
       s.description,
       s.price,
+      s.deposit_amount,
       s.duration_hours,
       s.image_url,
       json_agg(

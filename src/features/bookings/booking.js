@@ -309,9 +309,6 @@ function saveForm() {
   FORM_FIELDS.forEach((id) => {
     data[id] = document.getElementById(id).value;
   });
-  data.paymentType = document.querySelector(
-    'input[name="payment_type"]:checked',
-  ).value;
   sessionStorage.setItem(FORM_KEY, JSON.stringify(data));
 }
 
@@ -323,10 +320,6 @@ function restoreForm() {
     FORM_FIELDS.forEach((id) => {
       if (id in data) document.getElementById(id).value = data[id];
     });
-    document
-      .querySelector(`input[name="payment_type"][value="${data.paymentType}"]`)
-      ?.closest('.payment-option')
-      ?.click();
   } catch {
     sessionStorage.removeItem(FORM_KEY);
   }
@@ -334,10 +327,6 @@ function restoreForm() {
 
 FORM_FIELDS.forEach((id) => {
   document.getElementById(id).addEventListener('input', saveForm);
-});
-
-document.querySelectorAll('.payment-option').forEach((opt) => {
-  opt.addEventListener('click', () => setTimeout(saveForm, 0));
 });
 
 // back button handling
@@ -998,25 +987,12 @@ function populateSummary() {
     state.selectedDate,
   );
   document.getElementById('summary-price').textContent = formatPrice(price);
-  document.getElementById('full-amount').textContent = formatPrice(price);
-  document.getElementById('down-amount').textContent = formatPrice(price / 2);
+  document.getElementById('deposit-amount').textContent = formatPrice(
+    Math.min(state.service?.deposit_amount || 0, price),
+  );
+  document.getElementById('estimate-check').checked = false;
+  updatePayButton();
 }
-
-// Payment option toggle
-document.querySelectorAll('.payment-option').forEach((opt) => {
-  opt.addEventListener('click', () => {
-    document.querySelectorAll('.payment-option').forEach((o) => {
-      o.classList.remove('border-red-500');
-      o.classList.add('border-white/10');
-      o.querySelector('i').className = 'ph ph-circle text-white/30 text-xl';
-    });
-    opt.classList.add('border-red-500');
-    opt.classList.remove('border-white/10');
-    opt.querySelector('i').className =
-      'ph ph-check-circle text-red-500 text-xl';
-    opt.querySelector('input').checked = true;
-  });
-});
 
 // Release helper used by UI buttons
 async function releaseAndReset() {
@@ -1207,10 +1183,18 @@ document.getElementById('btn-step4-back').addEventListener('click', () => {
   showStep(3);
 });
 
+const estimateCheck = document.getElementById('estimate-check');
+const payBtn = document.getElementById('btn-pay');
+
+function updatePayButton() {
+  payBtn.disabled = !estimateCheck.checked;
+  payBtn.classList.toggle('opacity-50', !estimateCheck.checked);
+}
+
+estimateCheck.addEventListener('change', updatePayButton);
+
 document.getElementById('btn-pay').addEventListener('click', async () => {
-  const paymentType = document.querySelector(
-    'input[name="payment_type"]:checked',
-  ).value;
+  if (!estimateCheck.checked) return;
   const btn = document.getElementById('btn-pay');
 
   btn.disabled = true;
@@ -1219,7 +1203,7 @@ document.getElementById('btn-pay').addEventListener('click', async () => {
   const res = await fetch('/api/booking/pay', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bookingId: state.bookingId, paymentType }),
+    body: JSON.stringify({ bookingId: state.bookingId }),
   });
 
   const json = await res.json();

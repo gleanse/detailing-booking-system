@@ -324,7 +324,7 @@
       </div>
 
       <h3 class="text-2xl font-semibold mb-1">Payment</h3>
-      <p class="text-white/40 text-sm mb-6">Choose how you'd like to pay</p>
+      <p class="text-white/40 text-sm mb-6">Pay the reservation deposit to secure your slot</p>
 
       <div class="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
         <p class="text-xs text-white/30 uppercase tracking-widest mb-4">Booking Summary</p>
@@ -342,39 +342,24 @@
             <span id="summary-date" class="text-white font-medium"></span>
           </div>
           <div class="border-t border-white/10 pt-2 mt-1 flex justify-between">
-            <span class="text-white/50">Total</span>
+            <span class="text-white/50">Estimated total</span>
             <span id="summary-price" class="text-red-400 font-bold text-base"></span>
           </div>
         </div>
       </div>
 
-      <p class="text-xs text-white/30 uppercase tracking-widest mb-3">Payment Type</p>
-      <div class="flex flex-col gap-3 mb-8">
-        <label id="opt-full"
-          class="payment-option cursor-pointer flex items-center justify-between bg-white/5 border-2 border-red-500 rounded-xl px-5 py-4 transition-all duration-200">
-          <div class="flex items-center gap-3">
-            <i class="ph ph-check-circle text-red-500 text-xl"></i>
-            <div>
-              <p class="text-sm font-semibold">Full Payment</p>
-              <p class="text-xs text-white/40">Pay the full amount now</p>
-            </div>
-          </div>
-          <span id="full-amount" class="text-white font-bold"></span>
-          <input type="radio" name="payment_type" value="full" class="hidden" checked />
-        </label>
-        <label id="opt-down"
-          class="payment-option cursor-pointer flex items-center justify-between bg-white/5 border-2 border-white/10 rounded-xl px-5 py-4 transition-all duration-200 hover:border-white/30">
-          <div class="flex items-center gap-3">
-            <i class="ph ph-circle text-white/30 text-xl"></i>
-            <div>
-              <p class="text-sm font-semibold">Down Payment</p>
-              <p class="text-xs text-white/40">Pay 50% now, rest on pickup</p>
-            </div>
-          </div>
-          <span id="down-amount" class="text-white font-bold"></span>
-          <input type="radio" name="payment_type" value="downpayment" class="hidden" />
-        </label>
+            <div class="flex items-center justify-between bg-white/5 border-2 border-red-500 rounded-xl px-5 py-4 mb-4">
+        <div>
+          <p class="text-sm font-semibold">Reservation Deposit</p>
+          <p class="text-xs text-white/40">Pay now to secure your slot, the rest is settled in shop</p>
+        </div>
+        <span id="deposit-amount" class="text-white font-bold"></span>
       </div>
+
+      <label class="flex items-start gap-3 text-sm text-white/60 mb-8 cursor-pointer">
+        <input id="estimate-check" type="checkbox" class="mt-1 accent-red-500" />
+        <span>I understand the listed price is an estimate and the final price is confirmed in shop after inspection.</span>
+      </label>
 
       <div class="flex gap-3">
         <button id="btn-step4-back"
