@@ -221,9 +221,9 @@ const updateBooking = async (req, res) => {
 
 const createInvoice = async (req, res) => {
   try {
-    const { bookingId, paymentType } = req.body;
+    const { bookingId } = req.body;
 
-    if (!bookingId || !paymentType) {
+    if (!bookingId) {
       return res
         .status(400)
         .json({ success: false, message: 'Missing required fields' });
@@ -231,7 +231,7 @@ const createInvoice = async (req, res) => {
 
     // get booking details
     const bookingResult = await pool.query(
-      `SELECT b.*, sv.price AS variant_price, s.price AS service_price, s.name AS service_name,
+      `SELECT b.*, sv.price AS variant_price, s.price AS service_price, s.deposit_amount, s.name AS service_name,
               sv.name AS variant_name, u.email AS user_email, b.guest_email
        FROM bookings b
        JOIN services s ON s.id = b.service_id
@@ -252,7 +252,7 @@ const createInvoice = async (req, res) => {
     const totalPrice = parseFloat(
       booking.variant_price || booking.service_price,
     );
-    const amountPaid = paymentType === 'full' ? totalPrice : totalPrice * 0.5;
+    const amountPaid = Math.min(parseFloat(booking.deposit_amount), totalPrice);
     const email = booking.guest_email || booking.user_email;
 
     // create payment record
@@ -260,7 +260,6 @@ const createInvoice = async (req, res) => {
       bookingId,
       amount: totalPrice,
       amountPaid,
-      paymentType,
     });
 
     // create xendit invoice
@@ -271,7 +270,7 @@ const createInvoice = async (req, res) => {
         payerEmail: email,
         description: `${booking.service_name} - ${
           booking.variant_name || 'Standard'
-        } (${paymentType === 'full' ? 'Full Payment' : '50% Down Payment'})`,
+        } (Reservation Deposit)`,
         successRedirectUrl: `${process.env.APP_URL}/booking/success?external_id=${payment.id}`,
         failureRedirectUrl: `${process.env.APP_URL}/booking/failed`,
         currency: 'PHP',

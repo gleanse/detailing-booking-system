@@ -154,12 +154,7 @@ const updateBookingDetails = async (
   return result.rows[0] || null;
 };
 
-const createPayment = async ({
-  bookingId,
-  amount,
-  amountPaid,
-  paymentType,
-}) => {
+const createPayment = async ({ bookingId, amount, amountPaid }) => {
   const result = await pool.query(
     `
     INSERT INTO payments (
@@ -167,20 +162,11 @@ const createPayment = async ({
       amount,
       amount_paid,
       remaining_balance,
-      payment_type,
-      is_fully_paid,
       status
-    ) VALUES ($1, $2, $3, $4, $5, $6, 'unpaid')
+    ) VALUES ($1, $2, $3, $4, 'unpaid')
     RETURNING *
   `,
-    [
-      bookingId,
-      amount,
-      amountPaid,
-      amount - amountPaid,
-      paymentType,
-      paymentType === 'full',
-    ],
+    [bookingId, amount, amountPaid, amount - amountPaid],
   );
   return result.rows[0];
 };
@@ -289,7 +275,6 @@ const getBookingByPaymentId = async (paymentId) => {
       sv.name AS variant_name,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid
     FROM payments p
     JOIN bookings b ON b.id = p.booking_id
@@ -326,7 +311,6 @@ const getBookingByReferenceCode = async (referenceCode) => {
       sv.name AS variant_name,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       p.amount AS total_amount,
       a.capacity AS date_capacity
