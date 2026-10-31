@@ -25,6 +25,9 @@ async function loadBookingDetails() {
 
     const b = data.data;
 
+    // webhook has not confirmed the booking yet so the caller keeps waiting
+    if (b.booking_status !== 'confirmed') return 'pending';
+
     // booking details
     document.getElementById('referenceCode').textContent = b.reference_code;
     document.getElementById('queueNumber').textContent = `#${b.queue_number}`;
@@ -54,9 +57,6 @@ async function loadBookingDetails() {
         'en-PH',
         { minimumFractionDigits: 2 },
       )}`;
-      document
-        .getElementById('amountRow')
-        .classList.add('border-b', 'border-white/5', 'pb-3');
       document.getElementById('remainingRow').classList.remove('hidden');
       document.getElementById('remainingRow').classList.add('flex');
       document.getElementById('remainingBalance').textContent = formatted;
@@ -90,7 +90,77 @@ async function loadBookingDetails() {
   }
 }
 
-loadBookingDetails();
+const POLL_INTERVAL_MS = 2000;
+const POLL_MAX_MS = 60000;
+
+const STATUS_LINES = [
+  'Confirming your payment',
+  'Waiting for payment confirmation',
+  'Checking with our server',
+  'Almost there',
+];
+const STATUS_INTERVAL_MS = 3000;
+
+let statusTimer = null;
+
+function showConfirming() {
+  if (statusTimer) return;
+
+  document.getElementById('loadingSpinner').classList.add('hidden');
+  document.getElementById('loadingText').classList.add('hidden');
+  const block = document.getElementById('confirmingBlock');
+  block.classList.remove('hidden');
+  block.classList.add('flex');
+
+  const bar = document.getElementById('confirmingBar');
+  bar.style.transition = `width ${POLL_MAX_MS}ms linear`;
+  // force a reflow so the width change animates
+  void bar.offsetWidth;
+  bar.style.width = '100%';
+
+  const status = document.getElementById('confirmingStatus');
+  let index = 0;
+  statusTimer = setInterval(() => {
+    status.style.opacity = 0;
+    setTimeout(() => {
+      index = (index + 1) % STATUS_LINES.length;
+      status.textContent = STATUS_LINES[index];
+      status.style.opacity = 1;
+    }, 300);
+  }, STATUS_INTERVAL_MS);
+}
+
+function stopConfirming() {
+  clearInterval(statusTimer);
+  statusTimer = null;
+}
+
+async function waitForConfirmation() {
+  const startedAt = Date.now();
+
+  while (true) {
+    const result = await loadBookingDetails();
+    if (result !== 'pending') {
+      stopConfirming();
+      return;
+    }
+
+    showConfirming();
+
+    if (Date.now() - startedAt >= POLL_MAX_MS) {
+      document.getElementById('loadingCard').classList.add('hidden');
+      stopConfirming();
+      const pending = document.getElementById('pendingCard');
+      pending.classList.remove('hidden');
+      pending.classList.add('flex');
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+  }
+}
+
+waitForConfirmation();
 
 async function updateNav() {
   try {

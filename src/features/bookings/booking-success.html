@@ -82,8 +82,24 @@
 
     <!-- LOADING STATE -->
     <div id="loadingCard" class="flex flex-col items-center justify-center py-32 animate-fadeUp">
-      <div class="w-10 h-10 rounded-full border-2 border-white/10 border-t-green-500 animate-spin mb-5"></div>
-      <p class="text-white/30 text-xs uppercase tracking-widest">Loading booking details...</p>
+      <div id="loadingSpinner" class="w-10 h-10 rounded-full border-2 border-white/10 border-t-green-500 animate-spin mb-5"></div>
+      <p id="loadingText" class="text-white/30 text-xs uppercase tracking-widest">Loading booking details...</p>
+
+      <div id="confirmingBlock" class="hidden flex-col items-center text-center">
+        <div class="relative size-20 mb-7">
+          <div class="absolute inset-0 rounded-full border-2 border-green-500 animate-ping"></div>
+          <div class="absolute inset-0 rounded-full border-2 border-white/10 border-t-green-500 animate-spin"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-green-500 text-3xl">
+            <i class="ph ph-check"></i>
+          </div>
+        </div>
+        <p id="confirmingStatus" class="text-white text-base mb-1.5 transition-opacity duration-300">Confirming your payment</p>
+        <p class="text-white/30 text-xs uppercase tracking-widest mb-7">This usually takes a few seconds</p>
+        <div class="w-60 h-0.5 bg-white/10 rounded-full overflow-hidden mb-5">
+          <div id="confirmingBar" class="h-full w-0 bg-green-500"></div>
+        </div>
+        <p class="text-white/40 text-sm max-w-64">Please keep this page open. Your payment is safe.</p>
+      </div>
     </div>
 
     <!-- ERROR STATE -->
@@ -91,6 +107,13 @@
       <p class="text-red-500 font-bold text-8xl mb-2" style="font-family:'Bebas Neue',sans-serif;">Oops</p>
       <p class="text-white/60 font-semibold mb-1">Could Not Load Booking</p>
       <p class="text-white/30 text-sm mb-6">Please check your email for confirmation details.</p>
+    </div>
+
+    <!-- DELAYED STATE -->
+    <div id="pendingCard" class="hidden flex-col items-center justify-center py-32 text-center animate-fadeUp">
+      <p class="text-green-500 font-bold text-6xl mb-2" style="font-family:'Bebas Neue',sans-serif;">Payment Received</p>
+      <p class="text-white/60 font-semibold mb-1">Your confirmation is taking longer than usual</p>
+      <p class="text-white/30 text-sm mb-6">Please check your email in a few minutes or contact the shop.</p>
     </div>
 
     <!-- MAIN CONTENT -->
