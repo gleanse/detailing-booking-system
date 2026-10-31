@@ -452,11 +452,11 @@ function stopTimer() {
 }
 
 function handleTimerExpired() {
-  clearSession();
   showModal(
     'Time Expired',
     'Your slot reservation has expired. Select a new date to continue.',
     async () => {
+      clearSession();
       await fetch('/api/booking/release', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -566,7 +566,12 @@ async function tryRestoreSession() {
   try {
     const { res, json } = answer;
 
-    // the server answered and the booking is gone, expired or confirmed
+    // the booking expired, keep the saved booking so the notice shows again on refresh
+    if (res.ok && json.success && json.data.booking_status === 'expired') {
+      return 'expired';
+    }
+
+    // the server answered and the booking is gone or confirmed
     if (!res.ok || !json.success || json.data.booking_status !== 'locked') {
       clearSession();
       return false;
@@ -577,8 +582,7 @@ async function tryRestoreSession() {
     const remainingSeconds = Math.floor((expiresAt - now) / 1000);
 
     if (remainingSeconds <= 0) {
-      clearSession();
-      return false;
+      return 'expired';
     }
 
     state.bookingId = saved.bookingId;
@@ -654,6 +658,20 @@ async function loadService() {
       onButton: () => location.reload(),
       showLink: true,
     });
+    return;
+  }
+
+  if (restored === 'expired') {
+    renderVariants(state.service.variants);
+    showModal(
+      'Slot Expired',
+      'Your slot reservation has expired. Please start your booking again.',
+      () => {
+        clearSession();
+      },
+      'Okay',
+      true,
+    );
     return;
   }
 
