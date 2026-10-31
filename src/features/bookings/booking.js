@@ -418,9 +418,18 @@ window.addEventListener('popstate', (e) => {
 });
 
 // timer
+function renderTimer(seconds) {
+  const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const s = String(seconds % 60).padStart(2, '0');
+  const display = `${m}:${s}`;
+  document.getElementById('timer-display').textContent = display;
+  document.getElementById('timer-display-2').textContent = display;
+}
+
 function startTimerFromSeconds(seconds) {
   stopTimer();
   state.timerSeconds = seconds;
+  renderTimer(seconds);
   const endTime = Date.now() + seconds * 1000;
   state.timerInterval = setInterval(() => {
     const remaining = Math.floor((endTime - Date.now()) / 1000);
@@ -431,11 +440,7 @@ function startTimerFromSeconds(seconds) {
       handleTimerExpired();
       return;
     }
-    const m = String(Math.floor(remaining / 60)).padStart(2, '0');
-    const s = String(remaining % 60).padStart(2, '0');
-    const display = `${m}:${s}`;
-    document.getElementById('timer-display').textContent = display;
-    document.getElementById('timer-display-2').textContent = display;
+    renderTimer(remaining);
     state.timerSeconds = remaining;
   }, 1000);
 }
