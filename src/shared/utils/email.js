@@ -38,7 +38,7 @@ const sendBookingConfirmationEmail = async (booking) => {
   const serviceLabel = variant_name
     ? `${service_name} - ${variant_name}`
     : service_name;
-  const paymentLabel = 'Reservation Deposit';
+  const paymentLabel = 'Down Payment';
 
   const html = `
 <!DOCTYPE html>

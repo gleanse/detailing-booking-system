@@ -159,7 +159,7 @@ function render(b) {
   }
 
   // payment
-  document.getElementById('payment-type').textContent = 'Reservation Deposit';
+  document.getElementById('payment-type').textContent = 'Down Payment';
   document.getElementById('total-amount').textContent = fmtMoney(
     b.total_amount,
   );

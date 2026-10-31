@@ -231,7 +231,7 @@ const createInvoice = async (req, res) => {
 
     // get booking details
     const bookingResult = await pool.query(
-      `SELECT b.*, sv.price AS variant_price, s.price AS service_price, s.deposit_amount, s.name AS service_name,
+      `SELECT b.*, sv.price AS variant_price, s.price AS service_price, s.down_payment_amount, s.name AS service_name,
               sv.name AS variant_name, u.email AS user_email, b.guest_email
        FROM bookings b
        JOIN services s ON s.id = b.service_id
@@ -252,7 +252,10 @@ const createInvoice = async (req, res) => {
     const totalPrice = parseFloat(
       booking.variant_price || booking.service_price,
     );
-    const amountPaid = Math.min(parseFloat(booking.deposit_amount), totalPrice);
+    const amountPaid = Math.min(
+      parseFloat(booking.down_payment_amount),
+      totalPrice,
+    );
     const email = booking.guest_email || booking.user_email;
 
     // create payment record
@@ -270,7 +273,7 @@ const createInvoice = async (req, res) => {
         payerEmail: email,
         description: `${booking.service_name} - ${
           booking.variant_name || 'Standard'
-        } (Reservation Deposit)`,
+        } (Down Payment)`,
         successRedirectUrl: `${process.env.APP_URL}/booking/success?external_id=${payment.id}`,
         failureRedirectUrl: `${process.env.APP_URL}/booking/failed`,
         currency: 'PHP',

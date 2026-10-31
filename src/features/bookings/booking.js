@@ -987,8 +987,8 @@ function populateSummary() {
     state.selectedDate,
   );
   document.getElementById('summary-price').textContent = formatPrice(price);
-  document.getElementById('deposit-amount').textContent = formatPrice(
-    Math.min(state.service?.deposit_amount || 0, price),
+  document.getElementById('down-payment-amount').textContent = formatPrice(
+    Math.min(state.service?.down_payment_amount || 0, price),
   );
   document.getElementById('estimate-check').checked = false;
   updatePayButton();

@@ -490,7 +490,7 @@ async function loadPayments() {
           <td>${formatCurrency(p.amount)}</td>
           <td><strong style="color:var(--success)">${formatCurrency(p.amount_paid)}</strong></td>
           <td>${p.remaining_balance > 0 ? `<strong style="color:var(--warning)">${formatCurrency(p.remaining_balance)}</strong>` : '-'}</td>
-          <td>${p.is_fully_paid ? '<span class="status-badge status-confirmed">Paid in full</span>' : '<span class="status-badge status-pending">Deposit</span>'}</td>
+          <td>${p.is_fully_paid ? '<span class="status-badge status-confirmed">Paid in full</span>' : '<span class="status-badge status-pending">Down Payment</span>'}</td>
           <td>${statusBadge(p.status)}</td>
           <td>${formatDateTime(p.paid_at)}</td>
         </tr>

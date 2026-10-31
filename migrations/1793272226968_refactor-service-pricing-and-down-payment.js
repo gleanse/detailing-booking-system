@@ -1,0 +1,37 @@
+export const shorthands = undefined;
+
+export const up = (pgm) => {
+  pgm.addColumn('services', {
+    down_payment_amount: { type: 'decimal(10,2)' },
+  });
+
+  pgm.sql('UPDATE services SET down_payment_amount = 300');
+
+  pgm.alterColumn('services', 'down_payment_amount', { notNull: true });
+  pgm.addConstraint('services', 'check_down_payment_positive', {
+    check: 'down_payment_amount > 0',
+  });
+
+  pgm.dropColumn('payments', 'payment_type');
+
+  pgm.sql(`
+    COMMENT ON COLUMN services.down_payment_amount IS 'Flat down payment charged at booking. Set by admin per service.';
+    COMMENT ON COLUMN payments.amount IS 'Estimated total from the booked variant. Replaced when staff change the variant or set a final price.';
+    COMMENT ON COLUMN payments.amount_paid IS 'Down payment paid at booking. Not changed when the balance is settled at handover.';
+    COMMENT ON COLUMN payments.remaining_balance IS 'Balance still owed after the down payment. 0 once settled at handover.';
+  `);
+};
+
+export const down = (pgm) => {
+  pgm.sql(`
+    COMMENT ON COLUMN payments.amount IS NULL;
+    COMMENT ON COLUMN payments.amount_paid IS NULL;
+    COMMENT ON COLUMN payments.remaining_balance IS NULL;
+  `);
+
+  pgm.addColumn('payments', {
+    payment_type: { type: 'varchar(50)', default: 'full' },
+  });
+
+  pgm.dropColumn('services', 'down_payment_amount');
+};

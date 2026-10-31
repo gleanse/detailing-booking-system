@@ -12,7 +12,7 @@ INSERT INTO users (id, name, email, phone, password, role) VALUES
 (gen_random_uuid(), 'Customer Three', 'customer3@gmail.com', '09678901234', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'customer');
 
 -- 2. SERVICES SEED
-INSERT INTO services (id, name, description, price, deposit_amount, duration_hours, image_url, is_active) VALUES
+INSERT INTO services (id, name, description, price, down_payment_amount, duration_hours, image_url, is_active) VALUES
 (gen_random_uuid(), 'Ceramic Coating', 'Ceramic coating for the whole motorcycle body, for lasting protection and shine. Graphene coating, a longer-lasting upgrade, is available and confirmed in shop.', 1500.00, 300.00, 3, 'https://placehold.co/400x200?text=Ceramic+Coating', true),
 (gen_random_uuid(), 'Powder Coating', 'Durable powder coating for mags and other metal parts. Not applicable to plastic parts.', 800.00, 300.00, 12, 'https://placehold.co/400x200?text=Powder+Coating', true);
 
@@ -189,11 +189,11 @@ BEGIN
     'xendit_' || b.reference_code,
     sv.price,
     CASE
-      WHEN b.motorcycle_plate IN ('ABC123', 'XYZ789', 'DONE123') THEN s.deposit_amount
+      WHEN b.motorcycle_plate IN ('ABC123', 'XYZ789', 'DONE123') THEN s.down_payment_amount
       ELSE 0
     END,
     CASE
-      WHEN b.motorcycle_plate IN ('ABC123', 'XYZ789') THEN sv.price - s.deposit_amount
+      WHEN b.motorcycle_plate IN ('ABC123', 'XYZ789') THEN sv.price - s.down_payment_amount
       WHEN b.motorcycle_plate = 'DONE123' THEN 0
       ELSE sv.price
     END,

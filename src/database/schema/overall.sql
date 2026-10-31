@@ -22,12 +22,12 @@ CREATE TABLE services (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   price DECIMAL(10,2) NOT NULL, -- starting price, estimate only
-  deposit_amount DECIMAL(10,2) NOT NULL, -- flat reservation deposit charged at booking, set by admin
+  down_payment_amount DECIMAL(10,2) NOT NULL, -- flat down payment charged at booking, set by admin
   duration_hours INT, -- estimated duration, used for workload estimate
   image_url VARCHAR(500),
   is_active BOOLEAN DEFAULT true, -- soft delete
   created_at TIMESTAMP DEFAULT NOW(),
-  CONSTRAINT check_deposit_positive CHECK (deposit_amount > 0)
+  CONSTRAINT check_down_payment_positive CHECK (down_payment_amount > 0)
 );
 
 -- SERVICE VARIANTS (by body size or part, price is an estimate until confirmed in shop)
@@ -100,8 +100,8 @@ CREATE TABLE payments (
   booking_id UUID REFERENCES bookings(id),
   xendit_invoice_id VARCHAR(255),
   amount DECIMAL(10,2) NOT NULL, -- estimated total from the booked variant, replaced when staff change the variant or set a final price
-  amount_paid DECIMAL(10,2) NOT NULL, -- deposit paid at booking, not changed when the balance is settled at handover
-  remaining_balance DECIMAL(10,2) DEFAULT 0, -- balance still owed after the deposit, 0 once settled at handover
+  amount_paid DECIMAL(10,2) NOT NULL, -- down payment paid at booking, not changed when the balance is settled at handover
+  remaining_balance DECIMAL(10,2) DEFAULT 0, -- balance still owed after the down payment, 0 once settled at handover
   is_fully_paid BOOLEAN DEFAULT false,
   status VARCHAR(50) DEFAULT 'unpaid', -- unpaid, paid, failed
   payment_attempts INT DEFAULT 0,
