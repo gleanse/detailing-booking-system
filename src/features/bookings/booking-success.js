@@ -26,7 +26,7 @@ async function loadBookingDetails() {
     const b = data.data;
 
     // webhook has not confirmed the booking yet so the caller keeps waiting
-    if (b.booking_status !== 'confirmed') return 'pending';
+    if (b.queue_number === null) return 'pending';
 
     // booking details
     document.getElementById('referenceCode').textContent = b.reference_code;
