@@ -59,7 +59,7 @@ function statusBadge(status) {
 }
 
 function renderActiveBooking(b) {
-  const isDownPayment = b.payment_type === 'downpayment' && !b.is_fully_paid;
+  const isDownPayment = !b.is_fully_paid && b.remaining_balance > 0;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -212,7 +212,7 @@ async function openBookingModal(referenceCode) {
   }
 
   const b = json.data;
-  const isDownPayment = b.payment_type === 'downpayment';
+  const isDownPayment = !b.is_fully_paid && b.remaining_balance > 0;
 
   const serviceBlock = `
     <div class="bg-white/3 border border-white/5 rounded-xl p-5">

@@ -515,7 +515,6 @@ const downloadSlip = async (req, res) => {
       'Remaining Balance',
       `PHP ${parseFloat(booking.remaining_balance || 0).toFixed(2)}`,
     );
-    field('Payment Type', booking.payment_type?.toUpperCase());
     field('Payment Method', booking.payment_method?.toUpperCase());
 
     doc.moveDown(1);

@@ -57,7 +57,6 @@ const getUpcomingBookings = async ({
       p.amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date
     FROM bookings b
@@ -123,7 +122,6 @@ const getBookingsForDate = async (date, { page = 1, limit = 5 } = {}) => {
       p.amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date
     FROM bookings b
@@ -179,7 +177,6 @@ const getBookingByReferenceCode = async (referenceCode) => {
       p.amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date,
       a.id AS availability_id
@@ -227,7 +224,6 @@ const getBookingById = async (id) => {
       p.amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date,
       a.id AS availability_id
@@ -278,7 +274,6 @@ const getMyInProgressBookings = async (staffId) => {
       p.amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date,
       bsl.created_at AS started_at
@@ -462,8 +457,8 @@ const createWalkInBooking = async ({
     const price = parseFloat(variantResult.rows[0].price);
 
     await client.query(
-      `INSERT INTO payments (booking_id, amount, amount_paid, remaining_balance, payment_type, is_fully_paid, status, paid_at)
-       VALUES ($1, $2, $2, 0, 'full', true, 'paid', NOW())`,
+      `INSERT INTO payments (booking_id, amount, amount_paid, remaining_balance, is_fully_paid, status, paid_at)
+       VALUES ($1, $2, $2, 0, true, 'paid', NOW())`,
       [booking.id, price],
     );
 

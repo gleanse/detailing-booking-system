@@ -419,7 +419,7 @@ const openModal = (b) => {
       </div>
       <div class="flex justify-between text-white/50"><span>Payment</span><span class="text-white uppercase">${
         b.payment_method
-      } · ${b.payment_type}</span></div>
+      }</span></div>
     </div>
     <div class="flex flex-col gap-2">
       ${

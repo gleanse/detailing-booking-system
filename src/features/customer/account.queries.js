@@ -22,7 +22,6 @@ const getBookingsByUserId = async (userId) => {
       p.amount AS total_amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid
     FROM bookings b
     JOIN availability a ON a.id = b.availability_id
@@ -62,7 +61,6 @@ const getBookingByReferenceCode = async (referenceCode, userId) => {
       p.amount AS total_amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid
     FROM bookings b
     JOIN availability a ON a.id = b.availability_id
