@@ -1,4 +1,3 @@
-// Kapag natapos ang session (na-logout sa ibang device, nag-expire), balik sa login
 (() => {
   const originalFetch = window.fetch;
   let redirecting = false;
@@ -63,7 +62,7 @@ const AdminLayout = (() => {
     return `
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-          <div class="sidebar-logo"><i class="fas fa-motorcycle"></i></div>
+          <div class="sidebar-logo"><img src="/Images/herco-logo.jpeg" alt="Herco logo"></div>
           <div class="sidebar-brand">
             <span class="sidebar-brand-name">HERCO</span>
             <span class="sidebar-brand-sub">Admin Panel</span>
@@ -370,6 +369,16 @@ const AdminLayout = (() => {
     }
   }
 
+  function initFavicon() {
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = '/Images/herco-logo.jpeg';
+  }
+  
   function init({ activePage, breadcrumb }) {
     const app = document.getElementById('app');
     const wrapper = document.createElement('div');
@@ -385,6 +394,7 @@ const AdminLayout = (() => {
     document.getElementById('mainContent').appendChild(app);
 
     initDateTime();
+    initFavicon();    
     initUserInfo();
     initLogout();
     initMobileMenu();

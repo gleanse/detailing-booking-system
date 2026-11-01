@@ -69,8 +69,11 @@
     @apply flex items-center gap-3 px-5 pt-5 pb-4 border-b border-admin-border;
   }
   .sidebar-logo {
-    @apply w-10 h-10 min-w-10 bg-red-600 rounded-[10px] flex items-center justify-center text-lg shadow-[0_0_16px_rgba(220,38,38,0.25)];
+      @apply w-10 h-10 min-w-10 rounded-full overflow-hidden flex items-center justify-center;
   }
+ .sidebar-logo img {
+  @apply w-full h-full object-cover rounded-full;
+ }
   .sidebar-brand-name {
     @apply font-display text-[22px] tracking-[2px] text-admin-text block leading-none;
   }
