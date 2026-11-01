@@ -989,6 +989,17 @@ async function lockSlot() {
   });
   const json = await res.json();
 
+  if (json.full) {
+    showModal(
+      'Date Is Full',
+      'Someone just took the last place on this date. Please choose another date.',
+      () => loadDates(),
+      'Choose another date',
+      true,
+    );
+    return false;
+  }
+
   if (json.blocked) {
     showModal(
       'Booking Temporarily Blocked',

@@ -100,6 +100,15 @@ const lockBookingSlot = async (req, res) => {
     });
     res.json({ success: true, data: booking });
   } catch (error) {
+    // someone else took the last place, tell the page so it can reload the dates
+    if (error.code === 'SLOT_FULL') {
+      return res.status(409).json({
+        success: false,
+        full: true,
+        message: 'This date is already full. Please choose another date.',
+      });
+    }
+
     console.error('Lock slot error:', error);
     res.status(500).json({ success: false, message: error.message });
   }

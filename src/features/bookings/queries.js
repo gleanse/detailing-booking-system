@@ -67,6 +67,13 @@ const getAvailableDates = async (serviceId) => {
   return result.rows;
 };
 
+// thrown when a date is full, closed or not part of the service
+const slotFullError = () => {
+  const error = new Error('slot is not available');
+  error.code = 'SLOT_FULL';
+  return error;
+};
+
 const lockSlot = async ({
   availabilityId,
   serviceId,
@@ -74,28 +81,61 @@ const lockSlot = async ({
   userId,
   ipAddress,
 }) => {
-  const result = await pool.query(
-    `
-    INSERT INTO bookings (
-      availability_id,
-      service_id,
-      variant_id,
-      user_id,
-      ip_address,
-      booking_status,
-      expires_at
-    ) VALUES ($1, $2, $3, $4, $5, 'locked', NOW() + INTERVAL '10 minutes')
-    RETURNING *
-  `,
-    [
-      availabilityId,
-      serviceId,
-      variantId || null,
-      userId || null,
-      ipAddress || null,
-    ],
-  );
-  return result.rows[0];
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // lock the date row so simultaneous requests for it wait in line
+    const slot = await client.query(
+      `SELECT capacity FROM availability
+       WHERE id = $1 AND service_id = $2 AND is_open = true
+       FOR UPDATE`,
+      [availabilityId, serviceId],
+    );
+
+    // date is closed or does not belong to this service
+    if (!slot.rows.length) throw slotFullError();
+
+    // count runs after the lock so it sees every booking made before us
+    const taken = await client.query(
+      `SELECT COUNT(*)::int AS count FROM bookings
+       WHERE availability_id = $1 AND booking_status IN ('locked', 'confirmed')`,
+      [availabilityId],
+    );
+
+    // date is full
+    if (taken.rows[0].count >= slot.rows[0].capacity) throw slotFullError();
+
+    const result = await client.query(
+      `
+      INSERT INTO bookings (
+        availability_id,
+        service_id,
+        variant_id,
+        user_id,
+        ip_address,
+        booking_status,
+        expires_at
+      ) VALUES ($1, $2, $3, $4, $5, 'locked', NOW() + INTERVAL '10 minutes')
+      RETURNING *
+    `,
+      [
+        availabilityId,
+        serviceId,
+        variantId || null,
+        userId || null,
+        ipAddress || null,
+      ],
+    );
+
+    await client.query('COMMIT');
+    return result.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 const releaseSlot = async (bookingId) => {
