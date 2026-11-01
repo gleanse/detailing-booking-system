@@ -399,6 +399,7 @@ const AdminLayout = (() => {
     initLogout();
     initMobileMenu();
     initPendingBadge();
+    setInterval(initPendingBadge, 30000);
     initNotifications();
   }
 
@@ -503,5 +504,5 @@ function delayedSkeleton(renderSkeletonFn, delay = 200) {
   return () => clearTimeout(timer);
 }
 
-  return { init, statusBadge, formatCurrency, formatDate, formatDateTime, skeletonTableRows, skeletonCards, skeletonStats, skeletonListItems, delayedSkeleton };
+  return { init, refreshBadge: initPendingBadge, statusBadge, formatCurrency, formatDate, formatDateTime, skeletonTableRows, skeletonCards, skeletonStats, skeletonListItems, delayedSkeleton };
 })();

@@ -299,6 +299,7 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
         document.getElementById('wiSummary').classList.remove('show');
         hideFutureMode();
         await loadTodayCapacity();
+        AdminLayout.refreshBadge();
         selectedFutDate = null;
       } else {
         const msgEl = document.getElementById('wiMsg');
