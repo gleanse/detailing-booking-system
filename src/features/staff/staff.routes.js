@@ -14,6 +14,7 @@ const {
   searchBooking,
   patchStatus,
   patchVariant,
+  patchFinalPrice,
   patchFullyPaid,
   getServices,
   getVariants,
@@ -58,6 +59,7 @@ router.get('/bookings/detail/:id', isStaff, getBookingByIdHandler);
 router.get('/bookings/:ref', isStaff, searchBooking);
 router.patch('/bookings/:id/status', isStaff, patchStatus);
 router.patch('/bookings/:id/variant', isStaff, patchVariant);
+router.patch('/bookings/:id/price', isStaff, patchFinalPrice);
 router.patch('/bookings/:id/paid', isStaff, patchFullyPaid);
 // started-by must be above :id wildcard routes
 router.get('/bookings/:id/started-by', isStaff, getStartedBy);

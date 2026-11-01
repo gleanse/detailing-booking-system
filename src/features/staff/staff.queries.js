@@ -348,6 +348,34 @@ const updateVariant = async (bookingId, variantId, staffId) => {
   return { newPrice, amountPaid, remaining, isFullyPaid };
 };
 
+const updateFinalPrice = async (bookingId, newPrice, staffId) => {
+  const paymentResult = await pool.query(
+    `SELECT amount, amount_paid FROM payments WHERE booking_id = $1`,
+    [bookingId],
+  );
+  if (paymentResult.rows.length === 0) return null;
+
+  const oldPrice = parseFloat(paymentResult.rows[0].amount);
+  const amountPaid = parseFloat(paymentResult.rows[0].amount_paid);
+  if (newPrice < amountPaid) return { belowPaid: true, amountPaid };
+
+  const remaining = newPrice - amountPaid;
+  const isFullyPaid = remaining === 0;
+
+  await pool.query(
+    `UPDATE payments
+     SET amount = $1, remaining_balance = $2, is_fully_paid = $3
+     WHERE booking_id = $4`,
+    [newPrice, remaining, isFullyPaid, bookingId],
+  );
+  await pool.query(
+    `UPDATE bookings SET updated_by = $1, updated_at = NOW() WHERE id = $2`,
+    [staffId, bookingId],
+  );
+
+  return { oldPrice, newPrice, amountPaid, remaining, isFullyPaid };
+};
+
 const markFullyPaid = async (bookingId, staffId) => {
   await pool.query(
     `UPDATE payments
@@ -527,6 +555,7 @@ module.exports = {
   updateBookingStatus,
   logBookingStatus,
   updateVariant,
+  updateFinalPrice,
   markFullyPaid,
   getAvailabilityForDate,
   getNextQueueNumber,
