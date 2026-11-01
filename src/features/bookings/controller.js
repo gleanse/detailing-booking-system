@@ -328,11 +328,22 @@ const handleWebhook = async (req, res) => {
     }
 
     const payment = paymentResult.rows[0];
-    await confirmBooking({ bookingId: payment.booking_id, xenditInvoiceId });
+    const confirmed = await confirmBooking({
+      bookingId: payment.booking_id,
+      xenditInvoiceId,
+    });
+
+    // an earlier delivery already confirmed it, so skip the email
+    if (!confirmed) return res.json({ success: true });
 
     // fetch full booking details then send confirmation email
     const bookingDetails = await getBookingByPaymentId(external_id);
-    await sendBookingConfirmationEmail(bookingDetails);
+    // a failed email must not fail the webhook, xendit would retry it
+    try {
+      await sendBookingConfirmationEmail(bookingDetails);
+    } catch (emailError) {
+      console.error('Confirmation email error:', emailError);
+    }
 
     res.json({ success: true });
   } catch (error) {
