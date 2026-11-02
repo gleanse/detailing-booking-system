@@ -173,6 +173,21 @@
         </div>
       </div>
 
+      <div class="border-t border-white/5 mb-6"></div>
+
+      <!-- DOWN PAYMENT -->
+      <div class="mb-6">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-1.5 h-5 bg-red-500 rounded-full"></div>
+          <h2 class="text-sm font-semibold text-white uppercase tracking-widest">Down Payment</h2>
+        </div>
+        <label class="text-xs text-white/40 uppercase tracking-widest mb-2 block">Received in cash</label>
+        <p id="down-payment-hint" class="text-white/20 text-xs mb-2">Optional for same-day walk-ins. Required for a future date.</p>
+        <input id="down-payment" type="number" min="1" step="0.01"
+          class="w-full bg-white/4 border border-white/8 focus:border-red-500 outline-none rounded-xl px-4 py-3 text-white text-sm transition-colors duration-200"
+          placeholder="0.00" />
+      </div>
+      
       <p id="form-error"
         class="hidden text-red-400 text-xs mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2"></p>
 

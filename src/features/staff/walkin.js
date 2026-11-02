@@ -69,6 +69,16 @@ const hideCapacityBadge = () => {
   document.getElementById('capacity-badge').classList.remove('flex');
 };
 
+const updateDownPaymentHint = (serviceId) => {
+  const svc = services.find((s) => s.id === serviceId);
+  document.getElementById('down-payment').placeholder = svc
+    ? svc.down_payment_amount
+    : '0.00';
+  document.getElementById('down-payment-hint').textContent = svc
+    ? `Optional for same-day walk-ins, required for a future date. Service down payment: ₱${svc.down_payment_amount}`
+    : 'Optional for same-day walk-ins. Required for a future date.';
+};
+
 const showFutureDatePicker = () => {
   const section = document.getElementById('future-date-section');
   section.classList.remove('hidden');
@@ -229,6 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     .getElementById('service-select')
     .addEventListener('change', async (e) => {
       loadVariants(e.target.value);
+      updateDownPaymentHint(e.target.value);
       hideFutureDatePicker();
       await checkTodayCapacity();
     });
@@ -253,6 +264,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const motorcycleDescription = document
       .getElementById('moto-desc')
       .value.trim();
+
+    const downPayment = document.getElementById('down-payment').value.trim();
 
     const futureSection = document.getElementById('future-date-section');
     const isFutureVisible = !futureSection.classList.contains('hidden');
@@ -315,6 +328,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           motorcycleModel,
           motorcycleColor,
           motorcycleDescription,
+          downPayment,
         }),
       });
       const data = await res.json();
@@ -384,6 +398,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('moto-model').value = '';
     document.getElementById('moto-color').value = '';
     document.getElementById('moto-desc').value = '';
+    document.getElementById('down-payment').value = '';
     hideError();
     hideFutureDatePicker();
     hideCapacityBadge();

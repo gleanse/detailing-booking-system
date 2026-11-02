@@ -45,7 +45,7 @@ async function loadBookingDetails() {
       day: 'numeric',
     });
     document.getElementById('guestName').textContent = b.guest_name;
-    document.getElementById('paymentType').textContent = 'Down Payment';
+    document.getElementById('downPaymentLabel').textContent = 'Down Payment';
     document.getElementById('amountPaid').textContent = `₱${parseFloat(
       b.amount_paid,
     ).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
