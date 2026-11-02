@@ -107,7 +107,7 @@ const check = (name, ok, detail = '') => {
 
 (async () => {
   const service = await pool.query(
-    `INSERT INTO services (name, price) VALUES ('webhook test', 1) RETURNING id`,
+    `INSERT INTO services (name, price, down_payment_amount) VALUES ('webhook test', 1, 1) RETURNING id`
   );
   const serviceId = service.rows[0].id;
   const slot = await pool.query(

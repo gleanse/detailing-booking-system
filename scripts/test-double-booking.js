@@ -22,7 +22,7 @@ const ROUNDS = Number(process.argv[2] || 20);
 
 async function oneRound(n) {
   const service = await pool.query(
-    `INSERT INTO services (name, price) VALUES ('T1 race test', 1) RETURNING id`,
+    `INSERT INTO services (name, price, down_payment_amount) VALUES ('T1 race test', 1, 1) RETURNING id`
   );
   const serviceId = service.rows[0].id;
   const slot = await pool.query(
