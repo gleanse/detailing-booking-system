@@ -38,6 +38,7 @@ const hideAllActionModals = () =>
     'modal-pickup',
     'modal-paid',
     'modal-variant',
+    'modal-price',
     'modal-logout',
   ].forEach(hideModal);
 
@@ -358,6 +359,7 @@ const openModal = (b) => {
   const canDone = b.status === 'in_progress';
   const canPickup = b.status === 'done';
   const canVariant = ['pending', 'in_progress'].includes(b.status);
+  const canPrice = !b.is_fully_paid && b.status !== 'picked_up';
   const canPaid = !b.is_fully_paid && b.status !== 'picked_up';
 
   document.getElementById('modal-content').innerHTML = `
@@ -419,7 +421,7 @@ const openModal = (b) => {
       </div>
       <div class="flex justify-between text-white/50"><span>Payment</span><span class="text-white uppercase">${
         b.payment_method
-      } · ${b.payment_type}</span></div>
+      }</span></div>
     </div>
     <div class="flex flex-col gap-2">
       ${
@@ -440,6 +442,11 @@ const openModal = (b) => {
       ${
         canVariant
           ? `<button onclick="triggerVariantSwap()" class="w-full border border-orange-500/30 hover:border-orange-500/60 text-orange-400 hover:text-orange-300 text-sm font-medium py-2.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"><i class="ph ph-arrows-left-right text-sm"></i> Change Variant</button>`
+          : ''
+      }
+      ${
+        canPrice
+          ? `<button onclick="triggerPriceAdjust()" class="w-full border border-orange-500/30 hover:border-orange-500/60 text-orange-400 hover:text-orange-300 text-sm font-medium py-2.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"><i class="ph ph-coins text-sm"></i> Adjust Price</button>`
           : ''
       }
       ${
@@ -607,6 +614,33 @@ const updateVariantPreview = () => {
   }
 
   document.getElementById('variant-balance-preview').classList.remove('hidden');
+};
+
+const triggerPriceAdjust = () => {
+  if (!currentBooking) return;
+  document.getElementById('price-old').textContent = fmt(currentBooking.amount);
+  document.getElementById('price-paid').textContent = fmt(
+    currentBooking.amount_paid || 0,
+  );
+  document.getElementById('price-input').value = '';
+  document.getElementById('price-reason').value = '';
+  document.getElementById('price-preview').textContent = '';
+  document.getElementById('price-error').classList.add('hidden');
+  showModal('modal-price');
+};
+
+const updatePricePreview = () => {
+  const price = parseFloat(document.getElementById('price-input').value);
+  const paid = parseFloat(currentBooking.amount_paid || 0);
+  const preview = document.getElementById('price-preview');
+  if (isNaN(price)) {
+    preview.textContent = '';
+    return;
+  }
+  preview.textContent =
+    price < paid
+      ? 'Lower than the down payment already paid. Ask admin to handle the refund first.'
+      : `Remaining to collect: ${fmt(price - paid)}`;
 };
 
 const triggerMarkPaid = () => {
@@ -831,6 +865,39 @@ document.addEventListener('DOMContentLoaded', async () => {
           : loadUpcoming(currentPage);
       } catch (err) {
         console.error(err);
+      }
+    });
+
+  // price
+  document
+    .getElementById('price-cancel')
+    .addEventListener('click', () => hideModal('modal-price'));
+  document
+    .getElementById('price-input')
+    .addEventListener('input', updatePricePreview);
+  document
+    .getElementById('price-confirm')
+    .addEventListener('click', async () => {
+      if (!currentBooking) return;
+      const price = document.getElementById('price-input').value;
+      const reason = document.getElementById('price-reason').value.trim();
+      const errorEl = document.getElementById('price-error');
+      try {
+        const res = await fetch(`/staff/bookings/${currentBooking.id}/price`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ price, reason }),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        hideModal('modal-price');
+        closeModal();
+        viewMode === 'today'
+          ? loadBookings(picker.value, currentPage)
+          : loadUpcoming(currentPage);
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.remove('hidden');
       }
     });
 

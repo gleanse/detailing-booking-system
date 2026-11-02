@@ -8,6 +8,7 @@ const getAllServices = async () => {
       s.name,
       s.description,
       s.price,
+      s.down_payment_amount,
       s.duration_hours,
       s.image_url,
       json_agg(

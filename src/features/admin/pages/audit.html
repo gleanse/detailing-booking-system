@@ -39,6 +39,37 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="auditModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Audit Detail</h3>
+      <button class="modal-close" id="auditModalClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Action</p>
+      <p id="auditAction" style="color:var(--color-admin-text);font-weight:500;word-break:break-word;"></p>
+
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Done by</p>
+      <p id="auditUser" style="color:var(--color-admin-text);"></p>
+
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Table</p>
+      <p id="auditTable" style="color:var(--color-admin-text);"></p>
+
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Target ID</p>
+      <p id="auditTarget" style="color:var(--color-admin-text);word-break:break-all;"></p>
+
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Details</p>
+      <p id="auditDetails" style="color:var(--color-admin-text);white-space:pre-wrap;word-break:break-word;"></p>
+
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Date and time</p>
+      <p id="auditDate" style="color:var(--color-admin-text);margin-bottom:0;"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="auditModalDone">Close</button>
+    </div>
+  </div>
+</div>
+
 <script src="/admin/admin-layout.js"></script>
 <script src="audit.js"></script>
 

@@ -57,7 +57,6 @@ const getUpcomingBookings = async ({
       p.amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date
     FROM bookings b
@@ -123,7 +122,6 @@ const getBookingsForDate = async (date, { page = 1, limit = 5 } = {}) => {
       p.amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date
     FROM bookings b
@@ -179,7 +177,6 @@ const getBookingByReferenceCode = async (referenceCode) => {
       p.amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date,
       a.id AS availability_id
@@ -227,7 +224,6 @@ const getBookingById = async (id) => {
       p.amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date,
       a.id AS availability_id
@@ -278,7 +274,6 @@ const getMyInProgressBookings = async (staffId) => {
       p.amount,
       p.amount_paid,
       p.remaining_balance,
-      p.payment_type,
       p.is_fully_paid,
       TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date,
       bsl.created_at AS started_at
@@ -351,6 +346,34 @@ const updateVariant = async (bookingId, variantId, staffId) => {
   );
 
   return { newPrice, amountPaid, remaining, isFullyPaid };
+};
+
+const updateFinalPrice = async (bookingId, newPrice, staffId) => {
+  const paymentResult = await pool.query(
+    `SELECT amount, amount_paid FROM payments WHERE booking_id = $1`,
+    [bookingId],
+  );
+  if (paymentResult.rows.length === 0) return null;
+
+  const oldPrice = parseFloat(paymentResult.rows[0].amount);
+  const amountPaid = parseFloat(paymentResult.rows[0].amount_paid);
+  if (newPrice < amountPaid) return { belowPaid: true, amountPaid };
+
+  const remaining = newPrice - amountPaid;
+  const isFullyPaid = remaining === 0;
+
+  await pool.query(
+    `UPDATE payments
+     SET amount = $1, remaining_balance = $2, is_fully_paid = $3
+     WHERE booking_id = $4`,
+    [newPrice, remaining, isFullyPaid, bookingId],
+  );
+  await pool.query(
+    `UPDATE bookings SET updated_by = $1, updated_at = NOW() WHERE id = $2`,
+    [staffId, bookingId],
+  );
+
+  return { oldPrice, newPrice, amountPaid, remaining, isFullyPaid };
 };
 
 const markFullyPaid = async (bookingId, staffId) => {
@@ -462,8 +485,8 @@ const createWalkInBooking = async ({
     const price = parseFloat(variantResult.rows[0].price);
 
     await client.query(
-      `INSERT INTO payments (booking_id, amount, amount_paid, remaining_balance, payment_type, is_fully_paid, status, paid_at)
-       VALUES ($1, $2, $2, 0, 'full', true, 'paid', NOW())`,
+      `INSERT INTO payments (booking_id, amount, amount_paid, remaining_balance, is_fully_paid, status, paid_at)
+       VALUES ($1, $2, $2, 0, true, 'paid', NOW())`,
       [booking.id, price],
     );
 
@@ -532,6 +555,7 @@ module.exports = {
   updateBookingStatus,
   logBookingStatus,
   updateVariant,
+  updateFinalPrice,
   markFullyPaid,
   getAvailabilityForDate,
   getNextQueueNumber,

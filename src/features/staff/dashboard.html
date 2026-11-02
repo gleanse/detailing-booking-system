@@ -359,6 +359,44 @@
     </div>
   </div>
 
+  <!-- ADJUST PRICE MODAL -->
+  <div id="modal-price"
+    class="fixed inset-0 z-60 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="bg-neutral-900 border border-white/10 rounded-2xl w-full max-w-sm animate-fadeUp p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0">
+          <i class="ph ph-coins text-orange-400 text-lg"></i>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold text-sm">Adjust Final Price</h3>
+          <p class="text-white/40 text-xs mt-0.5">Use when the actual condition differs from the estimate.</p>
+        </div>
+      </div>
+      <div class="bg-white/3 rounded-xl px-4 py-3 mb-4 text-xs text-white/60 space-y-1">
+        <div class="flex justify-between"><span>Estimate</span><span id="price-old" class="text-white font-medium"></span></div>
+        <div class="flex justify-between"><span>Down payment paid</span><span id="price-paid" class="text-white font-medium"></span></div>
+      </div>
+      <div class="mb-4">
+        <label class="text-xs text-white/40 uppercase tracking-widest mb-2 block">New Final Price</label>
+        <input id="price-input" type="number" min="1" step="0.01"
+          class="w-full bg-white/5 text-white border border-white/10 focus:border-orange-500 outline-none rounded-xl px-4 py-3 text-sm transition-colors duration-200" />
+        <p id="price-preview" class="text-xs text-white/40 mt-2"></p>
+      </div>
+      <div class="mb-4">
+        <label class="text-xs text-white/40 uppercase tracking-widest mb-2 block">Reason</label>
+        <textarea id="price-reason" rows="2" maxlength="200" placeholder="e.g. heavy rust, extra stripping needed"
+          class="w-full bg-white/5 text-white placeholder:text-white/30 border border-white/10 focus:border-orange-500 outline-none rounded-xl px-4 py-3 text-sm transition-colors duration-200"></textarea>
+      </div>
+      <p id="price-error" class="hidden text-xs text-red-400 mb-3"></p>
+      <div class="flex gap-3">
+        <button id="price-cancel"
+          class="w-1/2 border border-white/10 hover:border-white/30 text-white/60 hover:text-white text-sm font-medium py-2.5 rounded-xl transition-all duration-200 cursor-pointer">Cancel</button>
+        <button id="price-confirm"
+          class="w-1/2 bg-orange-600 hover:bg-orange-700 active:scale-95 text-white text-sm font-semibold py-2.5 rounded-xl transition-all duration-200 cursor-pointer">Update</button>
+      </div>
+    </div>
+  </div>
+
   <!-- LOGOUT MODAL -->
   <div id="modal-logout"
     class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">

@@ -114,6 +114,7 @@
             <span class="service-price">from ${formatCurrency(s.price)}</span>
           </div>
           <div class="service-card-body">
+            <p class="service-desc">Down payment: ${formatCurrency(s.down_payment_amount)}</p>
             ${s.description ? `<p class="service-desc">${s.description}</p>` : ''}
             ${s.variants && s.variants.length
               ? `<ul class="variant-list">
@@ -131,6 +132,7 @@
               data-name="${escHtml(s.name)}"
               data-desc="${escHtml(s.description||'')}"
               data-price="${s.price}"
+              data-down-payment="${s.down_payment_amount}"
               data-duration="${s.duration_hours||''}"
               data-img="${escHtml(s.image_url||'')}"
               onclick="openEditService(this)">
@@ -163,6 +165,7 @@
     document.getElementById('svc_name').value        = '';
     document.getElementById('svc_description').value = '';
     document.getElementById('svc_price').value       = '';
+    document.getElementById('svc_down_payment').value = '';
     document.getElementById('svc_duration').value    = '';
     resetImageState(null);
     hideModalMsg('serviceModalMsg');
@@ -178,6 +181,7 @@
     document.getElementById('svc_name').value        = btn.dataset.name;
     document.getElementById('svc_description').value = btn.dataset.desc;
     document.getElementById('svc_price').value       = btn.dataset.price;
+    document.getElementById('svc_down_payment').value = btn.dataset.downPayment || '';
     document.getElementById('svc_duration').value    = btn.dataset.duration || '';
     resetImageState(btn.dataset.img || null);
     hideModalMsg('serviceModalMsg');
@@ -198,6 +202,7 @@
     const name     = document.getElementById('svc_name').value.trim();
     const desc     = document.getElementById('svc_description').value.trim();
     const price    = document.getElementById('svc_price').value.trim();
+    const downPayment = document.getElementById('svc_down_payment').value.trim();
     const duration = document.getElementById('svc_duration').value.trim();
 
     if (!name) {
@@ -211,12 +216,18 @@
       return;
     }
 
+    if (!downPayment || isNaN(parseFloat(downPayment)) || parseFloat(downPayment) <= 0) {
+      showModalMsg('serviceModalMsg', 'error', 'Please enter a down payment greater than 0.');
+      document.getElementById('svc_down_payment').focus();
+      return;
+    }
+
     const btn = document.getElementById('serviceModalSave');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
     const payload = {
-      name, price,
+      name, price, down_payment_amount: downPayment,
       description:    desc     || null,
       duration_hours: duration || null,
       image_base64:   currentImageBase64 || null,

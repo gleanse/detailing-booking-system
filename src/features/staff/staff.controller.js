@@ -13,6 +13,7 @@ const {
   updateBookingStatus,
   logBookingStatus,
   updateVariant,
+  updateFinalPrice,
   markFullyPaid,
   getAvailabilityForDate,
   getNextQueueNumber,
@@ -205,12 +206,76 @@ const patchVariant = async (req, res) => {
       action: 'variant_updated',
       targetTable: 'bookings',
       targetId: id,
-      details: `Variant changed on booking ${booking.reference_code}. New price: ${result.newPrice}, Remaining: ${result.remaining}`,
+      details: `Variant changed on booking ${booking.reference_code}. Old price: ${booking.amount}, New price: ${result.newPrice}, Remaining: ${result.remaining}`,
     });
 
     res.json({ success: true, ...result });
   } catch (err) {
     console.error('Patch variant error:', err);
+    res
+      .status(500)
+      .json({ success: false, message: 'Server error: ' + err.message });
+  }
+};
+
+const patchFinalPrice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { price, reason } = req.body;
+    const staffId = req.session.user.id;
+    const newPrice = parseFloat(price);
+    const note = (reason || '').trim();
+
+    if (isNaN(newPrice) || newPrice <= 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Enter a valid price' });
+    }
+    if (note.length < 3 || note.length > 200) {
+      return res.status(400).json({
+        success: false,
+        message: 'A reason of 3 to 200 characters is required',
+      });
+    }
+
+    const booking = await getBookingById(id);
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Booking not found' });
+    }
+    if (booking.status === 'picked_up' || booking.is_fully_paid) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'This booking is already settled, the price can no longer be changed',
+      });
+    }
+
+    const result = await updateFinalPrice(id, newPrice, staffId);
+    if (!result) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Payment record not found' });
+    }
+    if (result.belowPaid) {
+      return res.status(400).json({
+        success: false,
+        message: `The new price is lower than the down payment already paid (${result.amountPaid}). Ask admin to handle the refund first.`,
+      });
+    }
+
+    await logAudit({
+      userId: staffId,
+      action: 'price_adjusted',
+      targetTable: 'bookings',
+      targetId: id,
+      details: `Final price changed on booking ${booking.reference_code}: ${result.oldPrice} to ${result.newPrice}. Reason: ${note}`,
+    });
+
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error('Patch final price error:', err);
     res
       .status(500)
       .json({ success: false, message: 'Server error: ' + err.message });
@@ -515,7 +580,6 @@ const downloadSlip = async (req, res) => {
       'Remaining Balance',
       `PHP ${parseFloat(booking.remaining_balance || 0).toFixed(2)}`,
     );
-    field('Payment Type', booking.payment_type?.toUpperCase());
     field('Payment Method', booking.payment_method?.toUpperCase());
 
     doc.moveDown(1);
@@ -575,6 +639,7 @@ module.exports = {
   searchBooking,
   patchStatus,
   patchVariant,
+  patchFinalPrice,
   patchFullyPaid,
   getServices,
   getVariants,

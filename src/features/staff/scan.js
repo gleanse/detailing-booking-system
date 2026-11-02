@@ -129,8 +129,7 @@ const renderBooking = (b) => {
   remEl.className = `font-semibold ${
     b.is_fully_paid ? 'text-green-400' : 'text-red-400'
   }`;
-  document.getElementById('b-method').textContent =
-    `${b.payment_method} · ${b.payment_type}`;
+  document.getElementById('b-method').textContent = `${b.payment_method}`;
 
   renderActions(b);
 };

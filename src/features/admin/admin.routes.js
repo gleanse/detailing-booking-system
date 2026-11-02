@@ -596,7 +596,7 @@ router.post('/bookings/reschedule', async (req, res) => {
 router.get('/services', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT s.id, s.name, s.description, s.price, s.duration_hours, s.is_active, s.image_url,
+      SELECT s.id, s.name, s.description, s.price, s.down_payment_amount, s.duration_hours, s.is_active, s.image_url,
              json_agg(
                json_build_object('id',sv.id,'name',sv.name,'price',sv.price)
                ORDER BY sv.price ASC
@@ -616,13 +616,21 @@ router.get('/services', async (req, res) => {
 // POST /api/admin/services
 router.post('/services', async (req, res) => {
   try {
-    const { name, description, price, duration_hours, image_base64 } = req.body;
+    const { name, description, price, down_payment_amount, duration_hours, image_base64 } = req.body;
 
     if (!name || !price) {
       return res.status(400).json({ success: false, message: 'Name and price are required' });
     }
     if (isNaN(parseFloat(price)) || parseFloat(price) < 0) {
       return res.status(400).json({ success: false, message: 'Price must be a valid positive number' });
+    }
+
+    const downPayment = parseFloat(down_payment_amount);
+    if (isNaN(downPayment) || downPayment <= 0) {
+      return res.status(400).json({ success: false, message: 'Down payment must be greater than 0' });
+    }
+    if (downPayment > parseFloat(price)) {
+      return res.status(400).json({ success: false, message: 'Down payment cannot be higher than the service price' });
     }
 
     let finalImageUrl = null;
@@ -635,10 +643,10 @@ router.post('/services', async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO services (name,description,price,duration_hours,image_url,is_active)
-       VALUES ($1,$2,$3,$4,$5,true) RETURNING id,name,description,price,duration_hours,image_url`,
+      `INSERT INTO services (name,description,price,down_payment_amount,duration_hours,image_url,is_active)
+       VALUES ($1,$2,$3,$4,$5,$6,true) RETURNING id,name,description,price,down_payment_amount,duration_hours,image_url`,
       [name.trim(), description?.trim()||null, parseFloat(price),
-       duration_hours ? parseInt(duration_hours) : null, finalImageUrl]
+       downPayment, duration_hours ? parseInt(duration_hours) : null, finalImageUrl]
     );
 
     const service = result.rows[0];
@@ -661,10 +669,22 @@ router.post('/services', async (req, res) => {
 router.put('/services/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, duration_hours, image_base64, clear_image } = req.body;
+    const { name, description, price, down_payment_amount, duration_hours, image_base64, clear_image } = req.body;
 
     if (!name || !price) {
       return res.status(400).json({ success: false, message: 'Name and price are required' });
+    }
+
+    const downPayment = parseFloat(down_payment_amount);
+    if (isNaN(downPayment) || downPayment <= 0) {
+      return res.status(400).json({ success: false, message: 'Down payment must be greater than 0' });
+    }
+    const cheapest = await pool.query(
+      'SELECT MIN(price) AS min_price FROM service_variants WHERE service_id=$1 AND is_active=true', [id]
+    );
+    const lowestPrice = Math.min(parseFloat(price), parseFloat(cheapest.rows[0].min_price ?? price));
+    if (downPayment > lowestPrice) {
+      return res.status(400).json({ success: false, message: `Down payment cannot be higher than the cheapest price (₱${lowestPrice})` });
     }
 
     const oldResult   = await pool.query('SELECT image_url FROM services WHERE id=$1', [id]);
@@ -686,11 +706,11 @@ router.put('/services/:id', async (req, res) => {
     }
 
     const result = await pool.query(
-      `UPDATE services SET name=$1,description=$2,price=$3,duration_hours=$4,image_url=$5
-       WHERE id=$6 AND is_active=true
-       RETURNING id,name,description,price,duration_hours,image_url`,
+      `UPDATE services SET name=$1,description=$2,price=$3,down_payment_amount=$4,duration_hours=$5,image_url=$6
+       WHERE id=$7 AND is_active=true
+       RETURNING id,name,description,price,down_payment_amount,duration_hours,image_url`,
       [name.trim(), description?.trim()||null, parseFloat(price),
-       duration_hours ? parseInt(duration_hours) : null, finalImageUrl, id]
+       downPayment, duration_hours ? parseInt(duration_hours) : null, finalImageUrl, id]
     );
 
     if (!result.rows.length) {
@@ -754,6 +774,14 @@ router.post('/services/:id/variants', async (req, res) => {
     const { name, price, duration_hours, force } = req.body;
     if (!name || !price) {
       return res.status(400).json({ success: false, message: 'Name and price are required' });
+    }
+
+    const downPaymentResult = await pool.query(
+      'SELECT down_payment_amount FROM services WHERE id = $1', [id]
+    );
+    const servicePayment = downPaymentResult.rows[0]?.down_payment_amount;
+    if (servicePayment && parseFloat(price) < parseFloat(servicePayment)) {
+      return res.status(400).json({ success: false, message: `Variant price cannot be lower than the service down payment (₱${servicePayment})` });
     }
 
     // WARN: variant duration exceeds base service duration
@@ -896,7 +924,7 @@ router.get('/accounts', async (req, res) => {
 router.get('/payments', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT p.id,p.amount,p.amount_paid,p.remaining_balance,p.payment_type,
+      SELECT p.id,p.amount,p.amount_paid,p.remaining_balance,
              p.is_fully_paid,p.status,p.paid_at,b.reference_code,b.guest_name
       FROM payments p LEFT JOIN bookings b ON b.id=p.booking_id
       ORDER BY p.created_at DESC LIMIT 100

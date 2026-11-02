@@ -31,8 +31,8 @@ AdminLayout.init({ activePage: 'payments', breadcrumb: 'Payments' });
             <td>${p.remaining_balance > 0
               ? `<strong style="color:var(--color-admin-warning)">${formatCurrency(p.remaining_balance)}</strong>`
               : '-'}</td>
-            <td>${p.payment_type === 'full'
-              ? '<span class="status-badge status-confirmed">Full</span>'
+            <td>${p.is_fully_paid
+              ? '<span class="status-badge status-confirmed">Paid in full</span>'
               : '<span class="status-badge status-pending">Down Payment</span>'}</td>
             <td>${statusBadge(p.status)}</td>
             <td>${formatDateTime(p.paid_at)}</td>

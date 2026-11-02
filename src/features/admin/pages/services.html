@@ -76,7 +76,12 @@
         <div class="svc-field" style="margin-bottom:0">
           <label><i class="fas fa-peso-sign"></i> Base Price (₱) <span style="color:var(--color-admin-danger, #dc2626)">*</span></label>
           <input type="number" id="svc_price" placeholder="0.00" min="0" step="0.01">
-          <p class="field-hint">Display only - actual billing uses variants.</p>
+          <p class="field-hint">Starting price shown to customers. Estimate only.</p>
+        </div>
+        <div class="svc-field" style="margin-bottom:0">
+          <label><i class="fas fa-money-bill-wave"></i> Down Payment (₱) <span style="color:var(--color-admin-danger, #dc2626)">*</span></label>
+          <input type="number" id="svc_down_payment" placeholder="e.g. 300" min="1" step="0.01">
+          <p class="field-hint">Paid by the customer at booking. Deducted from the final price.</p>
         </div>
         <div class="svc-field" style="margin-bottom:0">
           <label><i class="fas fa-clock"></i> Est. Duration (hrs)</label>
