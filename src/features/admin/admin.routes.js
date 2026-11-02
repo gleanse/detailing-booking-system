@@ -5,6 +5,7 @@ const router  = express.Router();
 const path    = require('path');
 const fs      = require('fs');
 const pool    = require('../../config/database');
+const { resolveWalkInDownPayment } = require('../../shared/utils/walkin-down-payment');
 
 const PUBLIC_DIR  = path.join(__dirname, '..', '..', '..', 'public');
 const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads', 'services');
@@ -279,6 +280,7 @@ router.post('/bookings/walkin', async (req, res) => {
       booking_date,         // "YYYY-MM-DD" - galing sa frontend
       motorcycle_plate, motorcycle_color, motorcycle_model, motorcycle_description,
       payment_method = 'cash',
+      down_payment,
       is_future_date = false,
     } = req.body;
 
@@ -328,6 +330,22 @@ router.post('/bookings/walkin', async (req, res) => {
     );
     const queue_number = queueResult.rows[0].next_queue;
 
+    const variantResult = await client.query(
+      'SELECT price FROM service_variants WHERE id = $1', [variant_id]
+    );
+    if (!variantResult.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Variant not found.' });
+    }
+    const totalPrice = parseFloat(variantResult.rows[0].price);
+    const payment = resolveWalkInDownPayment({
+      bookingDate: booking_date, downPayment: down_payment, totalPrice,
+    });
+    if (payment.error) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: payment.error });
+    }
+
     // Generate reference code 
     const refCode = 'WI-' + Date.now().toString(36).toUpperCase().slice(-6) +
                     Math.random().toString(36).toUpperCase().slice(-3);
@@ -363,6 +381,17 @@ router.post('/bookings/walkin', async (req, res) => {
         motorcycle_plate || null, motorcycle_color || null,
         motorcycle_model || null, motorcycle_description || null,
         payment_method,
+      ]
+    );
+
+    const amountPaid = payment.amountPaid;
+    await client.query(
+      `INSERT INTO payments (booking_id, amount, amount_paid, remaining_balance, is_fully_paid, status, paid_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        insertResult.rows[0].id, totalPrice, amountPaid, totalPrice - amountPaid,
+        totalPrice - amountPaid === 0, amountPaid > 0 ? 'paid' : 'unpaid',
+        amountPaid > 0 ? new Date() : null,
       ]
     );
 

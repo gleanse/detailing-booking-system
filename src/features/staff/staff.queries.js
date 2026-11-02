@@ -414,7 +414,7 @@ const getNextQueueNumber = async (availabilityId) => {
 
 const getAllActiveServices = async () => {
   const result = await pool.query(
-    `SELECT s.id, s.name, s.price,
+    `SELECT s.id, s.name, s.price, s.down_payment_amount,
       json_agg(
         json_build_object('id', sv.id, 'name', sv.name, 'price', sv.price, 'duration_hours', sv.duration_hours)
         ORDER BY sv.price ASC
@@ -428,7 +428,16 @@ const getAllActiveServices = async () => {
   return result.rows;
 };
 
+const getVariantPrice = async (variantId) => {
+  const result = await pool.query(
+    `SELECT price FROM service_variants WHERE id = $1`,
+    [variantId],
+  );
+  return result.rows[0] ? parseFloat(result.rows[0].price) : null;
+};
+
 const createWalkInBooking = async ({
+  amountPaid = 0,
   serviceId,
   variantId,
   availabilityId,
@@ -486,8 +495,16 @@ const createWalkInBooking = async ({
 
     await client.query(
       `INSERT INTO payments (booking_id, amount, amount_paid, remaining_balance, is_fully_paid, status, paid_at)
-       VALUES ($1, $2, $2, 0, true, 'paid', NOW())`,
-      [booking.id, price],
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        booking.id,
+        price,
+        amountPaid,
+        price - amountPaid,
+        price - amountPaid === 0,
+        amountPaid > 0 ? 'paid' : 'unpaid',
+        amountPaid > 0 ? new Date() : null,
+      ],
     );
 
     await client.query(
@@ -561,6 +578,7 @@ module.exports = {
   getNextQueueNumber,
   getAllActiveServices,
   createWalkInBooking,
+  getVariantPrice,
   logAudit,
   getDoneNotPickedUp,
   getVariantsForService,

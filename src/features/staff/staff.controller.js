@@ -19,6 +19,7 @@ const {
   getNextQueueNumber,
   getAllActiveServices,
   createWalkInBooking,
+  getVariantPrice,
   logAudit,
   getDoneNotPickedUp,
   getVariantsForService,
@@ -28,6 +29,9 @@ const {
   sendBookingDoneEmail,
   sendBookingPickedUpEmail,
 } = require('../../shared/utils/email');
+const {
+  resolveWalkInDownPayment,
+} = require('../../shared/utils/walkin-down-payment');
 
 const getDashboardPage = (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
@@ -444,6 +448,21 @@ const postWalkIn = async (req, res) => {
       });
     }
 
+    const totalPrice = await getVariantPrice(variantId);
+    if (totalPrice === null) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Variant not found' });
+    }
+    const payment = resolveWalkInDownPayment({
+      bookingDate: date,
+      downPayment: req.body.downPayment,
+      totalPrice,
+    });
+    if (payment.error) {
+      return res.status(400).json({ success: false, message: payment.error });
+    }
+
     const queueNumber = await getNextQueueNumber(availability.id);
     const referenceCode =
       'HRC-' + crypto.randomBytes(4).toString('hex').toUpperCase();
@@ -454,6 +473,7 @@ const postWalkIn = async (req, res) => {
     await QRCode.toFile(qrPath, qrData, { width: 300, margin: 2 });
 
     const booking = await createWalkInBooking({
+      amountPaid: payment.amountPaid,
       serviceId,
       variantId,
       availabilityId: availability.id,
