@@ -1117,3 +1117,8 @@
     @apply opacity-60 cursor-default;
   }
 }
+
+@layer components {
+  .status-cancelled { background: rgba(239,68,68,0.12); color: #ef4444; }
+  .status-refunded  { background: rgba(59,130,246,0.12); color: #3b82f6; }
+}

@@ -34,6 +34,7 @@
         <option value="in_progress">In Progress</option>
         <option value="done">Done</option>
         <option value="picked_up">Picked Up</option>
+        <option value="cancelled">Cancelled</option>
       </select>
     </div>
   </div>
@@ -62,7 +63,7 @@
       <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      <p>Select new status for this booking:</p>
+      <p id="modalPrompt">Select new status for this booking:</p>
       <div class="status-options" id="statusOptions"></div>
       <div class="ref-confirm-step" id="refConfirmStep" style="display:none;">
         <label>Confirm Reference Number</label>

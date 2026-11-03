@@ -418,6 +418,8 @@ const AdminLayout = (() => {
       failed:      'fas fa-ban',
       admin:       'fas fa-user-shield',
       staff:       'fas fa-user-cog',
+      cancelled:   'fas fa-ban',
+      refunded:    'fas fa-undo',
     };
     const icon = icons[status] || 'fas fa-circle';
     return `<span class="status-badge status-${status}"><i class="${icon}"></i>${status.replace('_', ' ')}</span>`;

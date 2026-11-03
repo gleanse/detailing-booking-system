@@ -266,7 +266,6 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
           is_walkin:              true,
           payment_method:         'cash',
           is_future_date:         isFut,
-          down_payment:           document.getElementById('wi_down_payment').value.trim() || null,
         }),
       });
       const data = await res.json();
@@ -287,7 +286,6 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
           plate:        document.getElementById('wi_plate').value.trim(),
           model:        document.getElementById('wi_model').value.trim(),
           amount:       varOpt.dataset.price || 0,
-          amountPaid:   parseFloat(document.getElementById('wi_down_payment').value) || 0,
           isFuture:     isFut,
         });
 
@@ -331,8 +329,6 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
     document.getElementById('slipPlate').textContent     = d.plate || '-';
     document.getElementById('slipModel').textContent     = d.model || '-';
     document.getElementById('slipAmount').textContent    = formatCurrency(d.amount);
-    document.getElementById('slipPaid').textContent      = formatCurrency(d.amountPaid);
-    document.getElementById('slipBalance').textContent   = formatCurrency(d.amount - d.amountPaid);
     document.getElementById('slipTypeBadge').textContent = d.isFuture ? 'Pre-booked' : 'Walk-in';
     document.getElementById('slipPlateRow').style.display = d.plate ? '' : 'none';
     document.getElementById('slipModelRow').style.display = d.model ? '' : 'none';

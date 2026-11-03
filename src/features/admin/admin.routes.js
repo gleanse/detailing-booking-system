@@ -161,12 +161,22 @@ router.get('/bookings', async (req, res) => {
       SELECT b.id, b.reference_code, b.guest_name, b.guest_email,
              b.status, b.booking_status, b.payment_method, b.is_walkin,
              a.date AS booking_date, s.name AS service_name,
-             sv.name AS variant_name, sv.price AS variant_price
+             sv.name AS variant_name, sv.price AS variant_price,
+             p.amount_paid, p.status AS payment_status,
+             (b.booking_status = 'confirmed' AND b.status = 'pending'
+              AND a.date > CURRENT_DATE) AS can_cancel,
+             (b.booking_status = 'cancelled' AND p.status = 'paid'
+              AND COALESCE(p.amount_paid, 0) > 0) AS can_refund
       FROM bookings b
       LEFT JOIN availability a      ON a.id  = b.availability_id
       LEFT JOIN services s          ON s.id  = b.service_id
       LEFT JOIN service_variants sv ON sv.id = b.variant_id
-      WHERE b.booking_status = 'confirmed'
+      LEFT JOIN LATERAL (
+        SELECT amount_paid, status FROM payments
+        WHERE booking_id = b.id
+        ORDER BY created_at DESC LIMIT 1
+      ) p ON true
+      WHERE b.booking_status IN ('confirmed', 'cancelled')
     `;
     const params = [];
     if (status) { params.push(status); query += ` AND b.status = $${params.length}`; }
@@ -188,7 +198,7 @@ router.patch('/bookings/:id/status', async (req, res) => {
     const { id }     = req.params;
     const { status } = req.body;
 
-    const allowed = ['confirmed', 'in_progress', 'done', 'picked_up', 'cancelled'];
+    const allowed = ['confirmed', 'in_progress', 'done', 'picked_up'];
     if (!allowed.includes(status)) {
       return res.status(400).json({ success: false, message: `Invalid status: ${status}` });
     }
@@ -265,6 +275,134 @@ router.patch('/bookings/:id/status', async (req, res) => {
   } catch (err) {
     console.error('PATCH /bookings/:id/status error:', err);
     res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/admin/bookings/:id/cancel
+router.post('/bookings/:id/cancel', async (req, res) => {
+  if (req.session?.user?.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Only admins can cancel bookings.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const found = await client.query(
+      `SELECT b.id, b.status, b.booking_status, b.reference_code,
+              (a.date > CURRENT_DATE) AS is_future
+       FROM bookings b
+       LEFT JOIN availability a ON a.id = b.availability_id
+       WHERE b.id = $1
+       FOR UPDATE OF b`,
+      [req.params.id]
+    );
+
+    if (!found.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Booking not found.' });
+    }
+
+    const b = found.rows[0];
+
+    if (b.booking_status !== 'confirmed' || b.status !== 'pending') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Only pending, confirmed bookings can be cancelled.' });
+    }
+
+    if (!b.is_future) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Only bookings scheduled for a future date can be cancelled.' });
+    }
+
+    await client.query(
+      `UPDATE bookings
+          SET status = 'cancelled', booking_status = 'cancelled',
+              updated_by = $2, updated_at = NOW()
+        WHERE id = $1`,
+      [b.id, req.session.user.id]
+    );
+
+    await client.query(
+      `INSERT INTO audit_logs (user_id, action, target_table, target_id, details)
+       VALUES ($1, 'Booking cancelled', 'bookings', $2, $3)`,
+      [req.session.user.id, b.id, `Ref: ${b.reference_code}`]
+    );
+
+    await client.query('COMMIT');
+    res.json({ success: true, message: 'Booking cancelled.' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('POST /bookings/:id/cancel error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// POST /api/admin/bookings/:id/refund (record lang, manual ang refund sa Xendit)
+router.post('/bookings/:id/refund', async (req, res) => {
+  if (req.session?.user?.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Only admins can mark refunds.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const found = await client.query(
+      `SELECT id, booking_status, reference_code FROM bookings WHERE id = $1 FOR UPDATE`,
+      [req.params.id]
+    );
+
+    if (!found.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Booking not found.' });
+    }
+
+    const b = found.rows[0];
+
+    if (b.booking_status !== 'cancelled') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Only cancelled bookings can be refunded.' });
+    }
+
+    const refunded = await client.query(
+      `UPDATE payments
+          SET status = 'refunded', refunded_at = NOW(), refunded_by = $2
+        WHERE booking_id = $1 AND status = 'paid'
+        RETURNING amount_paid`,
+      [b.id, req.session.user.id]
+    );
+
+    if (!refunded.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'No paid down payment to refund (maybe already refunded).' });
+    }
+
+    const total = refunded.rows.reduce((sum, r) => sum + Number(r.amount_paid), 0);
+
+    await client.query(
+      `INSERT INTO audit_logs (user_id, action, target_table, target_id, details)
+       VALUES ($1, 'Marked as refunded', 'bookings', $2, $3)`,
+      [
+        req.session.user.id,
+        b.id,
+        `Ref: ${b.reference_code} | ₱${total.toFixed(2)} (recorded only, manual refund in Xendit)`,
+      ]
+    );
+
+    await client.query('COMMIT');
+    res.json({
+      success: true,
+      message: `Marked as refunded (₱${total.toFixed(2)}). Don't forget to send the actual refund in Xendit.`,
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('POST /bookings/:id/refund error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    client.release();
   }
 });
 
