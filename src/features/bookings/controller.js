@@ -12,6 +12,8 @@ const {
   releaseSlot,
   updateBookingDetails,
   createPayment,
+  getInvoicedPayment,
+  saveInvoiceOnPayment,
   confirmBooking,
   getBookingByPaymentId,
   getBookingByReferenceCode,
@@ -267,6 +269,23 @@ const createInvoice = async (req, res) => {
     );
     const email = booking.guest_email || booking.user_email;
 
+    // a second press inside the window gets the same checkout, after it the payment window is over
+    const existing = await getInvoicedPayment(bookingId);
+    if (existing) {
+      if (existing.status === 'unpaid' && existing.within_window) {
+        return res.json({
+          success: true,
+          invoiceUrl: existing.invoice_url,
+          paymentId: existing.id,
+          reused: true,
+        });
+      }
+      return res.status(409).json({
+        success: false,
+        message: 'Your payment window has ended. Please start a new booking.',
+      });
+    }
+
     // create payment record
     const payment = await createPayment({
       bookingId,
@@ -290,6 +309,12 @@ const createInvoice = async (req, res) => {
       },
     });
 
+    await saveInvoiceOnPayment({
+      paymentId: payment.id,
+      invoiceId: invoice.id,
+      invoiceUrl: invoice.invoiceUrl,
+    });
+
     // payment started so push the hold out, the invoice stops taking payment a minute before it ends
     await pool.query(
       `UPDATE bookings
@@ -298,7 +323,11 @@ const createInvoice = async (req, res) => {
       [bookingId],
     );
 
-    res.json({ success: true, invoiceUrl: invoice.invoiceUrl });
+    res.json({
+      success: true,
+      invoiceUrl: invoice.invoiceUrl,
+      paymentId: payment.id,
+    });
   } catch (error) {
     console.error('Create invoice error:', error);
     res.status(500).json({ success: false, message: error.message });

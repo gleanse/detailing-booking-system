@@ -99,6 +99,7 @@ CREATE TABLE payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID REFERENCES bookings(id),
   xendit_invoice_id VARCHAR(255),
+  invoice_url TEXT, -- hosted checkout link, reused when pay is pressed again
   amount DECIMAL(10,2) NOT NULL, -- estimated total from the booked variant, replaced when staff change the variant or set a final price
   amount_paid DECIMAL(10,2) NOT NULL, -- down payment paid at booking, not changed when the balance is settled at handover
   remaining_balance DECIMAL(10,2) DEFAULT 0, -- balance still owed after the down payment, 0 once settled at handover

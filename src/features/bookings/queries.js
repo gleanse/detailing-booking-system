@@ -195,6 +195,28 @@ const updateBookingDetails = async (
   return result.rows[0] || null;
 };
 
+const getInvoicedPayment = async (bookingId) => {
+  const result = await pool.query(
+    `
+    SELECT id, status, invoice_url,
+           (created_at > NOW() - INTERVAL '14 minutes') AS within_window
+    FROM payments
+    WHERE booking_id = $1 AND invoice_url IS NOT NULL
+    ORDER BY created_at DESC
+    LIMIT 1
+  `,
+    [bookingId],
+  );
+  return result.rows[0] || null;
+};
+
+const saveInvoiceOnPayment = async ({ paymentId, invoiceId, invoiceUrl }) => {
+  await pool.query(
+    `UPDATE payments SET xendit_invoice_id = $2, invoice_url = $3 WHERE id = $1`,
+    [paymentId, invoiceId, invoiceUrl],
+  );
+};
+
 const createPayment = async ({ bookingId, amount, amountPaid }) => {
   const result = await pool.query(
     `
@@ -393,6 +415,8 @@ module.exports = {
   releaseSlot,
   updateBookingDetails,
   createPayment,
+  getInvoicedPayment,
+  saveInvoiceOnPayment,
   confirmBooking,
   getBookingByPaymentId,
   getBookingByReferenceCode,
