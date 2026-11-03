@@ -5,8 +5,6 @@ export const up = (pgm) => {
     down_payment_amount: { type: 'decimal(10,2)' },
   });
 
-  pgm.sql('UPDATE services SET down_payment_amount = 300');
-
   pgm.alterColumn('services', 'down_payment_amount', { notNull: true });
   pgm.addConstraint('services', 'check_down_payment_positive', {
     check: 'down_payment_amount > 0',
