@@ -84,8 +84,8 @@ CREATE TABLE bookings (
   motorcycle_model VARCHAR(100),
   is_walkin BOOLEAN DEFAULT false,
   payment_method VARCHAR(50) DEFAULT 'online', -- online, cash
-  status VARCHAR(50) DEFAULT 'pending', -- pending, in_progress, done, picked_up
-  booking_status VARCHAR(50) DEFAULT 'locked', -- locked, confirmed, expired
+  status VARCHAR(50) DEFAULT 'pending', -- pending, in_progress, done, picked_up, cancelled
+  booking_status VARCHAR(50) DEFAULT 'locked', -- locked, confirmed, expired, cancelled
   qr_code TEXT,
   expires_at TIMESTAMP,
   ip_address VARCHAR(45),
@@ -103,9 +103,11 @@ CREATE TABLE payments (
   amount_paid DECIMAL(10,2) NOT NULL, -- down payment paid at booking, not changed when the balance is settled at handover
   remaining_balance DECIMAL(10,2) DEFAULT 0, -- balance still owed after the down payment, 0 once settled at handover
   is_fully_paid BOOLEAN DEFAULT false,
-  status VARCHAR(50) DEFAULT 'unpaid', -- unpaid, paid, failed
+  status VARCHAR(50) DEFAULT 'unpaid', -- unpaid, paid, failed, refunded
   payment_attempts INT DEFAULT 0,
   paid_at TIMESTAMP,
+  refunded_at TIMESTAMP, -- when the refund was recorded
+  refunded_by UUID REFERENCES users(id) NULL, -- admin who marked it as refunded
   created_at TIMESTAMP DEFAULT NOW()
 );
 

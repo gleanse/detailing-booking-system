@@ -1092,7 +1092,8 @@ router.get('/payments', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT p.id,p.amount,p.amount_paid,p.remaining_balance,
-             p.is_fully_paid,p.status,p.paid_at,b.reference_code,b.guest_name
+             p.is_fully_paid,p.status,p.paid_at,p.refunded_at,
+             b.reference_code,b.guest_name,b.booking_status
       FROM payments p LEFT JOIN bookings b ON b.id=p.booking_id
       ORDER BY p.created_at DESC LIMIT 100
     `);
