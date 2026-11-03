@@ -84,7 +84,6 @@ async function newPaidAttempt(serviceId, availabilityId) {
     bookingId: booking.id,
     amount: 100,
     amountPaid: 100,
-    paymentType: 'full',
   });
   return { bookingId: booking.id, paymentId: payment.id };
 }
