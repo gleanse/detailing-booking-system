@@ -466,9 +466,7 @@ const postWalkIn = async (req, res) => {
     const queueNumber = await getNextQueueNumber(availability.id);
     const referenceCode =
       'HRC-' + crypto.randomBytes(4).toString('hex').toUpperCase();
-    const qrData = `${
-      process.env.BASE_URL || 'http://localhost:3000'
-    }/staff/scan/${referenceCode}`;
+    const qrData = `${process.env.APP_URL}/staff/scan/${referenceCode}`;  
     const qrPath = `public/uploads/qr/${referenceCode}.png`;
     await QRCode.toFile(qrPath, qrData, { width: 300, margin: 2 });
 
