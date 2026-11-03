@@ -72,7 +72,7 @@ Do not edit tables directly in the Supabase dashboard. A change with no migratio
 
 Only for a disposable database with no real data. This deletes all tables and data.
 
-Preferred: let the migration tool undo itself, using the same inline variables as above. The count is the number of migrations currently applied (2 in this example). Increase it if more migrations exist later.
+Preferred: let the migration tool undo itself, using the same inline variables as above. The count is the number of rows in `pgmigrations` (list them with the query above). 
 
 ```bash
 NODE_ENV=production DATABASE_URL='<session pooler url>' npm run migrate down 2

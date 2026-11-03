@@ -8,12 +8,13 @@ Guide for getting this project running on a new machine, plus a reference for co
 - **npm** (comes with Node) - same as above, not required for Option C.
 - **Docker + Docker Compose** - required for Option B (database only) or Option C (fully Dockerized).
 - **PostgreSQL** (native install) - only required if not using Docker for the database at all (Option A).
+- **Redis** - required for sessions, OTP codes and booking abuse prevention. Options B and C start it from `docker-compose.yml`. For Option A, run a local Redis on port 6379 (matches `REDIS_URL` in `.env.example`).
 
 | Option | What runs natively | What runs in Docker |
 |---|---|---|
-| A - Fully native | Node + Postgres | - |
-| B - DB only in Docker | Node | Postgres |
-| C - Fully Dockerized | - | Node + Postgres |
+| A - Fully native | Node + Postgres + Redis | - |
+| B - DB only in Docker | Node | Postgres + Redis |
+| C - Fully Dockerized | - | Node + Postgres + Redis |
 
 ## First-time setup
 

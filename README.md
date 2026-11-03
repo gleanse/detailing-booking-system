@@ -29,6 +29,8 @@ This project supports both a Docker and a non-Docker local dev workflow. See [`S
  
 - [`docs/SETUP.md`](docs/SETUP.md) - dev environment setup and command reference
 - [`docs/EXTERNAL-SERVICES.md`](docs/EXTERNAL-SERVICES.md) - external service configuration (database, storage, payments, email)
+- [`docs/TECH-STACK.md`](docs/TECH-STACK.md) - core stack and supporting libraries
+- [`docs/SUPABASE-DATABASE-GUIDE.md`](docs/SUPABASE-DATABASE-GUIDE.md) - production migrations, rollback and troubleshooting
 
 ## Status
 

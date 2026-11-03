@@ -15,9 +15,9 @@
 
 ## Session Store, OTP, & Abuse Prevention - Upstash Redis
 - Dashboard: https://console.upstash.com
-- `.env` variables: `UPSTASH_REDIS_URL`, `UPSTASH_REDIS_TOKEN`
+- `.env` variable: `REDIS_URL` (the Upstash `rediss://` connection string in production, `redis://localhost:6379` locally, `redis://redis:6379` inside Docker)
 - Used for:
-  1. Session storage (all logged-in users - customer/staff/admin) - see src/app.js UpstashSessionStore
+  1. Session storage (all logged-in users - customer/staff/admin) - see src/app.js RedisSessionStore 
   2. OTP codes for password reset & email change (10 min TTL)
   3. Booking abuse prevention - temporary 2-hour block after 3 cancelled bookings within 1 hour (per IP and per user)
 - Free tier note: AUTO-DELETES after 14 days inactivity - recreate if needed, update .env after
@@ -27,7 +27,7 @@
 ## Payments - Xendit
 - Dashboard: https://dashboard.xendit.co
 - Used for: booking payments
-- `.env` variables: `XENDIT_SECRET_KEY`, `XENDIT_PUBLIC_KEY`
+- `.env` variables: `XENDIT_SECRET_KEY`, `XENDIT_WEBHOOK_TOKEN` (the callback verification token from the Xendit dashboard, webhooks with a wrong token are refused with 401)
 - Currently using TEST/sandbox keys
 - Webhook URL must be manually set in Xendit dashboard (Settings > Webhooks/Callbacks)
   - Format: `{APP_URL}/api/booking/webhook`
