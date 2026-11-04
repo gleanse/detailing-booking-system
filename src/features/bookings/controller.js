@@ -10,6 +10,7 @@ const {
   getAvailableDates,
   lockSlot,
   releaseSlot,
+  hasStartedPayment,
   updateBookingDetails,
   createPayment,
   getInvoicedPayment,
@@ -123,6 +124,16 @@ const releaseBookingSlot = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: 'Missing bookingId' });
+    }
+
+    // the customer may still pay an open invoice, so a started payment keeps the booking
+    if (await hasStartedPayment(bookingId)) {
+      return res.status(409).json({
+        success: false,
+        paymentStarted: true,
+        message:
+          'Your payment is already in progress, so this reservation cannot be cancelled. If you did not mean to pay, it will be released automatically when the payment window ends.',
+      });
     }
 
     const booking = await releaseSlot(bookingId);

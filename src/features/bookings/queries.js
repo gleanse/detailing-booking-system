@@ -146,11 +146,26 @@ const releaseSlot = async (bookingId) => {
     SET booking_status = 'expired'
     WHERE id = $1
     AND booking_status = 'locked'
+    AND NOT EXISTS (
+      SELECT 1 FROM payments WHERE payments.booking_id = bookings.id
+    )
     RETURNING id, ip_address, user_id
   `,
     [bookingId],
   );
   return result.rows[0] || null;
+};
+
+const hasStartedPayment = async (bookingId) => {
+  const result = await pool.query(
+    `SELECT 1
+     FROM bookings b
+     WHERE b.id = $1
+     AND b.booking_status = 'locked'
+     AND EXISTS (SELECT 1 FROM payments p WHERE p.booking_id = b.id)`,
+    [bookingId],
+  );
+  return result.rowCount > 0;
 };
 
 const updateBookingDetails = async (
@@ -443,6 +458,7 @@ module.exports = {
   getAvailableDates,
   lockSlot,
   releaseSlot,
+  hasStartedPayment,
   updateBookingDetails,
   createPayment,
   getInvoicedPayment,
