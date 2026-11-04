@@ -10,7 +10,7 @@ function getRecommendedArrival(queueNumber, totalBookings) {
 const params = new URLSearchParams(window.location.search);
 const externalId = params.get('external_id');
 
-async function loadBookingDetails() {
+async function loadBookingDetails(quiet = false) {
   if (!externalId) {
     document.getElementById('loadingCard').classList.add('hidden');
     document.getElementById('errorCard').classList.remove('hidden');
@@ -26,7 +26,10 @@ async function loadBookingDetails() {
     const b = data.data;
 
     // webhook has not confirmed the booking yet so the caller keeps waiting
-    if (b.queue_number === null) return 'pending';
+    if (b.queue_number === null) {
+      pendingBooking = b;
+      return 'pending';
+    }
 
     // booking details
     document.getElementById('referenceCode').textContent = b.reference_code;
@@ -80,10 +83,12 @@ async function loadBookingDetails() {
 
     // show main content
     document.getElementById('loadingCard').classList.add('hidden');
+    document.getElementById('pendingCard').classList.add('hidden');
     document.getElementById('mainContent').classList.remove('hidden');
     document.getElementById('mainContent').classList.add('grid');
   } catch (err) {
     console.error(err);
+    if (quiet) return 'pending';
     document.getElementById('loadingCard').classList.add('hidden');
     document.getElementById('errorCard').classList.remove('hidden');
   }
@@ -91,6 +96,10 @@ async function loadBookingDetails() {
 
 const POLL_INTERVAL_MS = 2000;
 const POLL_MAX_MS = 60000;
+const LATE_POLL_INTERVAL_MS = 10000;
+const LATE_POLL_MAX_MS = 10 * 60 * 1000;
+
+let pendingBooking = null;
 
 const STATUS_LINES = [
   'Confirming your payment',
@@ -134,28 +143,48 @@ function stopConfirming() {
   statusTimer = null;
 }
 
+function showDelayed() {
+  document.getElementById('loadingCard').classList.add('hidden');
+  document.getElementById('pendingPaymentId').textContent = externalId;
+  const who = [pendingBooking?.guest_name, pendingBooking?.guest_email]
+    .filter(Boolean)
+    .join(' - ');
+  if (who) {
+    const el = document.getElementById('pendingWho');
+    el.textContent = who;
+    el.classList.remove('hidden');
+  }
+  const pending = document.getElementById('pendingCard');
+  pending.classList.remove('hidden');
+  pending.classList.add('flex');
+}
+
 async function waitForConfirmation() {
   const startedAt = Date.now();
+  let delayed = false;
 
   while (true) {
-    const result = await loadBookingDetails();
+    const result = await loadBookingDetails(pendingBooking !== null);
     if (result !== 'pending') {
       stopConfirming();
       return;
     }
 
-    showConfirming();
+    const elapsed = Date.now() - startedAt;
 
-    if (Date.now() - startedAt >= POLL_MAX_MS) {
-      document.getElementById('loadingCard').classList.add('hidden');
+    if (delayed && elapsed >= LATE_POLL_MAX_MS) return;
+
+    if (!delayed && elapsed >= POLL_MAX_MS) {
       stopConfirming();
-      const pending = document.getElementById('pendingCard');
-      pending.classList.remove('hidden');
-      pending.classList.add('flex');
-      return;
+      showDelayed();
+      delayed = true;
+    } else if (!delayed) {
+      showConfirming();
     }
 
-    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+    await new Promise((resolve) =>
+      setTimeout(resolve, delayed ? LATE_POLL_INTERVAL_MS : POLL_INTERVAL_MS),
+    );
   }
 }
 

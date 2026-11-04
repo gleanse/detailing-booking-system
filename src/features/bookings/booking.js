@@ -520,13 +520,13 @@ document.addEventListener('visibilitychange', async () => {
       if (!json.success) return; // don't do anything if request failed
       if (json.data.booking_status === 'expired') {
         stopTimer();
-        clearSession();
         state.bookingId = null;
         state.expiresAt = null;
         showModal(
           'Slot No Longer Available',
           'Your reserved slot was released. Please select a new date.',
           () => {
+            clearSession();
             showStep(2);
             loadDates();
           },

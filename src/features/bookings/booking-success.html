@@ -113,7 +113,16 @@
     <div id="pendingCard" class="hidden flex-col items-center justify-center py-32 text-center animate-fadeUp">
       <p class="text-green-500 font-bold text-6xl mb-2" style="font-family:'Bebas Neue',sans-serif;">Payment Received</p>
       <p class="text-white/60 font-semibold mb-1">Your confirmation is taking longer than usual</p>
-      <p class="text-white/30 text-sm mb-6">Please check your email in a few minutes or contact the shop.</p>
+      <p class="text-white/40 text-sm max-w-sm mb-6">Your payment went through. A confirmation email will arrive once it completes. Please do not pay again, and keep this page open because it updates by itself.</p>
+      <div class="w-full max-w-sm border border-white/10 rounded-lg p-4 mb-6">
+        <p class="text-white/40 text-xs uppercase tracking-widest mb-1">Payment ID</p>
+        <p id="pendingPaymentId" class="text-white text-sm font-mono break-all"></p>
+        <p id="pendingWho" class="hidden text-white/40 text-xs mt-2"></p>
+      </div>
+      <p class="text-white/40 text-sm max-w-sm mb-4">Need help? Message the shop and quote the payment ID above.</p>
+      <a href="https://www.facebook.com/profile.php?id=100085045826929" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 border border-white/20 text-white text-sm px-5 py-3 rounded-lg">
+        <i class="ph ph-messenger-logo"></i> Message us on Facebook
+      </a>
     </div>
 
     <!-- MAIN CONTENT -->
