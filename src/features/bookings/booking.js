@@ -15,6 +15,8 @@ let state = {
 
 const SESSION_KEY = 'hrc_booking_state';
 const FORM_KEY = 'hrc_booking_form';
+const INVOICE_KEY = 'hrc_booking_invoice';
+const INVOICE_REUSE_MS = 14 * 60 * 1000;
 
 // Session storage
 function saveSession() {
@@ -35,6 +37,7 @@ function saveSession() {
 function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(FORM_KEY);
+  sessionStorage.removeItem(INVOICE_KEY);
 }
 
 function loadSession() {
@@ -53,7 +56,26 @@ function loadSession() {
   }
 }
 
-// Utils
+function saveInvoice(invoiceUrl) {
+  sessionStorage.setItem(
+    INVOICE_KEY,
+    JSON.stringify({ bookingId: state.bookingId, invoiceUrl, at: Date.now() }),
+  );
+}
+
+// the saved link only counts for this booking and while the invoice is still open
+function getSavedInvoice() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(INVOICE_KEY));
+    if (!saved || saved.bookingId !== state.bookingId) return null;
+    if (Date.now() - saved.at > INVOICE_REUSE_MS) return null;
+    return saved.invoiceUrl;
+  } catch {
+    return null;
+  }
+}
+
+// utils
 function showStep(step) {
   document
     .querySelectorAll('.step-content')
@@ -445,22 +467,24 @@ function stopTimer() {
   }
 }
 
+async function releaseAndRestart() {
+  clearSession();
+  await fetch('/api/booking/release', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bookingId: state.bookingId }),
+  });
+  state.bookingId = null;
+  state.expiresAt = null;
+  showStep(2);
+  loadDates();
+}
+
 function handleTimerExpired() {
   showModal(
     'Time Expired',
     'Your slot reservation has expired. Select a new date to continue.',
-    async () => {
-      clearSession();
-      await fetch('/api/booking/release', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingId: state.bookingId }),
-      });
-      state.bookingId = null;
-      state.expiresAt = null;
-      showStep(2);
-      loadDates();
-    },
+    releaseAndRestart,
     'Select new date',
     true,
   );
@@ -685,6 +709,7 @@ async function loadService() {
     }
 
     showStep(restored.step);
+    updatePayButton();
     autofillDone.then(restoreForm);
     // a refresh keeps the catcher when we're past step 1
     if (restored.step > 1) ensureCatcher();
@@ -1220,19 +1245,35 @@ document.getElementById('btn-step4-back').addEventListener('click', () => {
 const estimateCheck = document.getElementById('estimate-check');
 const payBtn = document.getElementById('btn-pay');
 
+// once a checkout link exists the customer continues it and needs no checkbox
 function updatePayButton() {
-  payBtn.disabled = !estimateCheck.checked;
-  payBtn.classList.toggle('opacity-50', !estimateCheck.checked);
+  const resuming = Boolean(getSavedInvoice());
+  estimateCheck.closest('label').classList.toggle('hidden', resuming);
+  payBtn.innerHTML = resuming
+    ? '<i class="ph ph-arrow-right"></i> Continue Payment'
+    : '<i class="ph ph-lock"></i> Proceed to Payment';
+  payBtn.disabled = !resuming && !estimateCheck.checked;
+  payBtn.classList.toggle('opacity-50', payBtn.disabled);
 }
 
 estimateCheck.addEventListener('change', updatePayButton);
 
+// the phone brings the page back as it was when returning from checkout, so reset the button
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) updatePayButton();
+});
+
 document.getElementById('btn-pay').addEventListener('click', async () => {
+  const savedInvoice = getSavedInvoice();
+  if (savedInvoice) {
+    window.location.href = savedInvoice;
+    return;
+  }
   if (!estimateCheck.checked) return;
   const btn = document.getElementById('btn-pay');
 
   btn.disabled = true;
-  btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Processing...';
+  btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Redirecting...';
 
   const res = await fetch('/api/booking/pay', {
     method: 'POST',
@@ -1242,12 +1283,41 @@ document.getElementById('btn-pay').addEventListener('click', async () => {
 
   const json = await res.json();
   if (json.success) {
-    clearSession();
+    saveInvoice(json.invoiceUrl);
+    if (json.reused) {
+      showModal(
+        'Payment Page Still Open',
+        'Your payment page is still open. We will take you back to it.',
+        () => {
+          window.location.href = json.invoiceUrl;
+        },
+        'Continue',
+        true,
+      );
+      return;
+    }
     window.location.href = json.invoiceUrl;
-  } else {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="ph ph-lock"></i> Proceed to Payment';
+    return;
   }
+
+  updatePayButton();
+  if (res.status === 409) {
+    showModal(
+      'Payment Window Ended',
+      json.message,
+      releaseAndRestart,
+      'Select new date',
+      true,
+    );
+    return;
+  }
+  showModal(
+    'Payment Not Started',
+    json.message || 'Something went wrong. Please try again.',
+    () => {},
+    'Okay',
+    true,
+  );
 });
 
 // Mobile menu
