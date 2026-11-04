@@ -4,7 +4,7 @@ const pool = require('../../config/database');
 const { xenditInvoiceClient } = require('../../config/xendit');
 const redis = require('../../config/redis');
 const { incrementAbuseCounter } = require('../../shared/utils/cron');
-const { sendBookingConfirmationEmail } = require('../../shared/utils/email');
+const { confirmPaidBooking } = require('./confirm');
 const {
   getServiceById,
   getAvailableDates,
@@ -14,7 +14,6 @@ const {
   createPayment,
   getInvoicedPayment,
   saveInvoiceOnPayment,
-  confirmBooking,
   getBookingByPaymentId,
   getBookingByReferenceCode,
 } = require('./queries');
@@ -359,22 +358,11 @@ const handleWebhook = async (req, res) => {
     }
 
     const payment = paymentResult.rows[0];
-    const confirmed = await confirmBooking({
+    await confirmPaidBooking({
       bookingId: payment.booking_id,
+      paymentId: external_id,
       xenditInvoiceId,
     });
-
-    // an earlier delivery already confirmed it, so skip the email
-    if (!confirmed) return res.json({ success: true });
-
-    // fetch full booking details then send confirmation email
-    const bookingDetails = await getBookingByPaymentId(external_id);
-    // a failed email must not fail the webhook, xendit would retry it
-    try {
-      await sendBookingConfirmationEmail(bookingDetails);
-    } catch (emailError) {
-      console.error('Confirmation email error:', emailError);
-    }
 
     res.json({ success: true });
   } catch (error) {

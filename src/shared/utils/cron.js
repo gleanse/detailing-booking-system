@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const pool = require('../../config/database');
 const redis = require('../../config/redis');
+const { reconcileHeldBookings } = require('../../features/bookings/reconcile');
 
 const ABUSE_WINDOW_SECONDS = 60 * 60; // 1 hour window for counting abandons
 const ABUSE_BLOCK_SECONDS = 60 * 60 * 2; // 2 hour block
@@ -30,29 +31,64 @@ const incrementAbuseCounter = async (ip, userId) => {
   }
 };
 
-const startCronJobs = () => {
-  // runs every minute checks for expired locked bookings
-  cron.schedule('* * * * *', async () => {
+const expireLockedBookings = async () => {
+  const result = await pool.query(
+    `UPDATE bookings
+     SET booking_status = 'expired'
+     WHERE booking_status = 'locked'
+     AND expires_at < NOW()
+     AND NOT EXISTS (
+       SELECT 1 FROM payments WHERE payments.booking_id = bookings.id
+     )
+     RETURNING id, ip_address, user_id`,
+  );
+
+  for (const booking of result.rows) {
+    await incrementAbuseCounter(booking.ip_address, booking.user_id);
+  }
+
+  return result.rows.length;
+};
+
+const reconcileBookings = () =>
+  reconcileHeldBookings({ onExpired: incrementAbuseCounter });
+
+// a run that is still going makes the next tick skip instead of overlapping
+const runOnce = (name, job) => {
+  let running = false;
+  return async () => {
+    if (running) return;
+    running = true;
     try {
-      const result = await pool.query(
-        `UPDATE bookings
-         SET booking_status = 'expired'
-         WHERE booking_status = 'locked'
-         AND expires_at < NOW()
-         RETURNING id, ip_address, user_id`,
-      );
-
-      if (result.rows.length > 0) {
-        console.log(`[CRON] Expired ${result.rows.length} locked booking(s)`);
-
-        for (const booking of result.rows) {
-          await incrementAbuseCounter(booking.ip_address, booking.user_id);
-        }
-      }
+      await job();
     } catch (error) {
-      console.error('[CRON] Error expiring bookings:', error.message);
+      console.error(`[CRON] ${name} error:`, error.message);
+    } finally {
+      running = false;
     }
-  });
+  };
+};
+
+const startCronJobs = () => {
+  // runs every minute expires locked bookings that have no payment started
+  cron.schedule(
+    '* * * * *',
+    runOnce('Expiry', async () => {
+      const count = await expireLockedBookings();
+      if (count > 0) console.log(`[CRON] Expired ${count} locked booking(s)`);
+    }),
+  );
+
+  // runs every minute asks xendit about held bookings that have a payment started
+  cron.schedule(
+    '* * * * *',
+    runOnce('Reconcile', async () => {
+      const summary = await reconcileBookings();
+      if (summary.confirmed || summary.expired || summary.failed) {
+        console.log('[CRON] Reconciled held bookings', summary);
+      }
+    }),
+  );
 
   // runs every SUNDAY midnight purges expired bookings older than 30 days
   cron.schedule('0 0 * * 0', async () => {
@@ -75,4 +111,9 @@ const startCronJobs = () => {
   console.log('[CRON] Jobs started');
 };
 
-module.exports = { startCronJobs, incrementAbuseCounter };
+module.exports = {
+  startCronJobs,
+  incrementAbuseCounter,
+  expireLockedBookings,
+  reconcileBookings,
+};

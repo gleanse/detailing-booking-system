@@ -250,7 +250,7 @@ const confirmBooking = async ({ bookingId, xenditInvoiceId }) => {
         AND booking_status = 'confirmed'
       ),
       updated_at = NOW()
-    WHERE id = $1 AND booking_status <> 'confirmed'
+    WHERE id = $1 AND booking_status IN ('locked', 'expired')
     RETURNING *
   `,
     [bookingId],
@@ -408,6 +408,36 @@ const getBookingByReferenceCode = async (referenceCode) => {
   return { ...booking, status_logs: logsResult.rows };
 };
 
+const getHeldBookingsWithPayments = async () => {
+  const result = await pool.query(
+    `SELECT b.id, b.ip_address, b.user_id
+     FROM bookings b
+     WHERE b.booking_status = 'locked'
+     AND b.expires_at < NOW()
+     AND EXISTS (SELECT 1 FROM payments p WHERE p.booking_id = b.id)`,
+  );
+  return result.rows;
+};
+
+const getPaymentsByBooking = async (bookingId) => {
+  const result = await pool.query(
+    'SELECT id FROM payments WHERE booking_id = $1',
+    [bookingId],
+  );
+  return result.rows;
+};
+
+const expireHeldBooking = async (bookingId) => {
+  const result = await pool.query(
+    `UPDATE bookings
+     SET booking_status = 'expired'
+     WHERE id = $1 AND booking_status = 'locked'
+     RETURNING id`,
+    [bookingId],
+  );
+  return result.rowCount > 0;
+};
+
 module.exports = {
   getServiceById,
   getAvailableDates,
@@ -418,6 +448,9 @@ module.exports = {
   getInvoicedPayment,
   saveInvoiceOnPayment,
   confirmBooking,
+  getHeldBookingsWithPayments,
+  getPaymentsByBooking,
+  expireHeldBooking,
   getBookingByPaymentId,
   getBookingByReferenceCode,
 };
