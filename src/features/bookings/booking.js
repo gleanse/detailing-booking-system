@@ -56,10 +56,15 @@ function loadSession() {
   }
 }
 
-function saveInvoice(invoiceUrl) {
+function saveInvoice(invoiceUrl, paymentId) {
   sessionStorage.setItem(
     INVOICE_KEY,
-    JSON.stringify({ bookingId: state.bookingId, invoiceUrl, at: Date.now() }),
+    JSON.stringify({
+      bookingId: state.bookingId,
+      invoiceUrl,
+      paymentId,
+      at: Date.now(),
+    }),
   );
 }
 
@@ -70,6 +75,17 @@ function getSavedInvoice() {
     if (!saved || saved.bookingId !== state.bookingId) return null;
     if (Date.now() - saved.at > INVOICE_REUSE_MS) return null;
     return saved.invoiceUrl;
+  } catch {
+    return null;
+  }
+}
+
+// the payment id of the checkout this tab started, used to open the confirmation after paying
+function getSavedPaymentId(bookingId) {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(INVOICE_KEY));
+    if (!saved || saved.bookingId !== bookingId) return null;
+    return saved.paymentId || null;
   } catch {
     return null;
   }
@@ -589,6 +605,12 @@ async function tryRestoreSession() {
       return 'expired';
     }
 
+    // a paid booking opens its confirmation page when this tab started the payment
+    if (res.ok && json.success && json.data.booking_status === 'confirmed') {
+      const paymentId = getSavedPaymentId(saved.bookingId);
+      if (paymentId) return { paymentId };
+    }
+
     // the server answered and the booking is gone or confirmed
     if (!res.ok || !json.success || json.data.booking_status !== 'locked') {
       clearSession();
@@ -663,6 +685,15 @@ async function loadService() {
   document.getElementById('service-name').textContent = state.service.name;
 
   const restored = await tryRestoreSession();
+
+  // this tab paid for the booking, so show its confirmation instead of a blank step 1
+  if (restored && restored.paymentId) {
+    clearSession();
+    window.location.replace(
+      `/booking/success?external_id=${restored.paymentId}`,
+    );
+    return;
+  }
 
   // could not reach the server, the saved booking is kept so show the error page
   if (restored === 'unreachable') {
@@ -1258,9 +1289,9 @@ function updatePayButton() {
 
 estimateCheck.addEventListener('change', updatePayButton);
 
-// the phone brings the page back as it was when returning from checkout, so reset the button
+// the phone brings the page back as it was when returning from checkout, so reload to check the booking again
 window.addEventListener('pageshow', (event) => {
-  if (event.persisted) updatePayButton();
+  if (event.persisted) location.reload();
 });
 
 document.getElementById('btn-pay').addEventListener('click', async () => {
@@ -1275,15 +1306,29 @@ document.getElementById('btn-pay').addEventListener('click', async () => {
   btn.disabled = true;
   btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Redirecting...';
 
-  const res = await fetch('/api/booking/pay', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bookingId: state.bookingId }),
-  });
+  let res;
+  let json;
+  try {
+    res = await fetch('/api/booking/pay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId: state.bookingId }),
+    });
+    json = await res.json();
+  } catch {
+    updatePayButton();
+    showModal(
+      'Connection Problem',
+      'We could not reach the server. Check your connection and try again.',
+      () => {},
+      'Okay',
+      true,
+    );
+    return;
+  }
 
-  const json = await res.json();
   if (json.success) {
-    saveInvoice(json.invoiceUrl);
+    saveInvoice(json.invoiceUrl, json.paymentId);
     if (json.reused) {
       showModal(
         'Payment Page Still Open',
