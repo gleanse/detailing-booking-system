@@ -1,408 +1,464 @@
- AdminLayout.init({ activePage: 'services', breadcrumb: 'Services' });
+AdminLayout.init({ activePage: 'services', breadcrumb: 'Services' });
 
-  const { formatCurrency, skeletonCards } = AdminLayout;
+const { formatCurrency, skeletonCards } = AdminLayout;
 
-  //  State 
-  let editingServiceId  = null;
-  let variantsServiceId = null;
-  let deletingServiceId = null;
-  let currentImageBase64 = null; // base64 of newly selected file
-  let clearImageFlag     = false; // user clicked "remove image"
+// ── State ──
+let editingServiceId   = null;
+let variantsServiceId  = null;
+let deletingServiceId  = null;
+let currentImageBase64 = null; // base64 of newly selected file
+let clearImageFlag     = false; // user clicked "remove image"
+let editingVariantId   = null;
+let variantsCache      = [];
 
-  //  Image upload handling 
-  const imgFileInput    = document.getElementById('svc_image_file');
-  const imgUploadArea   = document.getElementById('imgUploadArea');
-  const imgPlaceholder  = document.getElementById('imgPlaceholder');
-  const imgPreviewWrap  = document.getElementById('imgPreviewWrap');
-  const imgPreview      = document.getElementById('imgPreview');
-  const imgClearBtn     = document.getElementById('imgClearBtn');
+// ── Image upload handling ──
+const imgFileInput   = document.getElementById('svc_image_file');
+const imgUploadArea  = document.getElementById('imgUploadArea');
+const imgPlaceholder = document.getElementById('imgPlaceholder');
+const imgPreviewWrap = document.getElementById('imgPreviewWrap');
+const imgPreview     = document.getElementById('imgPreview');
+const imgClearBtn    = document.getElementById('imgClearBtn');
 
-  imgFileInput.addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file) return;
+imgFileInput.addEventListener('change', function () {
+  const file = this.files[0];
+  if (!file) return;
 
-    // 5MB limit
-    if (file.size > 5 * 1024 * 1024) {
-      showModalMsg('serviceModalMsg', 'error', 'Image too large. Please choose a file under 5MB.');
-      this.value = '';
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      currentImageBase64 = e.target.result;
-      clearImageFlag = false;
-      setImagePreview(e.target.result);
-    };
-    reader.readAsDataURL(file);
-  });
-
-  function setImagePreview(src) {
-    imgPreview.src = src;
-    imgPreviewWrap.classList.add('visible');
-    imgPlaceholder.style.display = 'none';
-    imgUploadArea.classList.add('has-image');
-    imgClearBtn.style.display = 'inline-flex';
+  // 5MB limit
+  if (file.size > 5 * 1024 * 1024) {
+    showModalMsg('serviceModalMsg', 'error', 'Image too large. Please choose a file under 5MB.');
+    this.value = '';
+    return;
   }
 
-  function clearImagePreview() {
-    imgPreview.src = '';
-    imgPreviewWrap.classList.remove('visible');
-    imgPlaceholder.style.display = '';
-    imgUploadArea.classList.remove('has-image');
-    imgClearBtn.style.display = 'none';
-    imgFileInput.value = '';
-    currentImageBase64 = null;
-  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    currentImageBase64 = e.target.result;
+    clearImageFlag = false;
+    setImagePreview(e.target.result);
+  };
+  reader.readAsDataURL(file);
+});
 
-  imgClearBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    clearImageFlag = true;
+function setImagePreview(src) {
+  imgPreview.src = src;
+  imgPreviewWrap.classList.add('visible');
+  imgPlaceholder.style.display = 'none';
+  imgUploadArea.classList.add('has-image');
+  imgClearBtn.style.display = 'inline-flex';
+}
+
+function clearImagePreview() {
+  imgPreview.src = '';
+  imgPreviewWrap.classList.remove('visible');
+  imgPlaceholder.style.display = '';
+  imgUploadArea.classList.remove('has-image');
+  imgClearBtn.style.display = 'none';
+  imgFileInput.value = '';
+  currentImageBase64 = null;
+}
+
+imgClearBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  clearImageFlag = true;
+  clearImagePreview();
+});
+
+// Reset image state when modal opens
+function resetImageState(existingImageUrl) {
+  clearImageFlag     = false;
+  currentImageBase64 = null;
+  imgFileInput.value = '';
+
+  if (existingImageUrl) {
+    setImagePreview(existingImageUrl);
+  } else {
     clearImagePreview();
-  });
-
-  // Reset image state when modal opens
-  function resetImageState(existingImageUrl) {
-    clearImageFlag     = false;
-    currentImageBase64 = null;
-    imgFileInput.value = '';
-
-    if (existingImageUrl) {
-      setImagePreview(existingImageUrl);
-    } else {
-      clearImagePreview();
-    }
   }
+}
 
-  //  Helpers 
-  function showModalMsg(msgId, type, text) {
-    const el = document.getElementById(msgId);
-    el.className = 'modal-msg ' + type;
-    el.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${text}`;
-  }
-  function hideModalMsg(msgId) {
-    document.getElementById(msgId).className = 'modal-msg';
-  }
-  function openOverlay(id)  { document.getElementById(id).classList.remove('hidden'); }
-  function closeOverlay(id) { document.getElementById(id).classList.add('hidden'); }
-  function escHtml(str) {
-    return String(str||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-  }
+// ── Helpers ──
+function showModalMsg(msgId, type, text) {
+  const el = document.getElementById(msgId);
+  el.className = 'modal-msg ' + type;
+  el.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${text}`;
+}
+function hideModalMsg(msgId) {
+  document.getElementById(msgId).className = 'modal-msg';
+}
+function openOverlay(id)  { document.getElementById(id).classList.remove('hidden'); }
+function closeOverlay(id) { document.getElementById(id).classList.add('hidden'); }
+function escHtml(str) {
+  return String(str||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
 
-  //  Load Services 
-  async function loadServices() {
-    const grid = document.getElementById('servicesGrid');
-    const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
+// ── Load Services ──
+async function loadServices() {
+  const grid = document.getElementById('servicesGrid');
+  const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
     grid.innerHTML = skeletonCards(3);
-    });
+  });
 
-    try {
-      const res  = await fetch('/api/admin/services');
-      const data = await res.json();
-      cancelSkeleton();
-      if (!data.success || !data.data.length) {
-        grid.innerHTML = `<div class="full-width"><div class="empty-state">
-          <i class="fas fa-spray-can"></i><p>No services yet. Add your first service.</p>
-        </div></div>`;
-        return;
-      }
-
-      grid.innerHTML = data.data.map(s => `
-        <div class="service-card">
-          <div class="service-card-header">
-            <span class="service-name">${s.name}</span>
-            <span class="service-price">from ${formatCurrency(s.price)}</span>
-          </div>
-          <div class="service-card-body">
-            <p class="service-desc">Down payment: ${formatCurrency(s.down_payment_amount)}</p>
-            ${s.description ? `<p class="service-desc">${s.description}</p>` : ''}
-            ${s.variants && s.variants.length
-              ? `<ul class="variant-list">
-                  ${s.variants.map(v => `
-                    <li class="variant-item">
-                      <span>${v.name}</span>
-                      <strong>${formatCurrency(v.price)}</strong>
-                    </li>`).join('')}
-                </ul>`
-              : '<p class="service-desc" style="font-style:italic;color:var(--color-admin-dim);">No variants yet</p>'}
-          </div>
-          <div class="service-card-footer">
-            <button class="action-btn"
-              data-id="${s.id}"
-              data-name="${escHtml(s.name)}"
-              data-desc="${escHtml(s.description||'')}"
-              data-price="${s.price}"
-              data-down-payment="${s.down_payment_amount}"
-              data-duration="${s.duration_hours||''}"
-              data-img="${escHtml(s.image_url||'')}"
-              onclick="openEditService(this)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button class="action-btn"
-              onclick="openVariants('${s.id}','${escHtml(s.name)}')">
-              <i class="fas fa-tags"></i> Variants
-            </button>
-            <button class="action-btn danger"
-              onclick="openDelete('${s.id}','${escHtml(s.name)}')">
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>`).join('');
-    } catch (err) {
-      cancelSkeleton();
-      console.error('Load services error:', err);
+  try {
+    const res  = await fetch('/api/admin/services');
+    const data = await res.json();
+    cancelSkeleton();
+    if (!data.success || !data.data.length) {
       grid.innerHTML = `<div class="full-width"><div class="empty-state">
-        <i class="fas fa-exclamation-triangle"></i><p>Failed to load services</p>
+        <i class="fas fa-spray-can"></i><p>No services yet. Add your first service.</p>
       </div></div>`;
+      return;
     }
+
+    grid.innerHTML = data.data.map(s => `
+      <div class="service-card">
+        <div class="service-card-header">
+          <span class="service-name">${s.name}</span>
+          <span class="service-price">from ${formatCurrency(s.price)}</span>
+        </div>
+        <div class="service-card-body">
+          <p class="service-desc">Down payment: ${formatCurrency(s.down_payment_amount)}</p>
+          ${s.description ? `<p class="service-desc">${s.description}</p>` : ''}
+          ${s.variants && s.variants.length
+            ? `<ul class="variant-list">
+                ${s.variants.map(v => `
+                  <li class="variant-item">
+                    <span>${v.name}</span>
+                    <strong>${formatCurrency(v.price)}</strong>
+                  </li>`).join('')}
+              </ul>`
+            : '<p class="service-desc" style="font-style:italic;color:var(--color-admin-dim);">No variants yet</p>'}
+        </div>
+        <div class="service-card-footer">
+          <button class="action-btn"
+            data-id="${s.id}"
+            data-name="${escHtml(s.name)}"
+            data-desc="${escHtml(s.description||'')}"
+            data-price="${s.price}"
+            data-down-payment="${s.down_payment_amount}"
+            data-duration="${s.duration_hours||''}"
+            data-img="${escHtml(s.image_url||'')}"
+            onclick="openEditService(this)">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button class="action-btn"
+            onclick="openVariants('${s.id}','${escHtml(s.name)}')">
+            <i class="fas fa-tags"></i> Variants
+          </button>
+          <button class="action-btn danger"
+            onclick="openDelete('${s.id}','${escHtml(s.name)}')">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+      </div>`).join('');
+  } catch (err) {
+    cancelSkeleton();
+    console.error('Load services error:', err);
+    grid.innerHTML = `<div class="full-width"><div class="empty-state">
+      <i class="fas fa-exclamation-triangle"></i><p>Failed to load services</p>
+    </div></div>`;
+  }
+}
+
+// ── ADD SERVICE ──
+document.getElementById('addServiceBtn').addEventListener('click', () => {
+  editingServiceId = null;
+  document.getElementById('serviceModalTitle').innerHTML = '<i class="fas fa-spray-can"></i> Add Service';
+  document.getElementById('serviceModalSaveLabel').textContent = 'Save Service';
+  document.getElementById('svc_name').value         = '';
+  document.getElementById('svc_description').value  = '';
+  document.getElementById('svc_price').value        = '';
+  document.getElementById('svc_down_payment').value = '';
+  document.getElementById('svc_duration').value     = '';
+  resetImageState(null);
+  hideModalMsg('serviceModalMsg');
+  openOverlay('serviceModal');
+  document.getElementById('svc_name').focus();
+});
+
+// ── EDIT SERVICE ──
+function openEditService(btn) {
+  editingServiceId = btn.dataset.id;
+  document.getElementById('serviceModalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Service';
+  document.getElementById('serviceModalSaveLabel').textContent = 'Update Service';
+  document.getElementById('svc_name').value         = btn.dataset.name;
+  document.getElementById('svc_description').value  = btn.dataset.desc;
+  document.getElementById('svc_price').value        = btn.dataset.price;
+  document.getElementById('svc_down_payment').value = btn.dataset.downPayment || '';
+  document.getElementById('svc_duration').value     = btn.dataset.duration || '';
+  resetImageState(btn.dataset.img || null);
+  hideModalMsg('serviceModalMsg');
+  openOverlay('serviceModal');
+  document.getElementById('svc_name').focus();
+}
+
+// Close service modal
+['serviceModalClose','serviceModalCancel'].forEach(id => {
+  document.getElementById(id).addEventListener('click', () => closeOverlay('serviceModal'));
+});
+document.getElementById('serviceModal').addEventListener('click', e => {
+  if (e.target.id === 'serviceModal') closeOverlay('serviceModal');
+});
+
+// ── SAVE SERVICE ──
+document.getElementById('serviceModalSave').addEventListener('click', async () => {
+  const name        = document.getElementById('svc_name').value.trim();
+  const desc        = document.getElementById('svc_description').value.trim();
+  const price       = document.getElementById('svc_price').value.trim();
+  const downPayment = document.getElementById('svc_down_payment').value.trim();
+  const duration    = document.getElementById('svc_duration').value.trim();
+
+  if (!name) {
+    showModalMsg('serviceModalMsg', 'error', 'Service name is required.');
+    document.getElementById('svc_name').focus();
+    return;
+  }
+  if (!price || isNaN(parseFloat(price)) || parseFloat(price) < 0) {
+    showModalMsg('serviceModalMsg', 'error', 'Please enter a valid base price.');
+    document.getElementById('svc_price').focus();
+    return;
   }
 
-  //  ADD SERVICE 
-  document.getElementById('addServiceBtn').addEventListener('click', () => {
-    editingServiceId = null;
-    document.getElementById('serviceModalTitle').innerHTML = '<i class="fas fa-spray-can"></i> Add Service';
-    document.getElementById('serviceModalSaveLabel').textContent = 'Save Service';
-    document.getElementById('svc_name').value        = '';
-    document.getElementById('svc_description').value = '';
-    document.getElementById('svc_price').value       = '';
-    document.getElementById('svc_down_payment').value = '';
-    document.getElementById('svc_duration').value    = '';
-    resetImageState(null);
-    hideModalMsg('serviceModalMsg');
-    openOverlay('serviceModal');
-    document.getElementById('svc_name').focus();
-  });
-
-  //  EDIT SERVICE 
-  function openEditService(btn) {
-    editingServiceId = btn.dataset.id;
-    document.getElementById('serviceModalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Service';
-    document.getElementById('serviceModalSaveLabel').textContent = 'Update Service';
-    document.getElementById('svc_name').value        = btn.dataset.name;
-    document.getElementById('svc_description').value = btn.dataset.desc;
-    document.getElementById('svc_price').value       = btn.dataset.price;
-    document.getElementById('svc_down_payment').value = btn.dataset.downPayment || '';
-    document.getElementById('svc_duration').value    = btn.dataset.duration || '';
-    resetImageState(btn.dataset.img || null);
-    hideModalMsg('serviceModalMsg');
-    openOverlay('serviceModal');
-    document.getElementById('svc_name').focus();
+  if (!downPayment || isNaN(parseFloat(downPayment)) || parseFloat(downPayment) <= 0) {
+    showModalMsg('serviceModalMsg', 'error', 'Please enter a down payment greater than 0.');
+    document.getElementById('svc_down_payment').focus();
+    return;
   }
 
-  // Close service modal
-  ['serviceModalClose','serviceModalCancel'].forEach(id => {
-    document.getElementById(id).addEventListener('click', () => closeOverlay('serviceModal'));
-  });
-  document.getElementById('serviceModal').addEventListener('click', e => {
-    if (e.target.id === 'serviceModal') closeOverlay('serviceModal');
-  });
+  const btn = document.getElementById('serviceModalSave');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
-  //  SAVE SERVICE 
-  document.getElementById('serviceModalSave').addEventListener('click', async () => {
-    const name     = document.getElementById('svc_name').value.trim();
-    const desc     = document.getElementById('svc_description').value.trim();
-    const price    = document.getElementById('svc_price').value.trim();
-    const downPayment = document.getElementById('svc_down_payment').value.trim();
-    const duration = document.getElementById('svc_duration').value.trim();
+  const payload = {
+    name, price, down_payment_amount: downPayment,
+    description:    desc     || null,
+    duration_hours: duration || null,
+    image_base64:   currentImageBase64 || null,
+    clear_image:    clearImageFlag,
+  };
 
-    if (!name) {
-      showModalMsg('serviceModalMsg', 'error', 'Service name is required.');
-      document.getElementById('svc_name').focus();
+  try {
+    const url    = editingServiceId ? `/api/admin/services/${editingServiceId}` : '/api/admin/services';
+    const method = editingServiceId ? 'PUT' : 'POST';
+
+    const res  = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showModalMsg('serviceModalMsg', 'success', data.message || 'Saved!');
+      setTimeout(() => { closeOverlay('serviceModal'); loadServices(); }, 900);
+    } else {
+      showModalMsg('serviceModalMsg', 'error', data.message || 'Failed to save service.');
+    }
+  } catch (err) {
+    showModalMsg('serviceModalMsg', 'error', 'Network error. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-save"></i> <span id="serviceModalSaveLabel">${editingServiceId?'Update Service':'Save Service'}</span>`;
+  }
+});
+
+// ── DELETE SERVICE ──
+function openDelete(id, name) {
+  deletingServiceId = id;
+  document.getElementById('deleteModalMsg').textContent =
+    `Are you sure you want to delete "${name}"? This cannot be undone.`;
+  openOverlay('deleteModal');
+}
+
+document.getElementById('deleteModalCancel').addEventListener('click', () => closeOverlay('deleteModal'));
+document.getElementById('deleteModal').addEventListener('click', e => {
+  if (e.target.id === 'deleteModal') closeOverlay('deleteModal');
+});
+
+document.getElementById('deleteModalConfirm').addEventListener('click', async () => {
+  if (!deletingServiceId) return;
+  const btn = document.getElementById('deleteModalConfirm');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+  try {
+    const res  = await fetch(`/api/admin/services/${deletingServiceId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) { closeOverlay('deleteModal'); loadServices(); }
+    else alert('Failed to delete: ' + (data.message || 'Unknown error'));
+  } catch (err) {
+    alert('Network error. Try again.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+  }
+});
+
+// ── VARIANTS MODAL ──
+function setVariantFormMode(editing) {
+  document.getElementById('addVariantBtn').innerHTML =
+    editing ? '<i class="fas fa-save"></i>' : '<i class="fas fa-plus"></i>';
+  document.getElementById('variantFormTitle').innerHTML = editing
+    ? '<i class="fas fa-pen" style="color:var(--color-admin-danger, #dc2626);margin-right:5px;"></i> Edit Variant'
+    : '<i class="fas fa-plus" style="color:var(--color-admin-danger, #dc2626);margin-right:5px;"></i> Add New Variant';
+  document.getElementById('cancelVariantEdit').style.display = editing ? 'inline-flex' : 'none';
+}
+
+function resetVariantForm() {
+  editingVariantId = null;
+  document.getElementById('v_name').value     = '';
+  document.getElementById('v_price').value    = '';
+  document.getElementById('v_duration').value = '';
+  setVariantFormMode(false);
+}
+
+function startEditVariant(id) {
+  const v = variantsCache.find(x => String(x.id) === String(id));
+  if (!v) return;
+  editingVariantId = v.id;
+  document.getElementById('v_name').value     = v.name;
+  document.getElementById('v_price').value    = v.price;
+  document.getElementById('v_duration').value = v.duration_hours || '';
+  setVariantFormMode(true);
+  hideModalMsg('variantsModalMsg');
+  document.getElementById('v_name').focus();
+}
+
+document.getElementById('cancelVariantEdit').addEventListener('click', resetVariantForm);
+
+async function openVariants(serviceId, serviceName) {
+  variantsServiceId = serviceId;
+  document.getElementById('variantsModalServiceName').textContent = serviceName;
+  resetVariantForm();
+  hideModalMsg('variantsModalMsg');
+  openOverlay('variantsModal');
+  await loadVariants();
+}
+
+async function loadVariants() {
+  const list = document.getElementById('variantsList');
+  list.innerHTML = `<div class="empty-state" style="padding:12px 0"><i class="fas fa-spinner fa-spin"></i><p>Loading...</p></div>`;
+  try {
+    const res  = await fetch(`/api/admin/services/${variantsServiceId}/variants`);
+    const data = await res.json();
+    variantsCache = data.success ? data.data.filter(v => v.is_active !== false) : [];
+    if (!variantsCache.length) {
+      list.innerHTML = `<div class="empty-state" style="padding:12px 0">
+        <i class="fas fa-tags" style="font-size:20px;opacity:.3"></i>
+        <p>No variants yet. Add one below.</p>
+      </div>`;
       return;
     }
-    if (!price || isNaN(parseFloat(price)) || parseFloat(price) < 0) {
-      showModalMsg('serviceModalMsg', 'error', 'Please enter a valid base price.');
-      document.getElementById('svc_price').focus();
-      return;
-    }
+    list.innerHTML = variantsCache.map(v => `
+      <div class="variant-modal-item">
+        <div>
+          <span class="v-name">${v.name}</span>
+          ${v.duration_hours ? `<span class="v-dur" style="margin-left:8px;">~${v.duration_hours}h</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="v-price">${formatCurrency(v.price)}</span>
+          <button class="v-del" onclick="startEditVariant('${v.id}')" title="Edit">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button class="v-del" onclick="deleteVariant('${v.id}','${escHtml(v.name)}')" title="Remove">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>`).join('');
+  } catch (err) {
+    list.innerHTML = `<div class="empty-state" style="padding:12px 0">
+      <i class="fas fa-exclamation-triangle" style="font-size:20px;"></i><p>Failed to load</p>
+    </div>`;
+  }
+}
 
-    if (!downPayment || isNaN(parseFloat(downPayment)) || parseFloat(downPayment) <= 0) {
-      showModalMsg('serviceModalMsg', 'error', 'Please enter a down payment greater than 0.');
-      document.getElementById('svc_down_payment').focus();
-      return;
-    }
+// Add / Update variant
+document.getElementById('addVariantBtn').addEventListener('click', async () => {
+  const name     = document.getElementById('v_name').value.trim();
+  const price    = document.getElementById('v_price').value.trim();
+  const duration = document.getElementById('v_duration').value.trim();
 
-    const btn = document.getElementById('serviceModalSave');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  if (!name || !price) {
+    showModalMsg('variantsModalMsg', 'error', 'Variant name and price are required.');
+    return;
+  }
+  if (isNaN(parseFloat(price)) || parseFloat(price) < 0) {
+    showModalMsg('variantsModalMsg', 'error', 'Enter a valid price.');
+    return;
+  }
 
-    const payload = {
-      name, price, down_payment_amount: downPayment,
-      description:    desc     || null,
-      duration_hours: duration || null,
-      image_base64:   currentImageBase64 || null,
-      clear_image:    clearImageFlag,
-    };
+  const isEdit = !!editingVariantId;
+  const btn = document.getElementById('addVariantBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-    try {
-      const url    = editingServiceId ? `/api/admin/services/${editingServiceId}` : '/api/admin/services';
-      const method = editingServiceId ? 'PUT' : 'POST';
+  try {
+    const url = isEdit
+      ? `/api/admin/services/${variantsServiceId}/variants/${editingVariantId}`
+      : `/api/admin/services/${variantsServiceId}/variants`;
 
-      const res  = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
+    const send = (force) => fetch(url, {
+      method: isEdit ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, price: parseFloat(price), duration_hours: duration || null, force }),
+    });
 
-      if (data.success) {
-        showModalMsg('serviceModalMsg', 'success', data.message || 'Saved!');
-        setTimeout(() => { closeOverlay('serviceModal'); loadServices(); }, 900);
+    let res  = await send(false);
+    let data = await res.json();
+
+    // Backend warning (e.g. duration exceeds base service) - ask to proceed
+    if (data.warning) {
+      if (confirm(data.message)) {
+        res  = await send(true);
+        data = await res.json();
       } else {
-        showModalMsg('serviceModalMsg', 'error', data.message || 'Failed to save service.');
-      }
-    } catch (err) {
-      showModalMsg('serviceModalMsg', 'error', 'Network error. Please try again.');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fas fa-save"></i> <span id="serviceModalSaveLabel">${editingServiceId?'Update Service':'Save Service'}</span>`;
-    }
-  });
-
-  //  DELETE SERVICE 
-  function openDelete(id, name) {
-    deletingServiceId = id;
-    document.getElementById('deleteModalMsg').textContent =
-      `Are you sure you want to delete "${name}"? This cannot be undone.`;
-    openOverlay('deleteModal');
-  }
-
-  document.getElementById('deleteModalCancel').addEventListener('click', () => closeOverlay('deleteModal'));
-  document.getElementById('deleteModal').addEventListener('click', e => {
-    if (e.target.id === 'deleteModal') closeOverlay('deleteModal');
-  });
-
-  document.getElementById('deleteModalConfirm').addEventListener('click', async () => {
-    if (!deletingServiceId) return;
-    const btn = document.getElementById('deleteModalConfirm');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-    try {
-      const res  = await fetch(`/api/admin/services/${deletingServiceId}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) { closeOverlay('deleteModal'); loadServices(); }
-      else alert('Failed to delete: ' + (data.message || 'Unknown error'));
-    } catch (err) {
-      alert('Network error. Try again.');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-trash"></i> Delete';
-    }
-  });
-
-  //  VARIANTS MODAL 
-  async function openVariants(serviceId, serviceName) {
-    variantsServiceId = serviceId;
-    document.getElementById('variantsModalServiceName').textContent = serviceName;
-    document.getElementById('v_name').value     = '';
-    document.getElementById('v_price').value    = '';
-    document.getElementById('v_duration').value = '';
-    hideModalMsg('variantsModalMsg');
-    openOverlay('variantsModal');
-    await loadVariants();
-  }
-
-  async function loadVariants() {
-    const list = document.getElementById('variantsList');
-    list.innerHTML = `<div class="empty-state" style="padding:12px 0"><i class="fas fa-spinner fa-spin"></i><p>Loading...</p></div>`;
-    try {
-      const res  = await fetch(`/api/admin/services/${variantsServiceId}/variants`);
-      const data = await res.json();
-      if (!data.success || !data.data.length) {
-        list.innerHTML = `<div class="empty-state" style="padding:12px 0">
-          <i class="fas fa-tags" style="font-size:20px;opacity:.3"></i>
-          <p>No variants yet. Add one below.</p>
-        </div>`;
         return;
       }
-      list.innerHTML = data.data.map(v => `
-        <div class="variant-modal-item">
-          <div>
-            <span class="v-name">${v.name}</span>
-            ${v.duration_hours ? `<span class="v-dur" style="margin-left:8px;">~${v.duration_hours}h</span>` : ''}
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span class="v-price">${formatCurrency(v.price)}</span>
-            <button class="v-del" onclick="deleteVariant('${v.id}','${escHtml(v.name)}')" title="Remove">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        </div>`).join('');
-    } catch (err) {
-      list.innerHTML = `<div class="empty-state" style="padding:12px 0">
-        <i class="fas fa-exclamation-triangle" style="font-size:20px;"></i><p>Failed to load</p>
-      </div>`;
     }
+
+    if (data.success) {
+      showModalMsg('variantsModalMsg', 'success', `Variant "${name}" ${isEdit ? 'updated' : 'added'}!`);
+      resetVariantForm();
+      await loadVariants();
+      loadServices();
+    } else {
+      showModalMsg('variantsModalMsg', 'error', data.message || 'Failed to save variant.');
+    }
+  } catch (err) {
+    showModalMsg('variantsModalMsg', 'error', 'Network error. Try again.');
+  } finally {
+    btn.disabled = false;
+    setVariantFormMode(!!editingVariantId);
   }
+});
 
-  document.getElementById('addVariantBtn').addEventListener('click', async () => {
-    const name     = document.getElementById('v_name').value.trim();
-    const price    = document.getElementById('v_price').value.trim();
-    const duration = document.getElementById('v_duration').value.trim();
-
-    if (!name || !price) {
-      showModalMsg('variantsModalMsg', 'error', 'Variant name and price are required.');
-      return;
+async function deleteVariant(variantId, variantName) {
+  if (!confirm(`Remove variant "${variantName}"?`)) return;
+  try {
+    const res  = await fetch(`/api/admin/services/${variantsServiceId}/variants/${variantId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      if (String(editingVariantId) === String(variantId)) resetVariantForm();
+      await loadVariants();
+      loadServices();
     }
-    if (isNaN(parseFloat(price)) || parseFloat(price) < 0) {
-      showModalMsg('variantsModalMsg', 'error', 'Enter a valid price.');
-      return;
-    }
-
-    const btn = document.getElementById('addVariantBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-    try {
-      const res  = await fetch(`/api/admin/services/${variantsServiceId}/variants`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, price: parseFloat(price), duration_hours: duration||null }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        showModalMsg('variantsModalMsg', 'success', `Variant "${name}" added!`);
-        document.getElementById('v_name').value     = '';
-        document.getElementById('v_price').value    = '';
-        document.getElementById('v_duration').value = '';
-        await loadVariants();
-        loadServices();
-      } else {
-        showModalMsg('variantsModalMsg', 'error', data.message || 'Failed to add variant.');
-      }
-    } catch (err) {
-      showModalMsg('variantsModalMsg', 'error', 'Network error. Try again.');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-plus"></i>';
-    }
-  });
-
-  async function deleteVariant(variantId, variantName) {
-    if (!confirm(`Remove variant "${variantName}"?`)) return;
-    try {
-      const res  = await fetch(`/api/admin/services/${variantsServiceId}/variants/${variantId}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) { await loadVariants(); loadServices(); }
-      else alert('Failed: ' + data.message);
-    } catch (err) {
-      alert('Network error. Try again.');
-    }
+    else alert('Failed: ' + data.message);
+  } catch (err) {
+    alert('Network error. Try again.');
   }
+}
 
-  ['variantsModalClose','variantsModalClose2'].forEach(id => {
-    document.getElementById(id).addEventListener('click', () => { closeOverlay('variantsModal'); loadServices(); });
-  });
-  document.getElementById('variantsModal').addEventListener('click', e => {
-    if (e.target.id === 'variantsModal') { closeOverlay('variantsModal'); loadServices(); }
-  });
+['variantsModalClose','variantsModalClose2'].forEach(id => {
+  document.getElementById(id).addEventListener('click', () => { closeOverlay('variantsModal'); loadServices(); });
+});
+document.getElementById('variantsModal').addEventListener('click', e => {
+  if (e.target.id === 'variantsModal') { closeOverlay('variantsModal'); loadServices(); }
+});
 
-  // Enter to add variant quickly
-  ['v_name','v_price','v_duration'].forEach(id => {
-    document.getElementById(id).addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('addVariantBtn').click();
-    });
+// Enter to add/save variant quickly
+['v_name','v_price','v_duration'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('addVariantBtn').click();
   });
+});
 
-  //  Init 
-  loadServices();
+// ── Init ──
+loadServices();

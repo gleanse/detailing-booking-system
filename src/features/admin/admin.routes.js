@@ -977,6 +977,72 @@ router.post('/services/:id/variants', async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
+
+// PUT /api/admin/services/:serviceId/variants/:variantId
+router.put('/services/:serviceId/variants/:variantId', async (req, res) => {
+  try {
+    const { serviceId, variantId } = req.params;
+    const { name, price, duration_hours, force } = req.body;
+
+    if (!name || !price) {
+      return res.status(400).json({ success: false, message: 'Name and price are required' });
+    }
+    if (isNaN(parseFloat(price)) || parseFloat(price) < 0) {
+      return res.status(400).json({ success: false, message: 'Enter a valid price' });
+    }
+
+    const svcResult = await pool.query(
+      'SELECT down_payment_amount, duration_hours FROM services WHERE id = $1 AND is_active = true',
+      [serviceId]
+    );
+    if (!svcResult.rows.length) {
+      return res.status(404).json({ success: false, message: 'Service not found' });
+    }
+    const { down_payment_amount, duration_hours: baseDuration } = svcResult.rows[0];
+
+    if (down_payment_amount && parseFloat(price) < parseFloat(down_payment_amount)) {
+      return res.status(400).json({
+        success: false,
+        message: `Variant price cannot be lower than the service down payment (₱${down_payment_amount})`
+      });
+    }
+
+    if (!force && duration_hours && baseDuration && parseInt(duration_hours) > baseDuration) {
+      return res.status(200).json({
+        success: false,
+        code: 'VARIANT_DURATION_EXCEEDS',
+        warning: true,
+        message: `This variant's duration (${duration_hours}h) exceeds the base service duration (${baseDuration}h). Proceed anyway?`
+      });
+    }
+
+    const result = await pool.query(
+      `UPDATE service_variants
+          SET name = $1, price = $2, duration_hours = $3
+        WHERE id = $4 AND service_id = $5 AND is_active = true
+        RETURNING id, name, price, duration_hours`,
+      [name.trim(), parseFloat(price), duration_hours ? parseInt(duration_hours) : null, variantId, serviceId]
+    );
+    if (!result.rows.length) {
+      return res.status(404).json({ success: false, message: 'Variant not found' });
+    }
+
+    const staffId = req.session?.user?.id || null;
+    if (staffId) {
+      await pool.query(
+        `INSERT INTO audit_logs (user_id, action, target_table, target_id, details)
+         VALUES ($1, 'Updated variant', 'service_variants', $2, $3)`,
+        [staffId, variantId, `Variant "${name}" updated`]
+      );
+    }
+
+    res.json({ success: true, data: result.rows[0], message: 'Variant updated successfully' });
+  } catch (err) {
+    console.error('Update variant error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // DELETE /api/admin/services/:serviceId/variants/:variantId
 router.delete('/services/:serviceId/variants/:variantId', async (req, res) => {
   try {
