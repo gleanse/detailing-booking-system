@@ -337,7 +337,7 @@ async function loadVariants() {
   const list = document.getElementById('variantsList');
   list.innerHTML = `<div class="empty-state" style="padding:12px 0"><i class="fas fa-spinner fa-spin"></i><p>Loading...</p></div>`;
   try {
-    const res  = await fetch(`/api/admin/services/${variantsServiceId}/variants`);
+    const res  = await fetch(`/api/admin/services/${variantsServiceId}/variants`, { cache: 'no-store' });
     const data = await res.json();
     variantsCache = data.success ? data.data.filter(v => v.is_active !== false) : [];
     if (!variantsCache.length) {

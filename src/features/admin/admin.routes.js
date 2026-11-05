@@ -926,8 +926,9 @@ router.get('/services/:id/variants', async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id,name,price,duration_hours,is_active FROM service_variants
-       WHERE service_id=$1 ORDER BY price ASC`, [req.params.id]
+       WHERE service_id=$1 AND is_active=true ORDER BY price ASC`, [req.params.id]
     );
+    res.set('Cache-Control', 'no-store');
     res.json({ success: true, data: result.rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -1046,10 +1047,25 @@ router.put('/services/:serviceId/variants/:variantId', async (req, res) => {
 // DELETE /api/admin/services/:serviceId/variants/:variantId
 router.delete('/services/:serviceId/variants/:variantId', async (req, res) => {
   try {
-    await pool.query(
-      `UPDATE service_variants SET is_active=false WHERE id=$1 AND service_id=$2`,
+    const result = await pool.query(
+      `UPDATE service_variants SET is_active=false
+       WHERE id=$1 AND service_id=$2 AND is_active=true
+       RETURNING id, name`,
       [req.params.variantId, req.params.serviceId]
     );
+    if (!result.rows.length) {
+      return res.status(404).json({ success: false, message: 'Variant not found or already removed' });
+    }
+
+    const staffId = req.session?.user?.id || null;
+    if (staffId) {
+      await pool.query(
+        `INSERT INTO audit_logs (user_id, action, target_table, target_id, details)
+         VALUES ($1, 'Deleted variant', 'service_variants', $2, $3)`,
+        [staffId, req.params.variantId, `Variant "${result.rows[0].name}" removed`]
+      );
+    }
+
     res.json({ success: true, message: 'Variant removed' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
