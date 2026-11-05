@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const redis = require('../../config/redis');
 const { sendPasswordResetEmail } = require('../../shared/utils/email');
+const { issueCode, checkCode } = require('./signup-verify');
 
 const getLoginPage = (req, res) => {
   // redirect to account if already logged in as customer
@@ -59,11 +60,15 @@ const register = async (req, res) => {
       });
     }
 
-    // check if email already exists
-    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [
-      email.toLowerCase(),
-    ]);
-    if (existing.rows.length > 0) {
+    const normalized = email.trim().toLowerCase();
+
+    const existing = await pool.query(
+      'SELECT id, role, email_verified FROM users WHERE email = $1',
+      [normalized],
+    );
+    const found = existing.rows[0];
+
+    if (found && (found.email_verified || found.role !== 'customer')) {
       return res.status(400).json({
         success: false,
         message: 'An account with this email already exists.',
@@ -72,33 +77,27 @@ const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await pool.query(
-      `INSERT INTO users (name, email, phone, password, role)
-       VALUES ($1, $2, $3, $4, 'customer')
-       RETURNING id, name, email, phone, role`,
-      [name.trim(), email.toLowerCase(), phone.trim(), hashedPassword],
-    );
+    // an unverified account is only a pending sign up, so signing up again replaces it
+    if (found) {
+      await pool.query(
+        `UPDATE users SET name = $1, phone = $2, password = $3 WHERE id = $4`,
+        [name.trim(), phone.trim(), hashedPassword, found.id],
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO users (name, email, phone, password, role)
+         VALUES ($1, $2, $3, $4, 'customer')`,
+        [name.trim(), normalized, phone.trim(), hashedPassword],
+      );
+    }
 
-    const user = result.rows[0];
-
-    req.session.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-    };
+    await issueCode({ email: normalized, name: name.trim() });
 
     res.json({
       success: true,
-      message: 'Account created successfully.',
-      redirect: '/customer/account',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      verify: true,
+      email: normalized,
+      message: 'We sent a 6 digit code to your email.',
     });
   } catch (err) {
     console.error('Customer register error:', err);
@@ -119,7 +118,7 @@ const login = async (req, res) => {
     }
 
     const result = await pool.query(
-      'SELECT id, name, email, phone, password, role FROM users WHERE email = $1',
+      'SELECT id, name, email, phone, password, role, email_verified FROM users WHERE email = $1',
       [email.toLowerCase()],
     );
 
@@ -142,6 +141,16 @@ const login = async (req, res) => {
       return res
         .status(401)
         .json({ success: false, message: 'Invalid email or password.' });
+    }
+
+    if (!user.email_verified) {
+      await issueCode({ email: user.email, name: user.name });
+      return res.status(403).json({
+        success: false,
+        needsVerification: true,
+        email: user.email,
+        message: 'Please verify your email first. We sent you a new code.',
+      });
     }
 
     req.session.user = {
@@ -342,10 +351,112 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const codeProblem = {
+  expired: 'This code has expired. Please request a new one.',
+  locked: 'Too many wrong codes. Please request a new one.',
+  wrong: 'Incorrect code. Please try again.',
+};
+
+const findPendingCustomer = async (email) => {
+  const result = await pool.query(
+    `SELECT id, name, email, phone, role FROM users
+     WHERE email = $1 AND role = 'customer' AND email_verified = false`,
+    [email],
+  );
+  return result.rows[0] || null;
+};
+
+const verifySignup = async (req, res) => {
+  try {
+    const email = String(req.body.email || '')
+      .trim()
+      .toLowerCase();
+    const otp = String(req.body.otp || '').trim();
+
+    if (!email || !/^\d{6}$/.test(otp)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Enter the 6 digit code.' });
+    }
+
+    const user = await findPendingCustomer(email);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'This email has nothing to verify. Please sign in.',
+      });
+    }
+
+    const check = await checkCode({ email, otp });
+    if (!check.ok) {
+      return res
+        .status(400)
+        .json({ success: false, message: codeProblem[check.reason] });
+    }
+
+    await pool.query('UPDATE users SET email_verified = true WHERE id = $1', [
+      user.id,
+    ]);
+
+    req.session.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+    };
+
+    res.json({
+      success: true,
+      message: 'Email verified.',
+      redirect: '/customer/account',
+    });
+  } catch (err) {
+    console.error('Verify signup error:', err);
+    res
+      .status(500)
+      .json({ success: false, message: 'Server error: ' + err.message });
+  }
+};
+
+const resendSignupCode = async (req, res) => {
+  try {
+    const email = String(req.body.email || '')
+      .trim()
+      .toLowerCase();
+
+    const user = email ? await findPendingCustomer(email) : null;
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'This email has nothing to verify. Please sign in.',
+      });
+    }
+
+    const result = await issueCode({ email, name: user.name });
+    if (!result.sent) {
+      return res.status(429).json({
+        success: false,
+        retryAfter: result.retryAfter,
+        message: `Please wait ${result.retryAfter} seconds before asking for a new code.`,
+      });
+    }
+
+    res.json({ success: true, message: 'A new code was sent to your email.' });
+  } catch (err) {
+    console.error('Resend signup code error:', err);
+    res
+      .status(500)
+      .json({ success: false, message: 'Server error: ' + err.message });
+  }
+};
+
 module.exports = {
   getLoginPage,
   getRegisterPage,
   register,
+  verifySignup,
+  resendSignupCode,
   login,
   logout,
   getMe,

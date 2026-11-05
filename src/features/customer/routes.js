@@ -7,6 +7,8 @@ const {
   getLoginPage,
   getRegisterPage,
   register,
+  verifySignup,
+  resendSignupCode,
   login,
   logout,
   getMe,
@@ -45,6 +47,8 @@ router.get('/account', isCustomer, getAccountPage);
 
 // API ROUTES
 router.post('/register', register);
+router.post('/register/verify', verifySignup);
+router.post('/register/resend', resendSignupCode);
 router.post('/login', login);
 router.post('/logout', logout);
 router.get('/me', getMe);
