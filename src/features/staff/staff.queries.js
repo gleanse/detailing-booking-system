@@ -21,7 +21,7 @@ const getUpcomingBookings = async ({
   const countResult = await pool.query(
     `SELECT COUNT(*) FROM bookings b
      LEFT JOIN availability a ON b.availability_id = a.id
-     WHERE a.date >= CURRENT_DATE
+     WHERE a.date >= (NOW() AT TIME ZONE 'Asia/Manila')::date
        AND b.booking_status = 'confirmed'
        ${dateFilter}`,
     date ? [date] : [],
@@ -65,7 +65,7 @@ const getUpcomingBookings = async ({
     LEFT JOIN service_variants sv ON b.variant_id = sv.id
     LEFT JOIN payments p ON p.booking_id = b.id
     LEFT JOIN availability a ON b.availability_id = a.id
-    WHERE a.date >= CURRENT_DATE
+    WHERE a.date >= (NOW() AT TIME ZONE 'Asia/Manila')::date
       AND b.booking_status = 'confirmed'
       ${dateFilter}
     ORDER BY a.date ASC, b.queue_number ASC NULLS LAST, b.created_at ASC

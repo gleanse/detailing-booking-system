@@ -12,11 +12,21 @@ const fmt = (amt) =>
   `PHP ${parseFloat(amt || 0).toLocaleString('en-PH', {
     minimumFractionDigits: 2,
   })}`;
-const today = () => new Date().toISOString().split('T')[0];
+const today = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' }).format(
+    new Date(),
+  );
+
+const fmtDate = (d) =>
+  new Date(d + 'T00:00:00').toLocaleDateString('en-PH', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 
 const isDateMismatch = (bookingDate) => {
   if (!bookingDate) return false;
-  return new Date(bookingDate).toISOString().split('T')[0] !== today();
+  return bookingDate !== today();
 };
 
 const statusLabel = (s) =>
@@ -367,9 +377,9 @@ const openModal = (b) => {
       mismatch
         ? `<div class="flex items-start gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-3 py-2.5 mb-4">
       <i class="ph ph-warning text-yellow-400 text-base flex-shrink-0 mt-0.5"></i>
-      <p class="text-yellow-300 text-xs">Booking date is <strong>${new Date(
+      <p class="text-yellow-300 text-xs">Booking date is <strong>${fmtDate(
         b.booking_date,
-      ).toDateString()}</strong> but today is <strong>${new Date().toDateString()}</strong>. Confirm status changes carefully.</p>
+      )}</strong> but today is <strong>${fmtDate(today())}</strong>. Confirm status changes carefully.</p>
     </div>`
         : ''
     }
@@ -402,7 +412,7 @@ const openModal = (b) => {
       ${modalField(
         'ph-calendar',
         'Booking Date',
-        b.booking_date ? new Date(b.booking_date).toDateString() : '-',
+        b.booking_date ? fmtDate(b.booking_date) : '-',
       )}
     </div>
     <div class="bg-white/3 rounded-xl px-4 py-3 mb-4 text-xs space-y-1.5">
@@ -466,9 +476,9 @@ const closeModal = () => {
 
 const warnMsg = (b) =>
   isDateMismatch(b.booking_date)
-    ? `⚠ Booking date is ${new Date(
-        b.booking_date,
-      ).toDateString()} but today is ${new Date().toDateString()}. Proceed carefully.`
+    ? `⚠ Booking date is ${fmtDate(b.booking_date)} but today is ${fmtDate(
+        today(),
+      )}. Proceed carefully.`
     : null;
 
 const triggerStatus = async (status) => {

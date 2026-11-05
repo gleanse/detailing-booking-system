@@ -32,6 +32,7 @@ const {
 const {
   resolveWalkInDownPayment,
 } = require('../../shared/utils/walkin-down-payment');
+const { todayInManila } = require('../../shared/utils/date');
 
 const getDashboardPage = (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
@@ -65,7 +66,7 @@ const logout = (req, res) => {
 
 const getBookingsToday = async (req, res) => {
   try {
-    const date = req.query.date || new Date().toISOString().split('T')[0];
+    const date = req.query.date || todayInManila();
     const page = parseInt(req.query.page) || 1;
     const result = await getBookingsForDate(date, { page, limit: 5 });
     res.json({ success: true, ...result });
@@ -439,7 +440,7 @@ const postWalkIn = async (req, res) => {
     }
 
     const confirmed = parseInt(availability.confirmed_count);
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = todayInManila();
     if (confirmed >= availability.capacity && date === todayStr) {
       return res.status(400).json({
         success: false,
@@ -466,7 +467,7 @@ const postWalkIn = async (req, res) => {
     const queueNumber = await getNextQueueNumber(availability.id);
     const referenceCode =
       'HRC-' + crypto.randomBytes(4).toString('hex').toUpperCase();
-    const qrData = `${process.env.APP_URL}/staff/scan/${referenceCode}`;  
+    const qrData = `${process.env.APP_URL}/staff/scan/${referenceCode}`;
     const qrPath = `public/uploads/qr/${referenceCode}.png`;
     await QRCode.toFile(qrPath, qrData, { width: 300, margin: 2 });
 
@@ -578,7 +579,7 @@ const downloadSlip = async (req, res) => {
     field(
       'Date',
       booking.booking_date
-        ? new Date(booking.booking_date).toDateString()
+        ? new Date(booking.booking_date + 'T00:00:00').toDateString()
         : '-',
     );
     field('Motorcycle Plate', booking.motorcycle_plate);

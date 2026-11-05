@@ -50,7 +50,7 @@ const getAvailableDates = async (serviceId) => {
     WHERE 
       a.service_id = $1
       AND a.is_open = true
-      AND a.date > CURRENT_DATE
+      AND a.date > (NOW() AT TIME ZONE 'Asia/Manila')::date
       AND NOT EXISTS (
         SELECT 1 FROM closed_dates cd
         WHERE 

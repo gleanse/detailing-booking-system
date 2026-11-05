@@ -2,9 +2,17 @@ const fmt = (amt) =>
   `PHP ${parseFloat(amt || 0).toLocaleString('en-PH', {
     minimumFractionDigits: 2,
   })}`;
-const today = () => new Date().toISOString().split('T')[0];
-const isDateMismatch = (d) =>
-  d && new Date(d).toISOString().split('T')[0] !== today();
+const today = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' }).format(
+    new Date(),
+  );
+const fmtDate = (d) =>
+  new Date(d + 'T00:00:00').toLocaleDateString('en-PH', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+const isDateMismatch = (d) => d && d !== today();
 const showEl = (id) => {
   const el = document.getElementById(id);
   el.classList.remove('hidden');
@@ -92,9 +100,9 @@ const renderBooking = (b) => {
 
   if (isDateMismatch(b.booking_date)) {
     document.getElementById('date-warn-text').textContent =
-      `Booking date is ${new Date(
-        b.booking_date,
-      ).toDateString()} but today is ${new Date().toDateString()}. Confirm changes carefully.`;
+      `Booking date is ${fmtDate(b.booking_date)} but today is ${fmtDate(
+        today(),
+      )}. Confirm changes carefully.`;
     showFlex('date-warn');
   }
 
@@ -180,9 +188,9 @@ const renderActions = (b) => {
     document.getElementById('inprogress-input-error').classList.add('hidden');
     const w = document.getElementById('inprogress-warn');
     const warn = isDateMismatch(booking.booking_date)
-      ? `⚠ Booking date is ${new Date(
-          booking.booking_date,
-        ).toDateString()} but today is ${new Date().toDateString()}.`
+      ? `⚠ Booking date is ${fmtDate(booking.booking_date)} but today is ${fmtDate(
+          today(),
+        )}.`
       : null;
     warn
       ? ((w.textContent = warn), w.classList.remove('hidden'))
@@ -198,9 +206,9 @@ const renderActions = (b) => {
 
     const w = document.getElementById('done-warn');
     const warn = isDateMismatch(booking.booking_date)
-      ? `⚠ Booking date is ${new Date(
-          booking.booking_date,
-        ).toDateString()} but today is ${new Date().toDateString()}.`
+      ? `⚠ Booking date is ${fmtDate(booking.booking_date)} but today is ${fmtDate(
+          today(),
+        )}.`
       : null;
     warn
       ? ((w.textContent = warn), w.classList.remove('hidden'))
@@ -232,9 +240,9 @@ const renderActions = (b) => {
     document.getElementById('pickup-input-error').classList.add('hidden');
     const w = document.getElementById('pickup-warn');
     const warn = isDateMismatch(booking.booking_date)
-      ? `⚠ Booking date is ${new Date(
-          booking.booking_date,
-        ).toDateString()} but today is ${new Date().toDateString()}.`
+      ? `⚠ Booking date is ${fmtDate(booking.booking_date)} but today is ${fmtDate(
+          today(),
+        )}.`
       : null;
     warn
       ? ((w.textContent = warn), w.classList.remove('hidden'))

@@ -2,7 +2,10 @@ let services = [];
 let lastCreatedId = null;
 let todayIsFull = false;
 
-const today = () => new Date().toISOString().split('T')[0];
+const today = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' }).format(
+    new Date(),
+  );
 
 const setLoading = (loading) => {
   const btn = document.getElementById('btn-submit');
@@ -230,9 +233,10 @@ const checkFutureDateCapacity = async () => {
 document.addEventListener('DOMContentLoaded', async () => {
   await loadServices();
 
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const [year, month, day] = today().split('-').map(Number);
+  const tomorrowStr = new Date(Date.UTC(year, month - 1, day + 1))
+    .toISOString()
+    .split('T')[0];
   document.getElementById('future-date-input').min = tomorrowStr;
 
   document

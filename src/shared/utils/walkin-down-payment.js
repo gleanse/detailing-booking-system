@@ -1,7 +1,4 @@
-const todayInManila = () =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' }).format(
-    new Date(),
-  );
+const { todayInManila } = require('./date');
 
 const resolveWalkInDownPayment = ({ bookingDate, downPayment, totalPrice }) => {
   const isFutureDate = bookingDate > todayInManila();
