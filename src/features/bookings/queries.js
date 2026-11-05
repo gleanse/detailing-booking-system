@@ -156,16 +156,16 @@ const releaseSlot = async (bookingId) => {
   return result.rows[0] || null;
 };
 
-const hasStartedPayment = async (bookingId) => {
+const getHeldBookingWithPayment = async (bookingId) => {
   const result = await pool.query(
-    `SELECT 1
+    `SELECT b.id, b.ip_address, b.user_id
      FROM bookings b
      WHERE b.id = $1
      AND b.booking_status = 'locked'
      AND EXISTS (SELECT 1 FROM payments p WHERE p.booking_id = b.id)`,
     [bookingId],
   );
-  return result.rowCount > 0;
+  return result.rows[0] || null;
 };
 
 const updateBookingDetails = async (
@@ -458,7 +458,7 @@ module.exports = {
   getAvailableDates,
   lockSlot,
   releaseSlot,
-  hasStartedPayment,
+  getHeldBookingWithPayment,
   updateBookingDetails,
   createPayment,
   getInvoicedPayment,

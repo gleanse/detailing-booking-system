@@ -1,20 +1,10 @@
-const { xenditInvoiceClient } = require('../../config/xendit');
+const { lookupInvoices } = require('./xendit-lookup');
 const {
   getHeldBookingsWithPayments,
   getPaymentsByBooking,
   expireHeldBooking,
 } = require('./queries');
 const { confirmPaidBooking } = require('./confirm');
-
-const LOOKUP_TIMEOUT_MS = 10000;
-
-const withTimeout = (promise, ms) => {
-  let timer;
-  const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error('xendit lookup timed out')), ms);
-  });
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
-};
 
 // decides one held booking from what xendit says about each of its payments
 const reconcileBooking = async (booking, onExpired) => {
@@ -28,10 +18,7 @@ const reconcileBooking = async (booking, onExpired) => {
   for (const payment of payments) {
     let invoices;
     try {
-      invoices = await withTimeout(
-        xenditInvoiceClient.getInvoices({ externalId: payment.id }),
-        LOOKUP_TIMEOUT_MS,
-      );
+      invoices = await lookupInvoices(payment.id);
     } catch (error) {
       // a failed lookup is unknown, never expired
       console.error('[RECONCILE] lookup failed:', payment.id, error.message);

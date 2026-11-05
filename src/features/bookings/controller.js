@@ -5,12 +5,14 @@ const { xenditInvoiceClient } = require('../../config/xendit');
 const redis = require('../../config/redis');
 const { incrementAbuseCounter } = require('../../shared/utils/cron');
 const { confirmPaidBooking } = require('./confirm');
+const { cancelHeldBooking } = require('./cancel');
 const {
   getServiceById,
   getAvailableDates,
   lockSlot,
   releaseSlot,
-  hasStartedPayment,
+  getHeldBookingWithPayment,
+  expireHeldBooking,
   updateBookingDetails,
   createPayment,
   getInvoicedPayment,
@@ -126,17 +128,34 @@ const releaseBookingSlot = async (req, res) => {
         .json({ success: false, message: 'Missing bookingId' });
     }
 
-    // the customer may still pay an open invoice, so a started payment keeps the booking
-    if (await hasStartedPayment(bookingId)) {
-      return res.status(409).json({
-        success: false,
-        paymentStarted: true,
-        message:
-          'Your payment is already in progress, so this reservation cannot be cancelled. If you did not mean to pay, it will be released automatically when the payment window ends.',
-      });
-    }
+    let booking;
+    const held = await getHeldBookingWithPayment(bookingId);
 
-    const booking = await releaseSlot(bookingId);
+    if (held) {
+      // the customer may still pay an open invoice, so settle it with xendit first
+      const result = await cancelHeldBooking(bookingId);
+
+      if (result.outcome === 'confirmed') {
+        return res.json({
+          success: true,
+          confirmed: true,
+          paymentId: result.paymentId,
+        });
+      }
+
+      if (result.outcome === 'refused') {
+        return res.status(409).json({
+          success: false,
+          paymentStarted: true,
+          message:
+            'We could not reach our payment provider to cancel your payment, so your reservation cannot be cancelled right now. Please try again in a moment. If you leave it, it will be released automatically when the payment window ends.',
+        });
+      }
+
+      booking = (await expireHeldBooking(bookingId)) ? held : null;
+    } else {
+      booking = await releaseSlot(bookingId);
+    }
 
     if (!booking) {
       return res.status(404).json({
