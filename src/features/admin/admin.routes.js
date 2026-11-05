@@ -426,7 +426,18 @@ router.post('/bookings/walkin', async (req, res) => {
       await client.query('ROLLBACK');
       return res.status(400).json({ success: false, message: 'Missing required fields.' });
     }
-
+    // BLOCK: past date (PH time, sunod sa DB session timezone)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(booking_date)) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Invalid booking date.' });
+    }
+    const dateCheck = await client.query(
+      `SELECT ($1::date < CURRENT_DATE) AS is_past`, [booking_date]
+    );
+    if (dateCheck.rows[0].is_past) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Booking date cannot be in the past.' });
+    }
     // Find availability row for this date + service 
     // Ginagamit ang `availability` table (hindi availability_calendar)
     const avResult = await client.query(

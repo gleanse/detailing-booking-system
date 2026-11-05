@@ -3,6 +3,11 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
 
   //  State 
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }); // YYYY-MM-DD
+  const tomorrow = (() => {
+  const d = new Date(today + 'T00:00:00');
+  d.setDate(d.getDate() + 1);
+  return d.toLocaleDateString('en-CA');
+  })();
   let isTodayFull    = false;
   let selectedFutDate = null;
   let services        = [];
@@ -11,6 +16,7 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
   document.getElementById('wi_date').value = today;
   document.getElementById('wi_date_display').value = new Date(today + 'T00:00:00')
     .toLocaleDateString('en-PH', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  document.getElementById('wi_future_date').min = tomorrow; // bawal ang past at today
 
   async function init() {
     await Promise.all([loadServices(), loadTodayCapacity()]);
@@ -183,7 +189,15 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
   }
 
   function onFutureDateChange() {
-    selectedFutDate = document.getElementById('wi_future_date').value;
+  const picked = document.getElementById('wi_future_date').value;
+   if (picked && picked <= today) {
+  setErr('wi_future_date', 'Booking date cannot be in the past.');
+  document.getElementById('wi_future_date').value = '';
+  selectedFutDate = null;
+  updateSummary();
+  return;
+}
+selectedFutDate = picked;
     // Deselect sidebar items
     document.querySelectorAll('.fut-date-item').forEach(el => el.classList.remove('selected'));
     const el = document.getElementById('fdi_' + selectedFutDate);
@@ -239,7 +253,9 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
     if (!phone || phone.replace(/\D/g,'').length !== 11) { setErr('wi_phone', 'Valid 11-digit phone required'); ok=false; } else clearErr('wi_phone');
     if (!svcId)                          { setErr('wi_service', 'Select a service'); ok=false; } else clearErr('wi_service');
     if (!varId)                          { setErr('wi_variant', 'Select a variant'); ok=false; } else clearErr('wi_variant');
-    if (isFut && !futDate)               { setErr('wi_future_date', 'Select a future date'); ok=false; } else clearErr('wi_future_date');
+    if (isFut && !futDate)               { setErr('wi_future_date', 'Select a future date'); ok=false; }
+    else if (isFut && futDate <= today)  { setErr ('wi_future_date', 'Booking date cannot be in the past.');       ok=false; }
+    else clearErr('wi_future_date');
     if (!ok) return;
 
     const btn = document.getElementById('wiSubmitBtn');
