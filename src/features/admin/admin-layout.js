@@ -131,8 +131,9 @@ const AdminLayout = (() => {
       const now = new Date();
       const dateEl = document.getElementById('topbarDate');
       if (dateEl) dateEl.textContent = now.toLocaleDateString('en-PH', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-      });
+     timeZone: 'Asia/Manila',
+     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+     });
     }
     update();
     setInterval(update, 60000);
@@ -431,14 +432,16 @@ const AdminLayout = (() => {
 
   function formatDate(dateStr) {
     if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('en-PH', {
+  timeZone: 'Asia/Manila', year: 'numeric', month: 'short', day: 'numeric'
+});
   }
 
   function formatDateTime(dateStr) {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
-    return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
-      + ' ' + d.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+return d.toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', month: 'short', day: 'numeric' })
+  + ' ' + d.toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit' });
   }
 
   // SKELETON HELPERS

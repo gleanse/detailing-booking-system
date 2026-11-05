@@ -1,4 +1,5 @@
 // APP JAVASCRIPT
+process.env.TZ = 'Asia/Manila'; 
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');

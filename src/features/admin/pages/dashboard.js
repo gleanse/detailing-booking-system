@@ -1,7 +1,9 @@
 AdminLayout.init({ activePage: 'dashboard', breadcrumb: 'Dashboard' });
 
 // Greeting time
-const hour = new Date().getHours();
+const hour = Number(new Intl.DateTimeFormat('en-US', {
+  hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Manila'
+}).format(new Date()));
 const greetEl = document.getElementById('greetingTime');
 if (greetEl) greetEl.textContent = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
 
@@ -171,7 +173,9 @@ function drawChart(key, canvasId, config) {
 }
 
 const shortDate = (str) =>
-  new Date(str + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+  new Date(str + 'T00:00:00+08:00').toLocaleDateString('en-PH', {
+    timeZone: 'Asia/Manila', month: 'short', day: 'numeric'
+  });
 
 async function loadReports() {
   const days = document.getElementById('trendRange')?.value || 7;

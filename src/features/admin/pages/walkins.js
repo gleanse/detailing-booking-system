@@ -2,7 +2,7 @@ AdminLayout.init({ activePage: 'walkins', breadcrumb: 'Walk-in Booking' });
   const { formatCurrency, skeletonListItems } = AdminLayout;
 
   //  State 
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }); // YYYY-MM-DD
   let isTodayFull    = false;
   let selectedFutDate = null;
   let services        = [];

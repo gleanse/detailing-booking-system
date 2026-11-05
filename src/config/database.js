@@ -1,6 +1,6 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
 require('dotenv').config();
-
+types.setTypeParser(1082, (v) => v);
 // NOTE: if migrating from supabase to a self-hosted vps (fully dockerized),
 // update this branch so 'production' also supports db_host/db_port/etc.
 // instead of only DATABASE_URL - otherwise docker's production target
@@ -29,7 +29,10 @@ const pool = new Pool(
 );
 
 // connection status
-pool.on('connect', () => {
+pool.on('connect', (client) => {
+  client.query("SET TIME ZONE 'Asia/Manila'").catch((err) => {
+    console.error('Failed to set session timezone:', err.message);
+  });
   console.log('Connected to PostgreSQL database');
 });
 

@@ -1311,8 +1311,10 @@ router.put('/availability/:id', async (req, res) => {
     }
 
     // Fetch existing row for checks
+    // TIMEZONE FIX: to_char para string na 'YYYY-MM-DD' ang avail_date (hindi Date object)
     const existing = await pool.query(
-      `SELECT a.*, s.duration_hours AS service_duration, a.date AS avail_date
+      `SELECT a.*, s.duration_hours AS service_duration,
+              to_char(a.date, 'YYYY-MM-DD') AS avail_date
        FROM availability a
        LEFT JOIN services s ON s.id = a.service_id
        WHERE a.id = $1`, [id]
@@ -1323,7 +1325,8 @@ router.put('/availability/:id', async (req, res) => {
     }
 
     const row = existing.rows[0];
-    const targetDateStr = date || row.avail_date?.toISOString().split('T')[0];
+    // TIMEZONE FIX: huwag nang gumamit ng toISOString() (UTC) dito
+    const targetDateStr = date || row.avail_date;
     const targetDate = new Date(targetDateStr + 'T00:00:00');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -1608,12 +1611,13 @@ router.get('/reports/summary', async (req, res) => {
     );
 
     // Punan ang mga araw na walang booking para tuloy-tuloy ang line
+    // TIMEZONE FIX: explicit Asia/Manila para tugma sa SQL CURRENT_DATE
     const trendMap = new Map(trendQ.rows.map(r => [r.date, Number(r.count)]));
     const trend = [];
     for (let i = span; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const key = d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+      const key = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }); // YYYY-MM-DD
       trend.push({ date: key, count: trendMap.get(key) || 0 });
     }
 
