@@ -483,13 +483,32 @@ function stopTimer() {
   }
 }
 
+// the release endpoint can refuse the cancel, or report that the payment was already received
+function showRefusedRelease(json) {
+  if (json.confirmed) {
+    clearSession();
+    window.location.replace(`/booking/success?external_id=${json.paymentId}`);
+    return;
+  }
+
+  showModal('Could Not Cancel Yet', json.message, () => {}, 'Understood', true);
+}
+
 async function releaseAndRestart() {
-  clearSession();
-  await fetch('/api/booking/release', {
+  const res = await fetch('/api/booking/release', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ bookingId: state.bookingId }),
   });
+  const json = await res.json();
+
+  // the cancel was refused or the payment already arrived, keep the booking
+  if (json.paymentStarted || json.confirmed) {
+    showRefusedRelease(json);
+    return;
+  }
+
+  clearSession();
   state.bookingId = null;
   state.expiresAt = null;
   showStep(2);
@@ -1086,17 +1105,24 @@ function populateSummary() {
 
 // Release helper used by UI buttons
 async function releaseAndReset() {
-  stopTimer();
   const res = await fetch('/api/booking/release', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ bookingId: state.bookingId }),
   });
   const json = await res.json();
+
+  // the cancel was refused or the payment already arrived, keep the booking
+  if (json.paymentStarted || json.confirmed) {
+    showRefusedRelease(json);
+    return { released: false, abuseCount: 0 };
+  }
+
+  stopTimer();
   state.bookingId = null;
   state.expiresAt = null;
   clearSession();
-  return json.abuseCount || 0;
+  return { released: true, abuseCount: json.abuseCount || 0 };
 }
 
 // Intercept nav links when slot is locked
@@ -1110,7 +1136,7 @@ document.querySelectorAll('nav a, #mobile-menu a').forEach((link) => {
           'Cancel Booking?',
           'Leaving this page will release your reserved slot and it may be taken by someone else.<br><br><span class="text-yellow-400 font-semibold">Note: Cancelling reservations 3 times within an hour will temporarily block you from booking for 2 hours.</span><br><br>Are you sure?',
           async () => {
-            await releaseAndReset();
+            if (!(await releaseAndReset()).released) return;
             window.location.href = href;
           },
         );
@@ -1125,7 +1151,7 @@ document.getElementById('btn-back-services').addEventListener('click', () => {
       'Cancel Booking?',
       'Going back to services will release your reserved slot and it may be taken by someone else.<br><br><span class="text-yellow-400 font-semibold">Note: Cancelling reservations 3 times within an hour will temporarily block you from booking for 2 hours.</span><br><br>Are you sure?',
       async () => {
-        await releaseAndReset();
+        if (!(await releaseAndReset()).released) return;
         window.location.href = '/services';
       },
     );
@@ -1169,7 +1195,8 @@ document.getElementById('btn-step3-back').addEventListener('click', () => {
     'Release Slot?',
     'Going back will release your reserved slot and someone else may take it.<br><br><span class="text-yellow-400 font-semibold">Note: Cancelling reservations 3 times within an hour will temporarily block you from booking for 2 hours.</span><br><br>Are you sure?',
     async () => {
-      const abuseCount = await releaseAndReset();
+      const { released, abuseCount } = await releaseAndReset();
+      if (!released) return;
       const btn = document.getElementById('btn-step2-next');
       btn.disabled = true;
       btn.innerHTML = 'Continue <i class="ph ph-arrow-right"></i>';
