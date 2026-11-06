@@ -262,7 +262,6 @@ const confirmBooking = async ({ bookingId, xenditInvoiceId }) => {
         WHERE availability_id = (
           SELECT availability_id FROM bookings WHERE id = $1
         )
-        AND booking_status = 'confirmed'
       ),
       updated_at = NOW()
     WHERE id = $1 AND booking_status IN ('locked', 'expired')

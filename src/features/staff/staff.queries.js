@@ -1,5 +1,8 @@
 //QUERY
 const pool = require('../../config/database');
+const {
+  getNextQueueNumber: computeNextQueueNumber,
+} = require('../../shared/utils/queue-number');
 
 const getUpcomingBookings = async ({
   page = 1,
@@ -402,15 +405,8 @@ const getAvailabilityForDate = async (serviceId, date) => {
   return result.rows[0] || null;
 };
 
-const getNextQueueNumber = async (availabilityId) => {
-  const result = await pool.query(
-    `SELECT COALESCE(MAX(queue_number), 0) + 1 AS next_queue
-     FROM bookings
-     WHERE availability_id = $1 AND booking_status = 'confirmed'`,
-    [availabilityId],
-  );
-  return result.rows[0].next_queue;
-};
+const getNextQueueNumber = (availabilityId) =>
+  computeNextQueueNumber(pool, availabilityId);
 
 const getAllActiveServices = async () => {
   const result = await pool.query(

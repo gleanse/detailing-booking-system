@@ -6,6 +6,7 @@ const path    = require('path');
 const fs      = require('fs');
 const pool    = require('../../config/database');
 const { resolveWalkInDownPayment } = require('../../shared/utils/walkin-down-payment');
+const { getNextQueueNumber } = require('../../shared/utils/queue-number');
 
 const PUBLIC_DIR  = path.join(__dirname, '..', '..', '..', 'public');
 const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads', 'services');
@@ -471,13 +472,7 @@ router.post('/bookings/walkin', async (req, res) => {
     }
 
     //  Next queue number for this availability slot 
-    const queueResult = await client.query(
-      `SELECT COALESCE(MAX(queue_number), 0) + 1 AS next_queue
-       FROM bookings
-       WHERE availability_id = $1`,
-      [av.id]
-    );
-    const queue_number = queueResult.rows[0].next_queue;
+    const queue_number = await getNextQueueNumber(client, av.id);
 
     const variantResult = await client.query(
       'SELECT price FROM service_variants WHERE id = $1', [variant_id]
@@ -690,10 +685,22 @@ router.post('/bookings/reschedule', async (req, res) => {
 
     //  Move bookings: update availability_id to new slot 
     await pool.query(
-      `UPDATE bookings
-       SET availability_id = $1, updated_at = NOW()
-       WHERE id = ANY($2::uuid[])`,
-      [av.id, booking_ids]
+      `UPDATE bookings b
+       SET availability_id = $1,
+           queue_number = (base.max_q + r.rn)::int,
+           updated_at = NOW()
+       FROM (
+         SELECT id, ROW_NUMBER() OVER (ORDER BY queue_number NULLS LAST, created_at) AS rn
+         FROM bookings
+         WHERE id = ANY($2::uuid[])
+       ) r,
+       (
+         SELECT COALESCE(MAX(queue_number), 0) AS max_q
+         FROM bookings
+         WHERE availability_id = $1
+       ) base
+       WHERE b.id = r.id`,
+      [av.id, bookings.map((x) => x.id)]
     );
 
     //  Audit log 
