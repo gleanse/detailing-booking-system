@@ -34,7 +34,12 @@ const issueCode = async ({ email, name }) => {
     const otp = crypto.randomInt(100000, 1000000).toString();
     await redis.set(codeKey(email), otp, 'EX', CODE_TTL_SECONDS);
     await redis.del(triesKey(email));
-    await sendEmailVerificationEmail({ email, name, otp });
+    await sendEmailVerificationEmail({
+      email,
+      name,
+      otp,
+      purpose: 'signup',
+    });
   } catch (error) {
     // the customer never got a code, so they should not have to wait to ask again
     await redis.del(cooldownKey(email));

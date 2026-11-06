@@ -7,195 +7,204 @@
   <link rel="stylesheet" href="/css/output.css">
   <link rel="stylesheet" href="/styles/custom.css">
   <link rel="stylesheet" href="/phosphor/regular/style.css">
+  <link rel="stylesheet" href="/fonts/big-shoulders/latin-800.css">
+  <link rel="stylesheet" href="/fonts/big-shoulders/latin-500.css">
   <link rel="stylesheet" href="/customer/customer.css">
 </head>
-<body class="bg-[#0a0a0a] min-h-screen text-white overflow-x-hidden">
+<body class="auth-page bg-ink-black min-h-screen text-white overflow-x-hidden">
 
   <!-- NAVBAR -->
-  <header
-    class="sticky top-0 z-50 border-b border-red-500/20 bg-[#0a0a0a]/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(229,53,53,0.1)] animate-slideDown">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+  <header class="sticky top-0 z-50 border-b border-white/10 bg-ink-black/80 backdrop-blur-lg animate-slideDown">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6">
       <div class="flex items-center justify-between h-16">
-
-        <a href="/" class="flex items-center gap-3 group">
-          <div class="w-[3px] h-7 bg-red-500 rounded-full transition-all duration-300 group-hover:h-9"></div>
-          <span
-            class="text-xl sm:text-2xl tracking-widest uppercase font-bold bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent"
-            style="font-family:'Bebas Neue',sans-serif;">
-            Herco Detailing Garage
+        <a href="/" class="flex items-center gap-2.5" aria-label="Herco Detailing Garage home">
+          <svg class="size-9 shrink-0 text-brand" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <path d="M18 2l14 8v16l-14 8L4 26V10z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            <path d="M12.5 11v14M23.5 11v14M12.5 18h11" class="stroke-white" stroke-width="3" stroke-linecap="round" />
+          </svg>
+          <span class="flex flex-col leading-none">
+            <span class="font-heading text-2xl font-extrabold tracking-wider text-white">HERCO</span>
+            <span class="text-xs text-white/50 mt-0.5">Detailing Garage</span>
           </span>
         </a>
 
-        <nav class="hidden md:flex items-center gap-7">
-          <a href="/services"
-            class="nav-link text-sm text-white/50 hover:text-white transition-colors duration-200 tracking-wide">Services</a>
-          <a href="/track"
-            class="nav-link text-sm text-white/50 hover:text-white transition-colors duration-200 tracking-wide">Track
-            Booking</a>
-          <a href="/customer/login" class="nav-link active text-sm tracking-wide">Sign In</a>
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="/services" class="nav-link text-sm text-white/60 hover:text-white transition-colors duration-200">Services</a>
+          <a href="/track" class="nav-link text-sm text-white/60 hover:text-white transition-colors duration-200">Track booking</a>
+          <a href="/customer/login" class="nav-link active text-sm">Sign in</a>
         </nav>
 
         <a href="/services"
-          class="hidden md:flex book-now-btn bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 items-center gap-2">
+          class="hidden md:flex book-now-btn items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-2.5 text-sm font-semibold text-white shadow-glow-sm transition-colors duration-200">
           <i class="ph ph-calendar-plus text-base"></i>
-          Book Now
+          Book now
         </a>
 
-        <button id="menu-toggle"
-          class="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-[5px] cursor-pointer">
-          <span class="w-5 h-px bg-white/60" id="bar1"></span>
-          <span class="w-5 h-px bg-white/60" id="bar2"></span>
-          <span class="w-5 h-px bg-white/60" id="bar3"></span>
+        <button id="menu-toggle" class="md:hidden size-11 -mr-2 flex flex-col items-center justify-center gap-1.25 cursor-pointer"
+          aria-label="Open menu" aria-controls="mobile-menu">
+          <span class="w-5 h-px bg-white/70" id="bar1"></span>
+          <span class="w-5 h-px bg-white/70" id="bar2"></span>
+          <span class="w-5 h-px bg-white/70" id="bar3"></span>
         </button>
-
       </div>
     </div>
 
-    <div id="mobile-menu" class="md:hidden border-t border-white/5 bg-[#0d0d0d]">
-      <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-1">
+    <div id="mobile-menu" class="md:hidden border-t border-white/10 bg-ink-900">
+      <div class="max-w-6xl mx-auto px-5 py-3 flex flex-col">
+        <a href="/services" class="py-4 text-base text-white/70 hover:text-white border-b border-white/5 transition-colors">Services</a>
+        <a href="/track" class="py-4 text-base text-white/70 hover:text-white border-b border-white/5 transition-colors">Track booking</a>
+        <a href="/customer/login" class="py-4 text-base text-white border-b border-white/5">Sign in</a>
         <a href="/services"
-          class="text-sm text-white/50 hover:text-white py-3 border-b border-white/5 transition-colors">Services</a>
-        <a href="/track"
-          class="text-sm text-white/50 hover:text-white py-3 border-b border-white/5 transition-colors">Track
-          Booking</a>
-        <a href="/customer/login" class="text-sm text-white py-3 border-b border-white/5">Sign In</a>
-        <a href="/services"
-          class="mt-3 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-3 rounded-xl text-center transition-colors">
-          Book Now
-        </a>
+          class="mt-3 flex h-12 items-center justify-center rounded-xl bg-red-600 hover:bg-red-700 text-base font-semibold text-white shadow-glow-sm transition-colors">Book now</a>
       </div>
     </div>
   </header>
 
   <!-- MAIN -->
-  <main class="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12">
+  <main class="auth-shell">
 
-    <div class="auth-card animate-fadeUp">
-      <div id="section-login">
-        <!-- HEADER -->
-        <div class="text-center mb-8">
-          <div
-            class="w-14 h-14 rounded-2xl bg-red-600 flex items-center justify-center mx-auto mb-5 shadow-[0_0_32px_rgba(229,53,53,0.3)]"
-            style="transform:rotate(-3deg)">
-            <i class="ph ph-motorcycle text-white text-2xl"></i>
-          </div>
-          <span
-            class="inline-flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-4">
-            <i class="ph ph-user-circle text-sm"></i>
-            Customer Account
-          </span>
-          <h1 class="text-2xl font-semibold text-white mt-3 mb-1">Welcome back</h1>
-          <p class="text-white/40 text-sm">Sign in to access your bookings and account</p>
+    <div class="auth-stage" aria-hidden="true">
+      <span class="auth-sweep" id="auth-sweep"></span>
+      <span class="auth-glow"></span>
+      <div class="auth-hero">
+        <h2 data-split>Back in the <em>garage</em></h2>
+        <p>Sign in to track your bookings, reuse your details and book your next detailing in minutes.</p>
+        <div class="auth-chips">
+          <span>Track bookings</span>
+          <span>Faster booking</span>
+          <span>Booking history</span>
         </div>
+      </div>
+    </div>
 
-        <!-- FORM -->
+    <div class="auth-sheet" id="auth-sheet">
+      <svg class="auth-edge" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+        <path class="auth-edge-glow" d="M0 30 L100 0" stroke="#e53535" />
+        <path id="auth-edge-line" d="M0 30 L100 0" stroke="#e53535" />
+      </svg>
+      <svg class="auth-edge auth-edge-wide" viewBox="0 0 44 100" preserveAspectRatio="none" aria-hidden="true">
+        <path class="auth-edge-glow" d="M44 0 L0 100" stroke="#e53535" />
+        <path d="M44 0 L0 100" stroke="#e53535" />
+      </svg>
+
+      <!-- SIGN IN -->
+      <div id="section-login" class="auth-view">
+        <h1 class="auth-title" data-split>Welcome back</h1>
+        <p class="auth-lede">Sign in to access your bookings and account.</p>
+
         <div class="flex flex-col gap-5">
 
-          <!-- Email -->
           <div>
-            <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-              <i class="ph ph-envelope text-red-500 text-sm"></i>
-              Email Address
-            </label>
-            <input id="input-email" type="email" placeholder="juan@email.com" autocomplete="email"
-              class="input-field" />
-            <p id="error-email" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
+            <label for="input-email" class="auth-label">Email address</label>
+            <div class="auth-control">
+              <i class="ph ph-envelope auth-icon"></i>
+              <input id="input-email" type="email" placeholder="juan@email.com" autocomplete="email" class="auth-input" />
+            </div>
+            <p id="error-email" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
               <i class="ph ph-warning-circle"></i>
               <span></span>
             </p>
           </div>
 
-          <!-- Password -->
           <div>
-            <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-              <i class="ph ph-lock text-red-500 text-sm"></i>
-              Password
-            </label>
-            <div class="pw-wrap">
+            <label for="input-password" class="auth-label">Password</label>
+            <div class="auth-control">
+              <i class="ph ph-lock auth-icon"></i>
               <input id="input-password" type="password" placeholder="Enter your password"
-                autocomplete="current-password" class="input-field pr-11" />
-              <button type="button" class="pw-toggle" id="toggle-pw">
+                autocomplete="current-password" class="auth-input has-eye" />
+              <button type="button" class="auth-eye" id="toggle-pw" aria-label="Show or hide password">
                 <i class="ph ph-eye" id="pw-icon"></i>
               </button>
             </div>
-            <p id="error-password" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
+            <p id="error-password" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
               <i class="ph ph-warning-circle"></i>
               <span></span>
             </p>
-            <button type="button" id="btn-forgot-password"
-              class="mt-2 text-xs text-white/30 hover:text-red-400 transition-colors duration-200 text-left cursor-pointer">
-              Forgot password?
-            </button>
           </div>
 
-          <!-- Remember Me -->
-          <div class="flex items-center gap-3">
-            <input type="checkbox" id="remember-me" class="w-4 h-4 rounded accent-red-500 cursor-pointer" />
-            <label for="remember-me" class="text-white/40 text-sm cursor-pointer select-none">
-              Remember me for 30 days
+          <div class="flex items-center justify-between gap-3">
+            <label for="remember-me" class="flex items-center gap-3 text-white/50 text-sm cursor-pointer select-none">
+              <input type="checkbox" id="remember-me" class="auth-check" />
+              Remember me
             </label>
+            <button type="button" id="btn-forgot-password" class="auth-link">Forgot password?</button>
           </div>
 
-          <!-- Form error -->
           <div id="form-error"
             class="hidden items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
-            <i class="ph ph-warning-circle text-lg flex-shrink-0"></i>
+            <i class="ph ph-warning-circle text-lg shrink-0"></i>
             <span id="form-error-text"></span>
           </div>
 
-          <!-- Submit -->
-          <button id="btn-submit"
-            class="book-now-btn w-full bg-red-600 hover:bg-red-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mt-1 cursor-pointer">
+          <button id="btn-submit" class="auth-btn flex items-center justify-center gap-2">
             <i class="ph ph-sign-in text-base" id="btn-icon"></i>
             <span id="btn-text">Sign In</span>
           </button>
-
         </div>
 
-        <!-- FOOTER -->
-        <div class="mt-8 pt-6 border-t border-white/5 flex flex-col items-center gap-3">
-          <p class="text-white/30 text-sm">
-            Don't have an account?
-            <a href="/customer/register"
-              class="text-red-400 hover:text-red-300 font-medium transition-colors duration-200 ml-1">Create one</a>
-          </p>
-          <a href="/services"
-            class="inline-flex items-center gap-1.5 text-white/20 hover:text-white/40 text-xs transition-colors duration-200">
+        <div class="auth-alt">
+          <p>Don't have an account? <a href="/customer/register" class="auth-link ml-1">Create one</a></p>
+          <a href="/services" class="auth-alt-sub inline-flex items-center gap-1.5">
             <i class="ph ph-arrow-left text-sm"></i>
             Continue as guest
           </a>
         </div>
-
       </div>
 
-      <!-- FORGOT PASSWORD STEP 1: enter email -->
-      <div id="section-forgot" class="hidden">
-
-        <div class="text-center mb-8">
-          <div
-            class="w-14 h-14 rounded-2xl bg-red-600 flex items-center justify-center mx-auto mb-5 shadow-[0_0_32px_rgba(229,53,53,0.3)]"
-            style="transform:rotate(-3deg)">
-            <i class="ph ph-key text-white text-2xl"></i>
-          </div>
-          <span
-            class="inline-flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-4">
-            <i class="ph ph-lock-key-open text-sm"></i>
-            Password Reset
-          </span>
-          <h1 class="text-2xl font-semibold text-white mt-3 mb-1">Forgot your password?</h1>
-          <p class="text-white/40 text-sm">Enter your email and we'll send you a reset code.</p>
-        </div>
+      <!-- EMAIL CODE (unverified account) -->
+      <div id="section-verify" class="auth-view hidden">
+        <h1 class="auth-title" data-split>Check your email</h1>
+        <p class="auth-lede">We sent a 6 digit code to <strong id="verify-email-text"></strong>. It expires in 10 minutes.</p>
 
         <div class="flex flex-col gap-5">
-
           <div>
-            <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-              <i class="ph ph-envelope text-red-500 text-sm"></i>
-              Email Address
-            </label>
-            <input id="forgot-email" type="email" placeholder="juan@email.com" autocomplete="email"
-              class="input-field" />
-            <p id="error-forgot-email" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
+            <label for="verify-code" class="auth-label">Verification code</label>
+            <input id="verify-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+              placeholder="000000" class="auth-input auth-code" />
+            <p id="error-verify-code" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
+              <i class="ph ph-warning-circle"></i>
+              <span></span>
+            </p>
+          </div>
+
+          <div id="verify-note" class="auth-note hidden"></div>
+
+          <div id="verify-form-error"
+            class="hidden items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+            <i class="ph ph-warning-circle text-lg shrink-0"></i>
+            <span id="verify-form-error-text"></span>
+          </div>
+
+          <button id="btn-verify" class="auth-btn flex items-center justify-center gap-2">
+            <i class="ph ph-shield-check text-base" id="verify-btn-icon"></i>
+            <span id="verify-btn-text">Verify and Continue</span>
+          </button>
+
+          <p class="auth-resend">
+            <span>Did not get it?</span>
+            <button type="button" id="btn-resend-code" class="auth-link" disabled>Resend code</button>
+            <span id="resend-code-count" class="auth-count"></span>
+          </p>
+        </div>
+
+        <div class="auth-alt">
+          <p>Wrong email? <button type="button" id="btn-verify-back" class="auth-link ml-1">Use a different email</button></p>
+        </div>
+      </div>
+
+      <!-- FORGOT PASSWORD STEP 1 -->
+      <div id="section-forgot" class="auth-view hidden">
+        <h1 class="auth-title" data-split>Forgot password</h1>
+        <p class="auth-lede">Enter your email and we will send you a reset code.</p>
+
+        <div class="flex flex-col gap-5">
+          <div>
+            <label for="forgot-email" class="auth-label">Email address</label>
+            <div class="auth-control">
+              <i class="ph ph-envelope auth-icon"></i>
+              <input id="forgot-email" type="email" placeholder="juan@email.com" autocomplete="email" class="auth-input" />
+            </div>
+            <p id="error-forgot-email" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
               <i class="ph ph-warning-circle"></i>
               <span></span>
             </p>
@@ -203,139 +212,101 @@
 
           <div id="forgot-form-error"
             class="hidden items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
-            <i class="ph ph-warning-circle text-lg flex-shrink-0"></i>
+            <i class="ph ph-warning-circle text-lg shrink-0"></i>
             <span id="forgot-form-error-text"></span>
           </div>
 
-          <button id="btn-send-otp"
-            class="book-now-btn w-full bg-red-600 hover:bg-red-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mt-1 cursor-pointer">
+          <button id="btn-send-otp" class="auth-btn flex items-center justify-center gap-2">
             <i class="ph ph-paper-plane-tilt text-base" id="send-otp-icon"></i>
             <span id="send-otp-text">Send Reset Code</span>
           </button>
-
         </div>
 
-        <div class="mt-8 pt-6 border-t border-white/5 flex justify-center">
-          <button type="button" id="btn-back-to-login"
-            class="inline-flex items-center gap-1.5 text-white/20 hover:text-white/40 text-xs transition-colors duration-200 cursor-pointer">
+        <div class="auth-alt">
+          <button type="button" id="btn-back-to-login" class="auth-alt-sub inline-flex items-center gap-1.5 cursor-pointer">
             <i class="ph ph-arrow-left text-sm"></i>
             Back to sign in
           </button>
         </div>
-
       </div>
 
-      <!-- FORGOT PASSWORD STEP 2: enter OTP + new password -->
-      <div id="section-reset" class="hidden">
-
-        <div class="text-center mb-8">
-          <div
-            class="w-14 h-14 rounded-2xl bg-red-600 flex items-center justify-center mx-auto mb-5 shadow-[0_0_32px_rgba(229,53,53,0.3)]"
-            style="transform:rotate(-3deg)">
-            <i class="ph ph-shield-check text-white text-2xl"></i>
-          </div>
-          <span
-            class="inline-flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-4">
-            <i class="ph ph-lock-key-open text-sm"></i>
-            Password Reset
-          </span>
-          <h1 class="text-2xl font-semibold text-white mt-3 mb-1">Set new password</h1>
-          <p class="text-white/40 text-sm">Enter the code sent to your email and choose a new password.</p>
-        </div>
+      <!-- FORGOT PASSWORD STEP 2 -->
+      <div id="section-reset" class="auth-view hidden">
+        <h1 class="auth-title" data-split>New password</h1>
+        <p class="auth-lede">Enter the code sent to your email, then choose a new password.</p>
 
         <div class="flex flex-col gap-5">
-
           <div>
-            <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-              <i class="ph ph-hash text-red-500 text-sm"></i>
-              Reset Code
-            </label>
-            <input id="reset-otp" type="text" placeholder="Enter 6-digit code" maxlength="6"
-              class="input-field tracking-widest" />
-            <p id="error-reset-otp" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
+            <label for="reset-otp" class="auth-label">Reset code</label>
+            <input id="reset-otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+              placeholder="000000" class="auth-input auth-code" />
+            <p id="error-reset-otp" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
               <i class="ph ph-warning-circle"></i>
               <span></span>
             </p>
           </div>
 
-          <button id="btn-verify-otp"
-            class="book-now-btn w-full bg-red-600 hover:bg-red-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+          <button id="btn-verify-otp" class="auth-btn flex items-center justify-center gap-2">
             <i class="ph ph-shield-check text-base" id="verify-otp-icon"></i>
             <span id="verify-otp-text">Verify Code</span>
           </button>
 
-          <!-- hidden until OTP verified -->
           <div id="new-password-fields" class="hidden flex-col gap-5">
-
             <div>
-              <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-                <i class="ph ph-lock text-red-500 text-sm"></i>
-                New Password
-              </label>
-              <div class="pw-wrap">
-                <input id="reset-password" type="password" placeholder="At least 8 characters"
-                  class="input-field pr-11" />
-                <button type="button" class="pw-toggle" id="toggle-reset-pw">
+              <label for="reset-password" class="auth-label">New password</label>
+              <div class="auth-control">
+                <i class="ph ph-lock auth-icon"></i>
+                <input id="reset-password" type="password" placeholder="At least 8 characters" class="auth-input has-eye" />
+                <button type="button" class="auth-eye" id="toggle-reset-pw" aria-label="Show or hide password">
                   <i class="ph ph-eye" id="reset-pw-icon"></i>
                 </button>
               </div>
-              <p id="error-reset-password" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
+              <p id="error-reset-password" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
                 <i class="ph ph-warning-circle"></i>
                 <span></span>
               </p>
             </div>
 
             <div>
-              <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-                <i class="ph ph-lock text-red-500 text-sm"></i>
-                Confirm New Password
-              </label>
-              <div class="pw-wrap">
-                <input id="reset-confirm-password" type="password" placeholder="Repeat new password"
-                  class="input-field pr-11" />
-                <button type="button" class="pw-toggle" id="toggle-reset-confirm-pw">
+              <label for="reset-confirm-password" class="auth-label">Confirm new password</label>
+              <div class="auth-control">
+                <i class="ph ph-lock auth-icon"></i>
+                <input id="reset-confirm-password" type="password" placeholder="Repeat new password" class="auth-input has-eye" />
+                <button type="button" class="auth-eye" id="toggle-reset-confirm-pw" aria-label="Show or hide password">
                   <i class="ph ph-eye" id="reset-confirm-pw-icon"></i>
                 </button>
               </div>
-              <p id="error-reset-confirm-password" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
+              <p id="error-reset-confirm-password" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
                 <i class="ph ph-warning-circle"></i>
                 <span></span>
               </p>
             </div>
 
-            <button id="btn-reset-password"
-              class="book-now-btn w-full bg-red-600 hover:bg-red-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mt-1">
+            <button id="btn-reset-password" class="auth-btn flex items-center justify-center gap-2">
               <i class="ph ph-check text-base" id="reset-btn-icon"></i>
               <span id="reset-btn-text">Reset Password</span>
             </button>
-
           </div>
 
           <div id="reset-form-error"
             class="hidden items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
-            <i class="ph ph-warning-circle text-lg flex-shrink-0"></i>
+            <i class="ph ph-warning-circle text-lg shrink-0"></i>
             <span id="reset-form-error-text"></span>
           </div>
 
-          <p class="text-center text-xs text-white/30">
-            Didn't receive the code?
-            <button type="button" id="btn-resend-otp"
-              class="text-red-400 hover:text-red-300 transition-colors duration-200 ml-1 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
-              Resend
-            </button>
-            <span id="resend-countdown" class="text-white/20 ml-1 hidden"></span>
+          <p class="auth-resend">
+            <span>Did not receive the code?</span>
+            <button type="button" id="btn-resend-otp" class="auth-link">Resend</button>
+            <span id="resend-countdown" class="auth-count hidden"></span>
           </p>
-
         </div>
 
-        <div class="mt-8 pt-6 border-t border-white/5 flex justify-center">
-          <button type="button" id="btn-back-to-forgot"
-            class="inline-flex items-center gap-1.5 text-white/20 hover:text-white/40 text-xs transition-colors duration-200 cursor-pointer">
+        <div class="auth-alt">
+          <button type="button" id="btn-back-to-forgot" class="auth-alt-sub inline-flex items-center gap-1.5 cursor-pointer">
             <i class="ph ph-arrow-left text-sm"></i>
             Back
           </button>
         </div>
-
       </div>
 
     </div>
@@ -356,6 +327,7 @@
       bar3.style.transform = menuOpen ? 'translateY(-6px) rotate(-45deg)' : '';
     });
   </script>
+  <script src="/gsap/gsap.min.js"></script>
   <script src="/customer/customer-auth.js"></script>
 </body>
 </html>

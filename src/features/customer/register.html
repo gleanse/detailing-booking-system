@@ -7,203 +7,225 @@
   <link rel="stylesheet" href="/css/output.css">
   <link rel="stylesheet" href="/styles/custom.css">
   <link rel="stylesheet" href="/phosphor/regular/style.css">
+  <link rel="stylesheet" href="/fonts/big-shoulders/latin-800.css">
+  <link rel="stylesheet" href="/fonts/big-shoulders/latin-500.css">
   <link rel="stylesheet" href="/customer/customer.css">
 </head>
-<body class="bg-[#0a0a0a] min-h-screen text-white overflow-x-hidden">
+<body class="auth-page bg-ink-black min-h-screen text-white overflow-x-hidden">
 
   <!-- NAVBAR -->
-  <header
-    class="sticky top-0 z-50 border-b border-red-500/20 bg-[#0a0a0a]/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(229,53,53,0.1)] animate-slideDown">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+  <header class="sticky top-0 z-50 border-b border-white/10 bg-ink-black/80 backdrop-blur-lg animate-slideDown">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6">
       <div class="flex items-center justify-between h-16">
-
-        <a href="/" class="flex items-center gap-3 group">
-          <div class="w-[3px] h-7 bg-red-500 rounded-full transition-all duration-300 group-hover:h-9"></div>
-          <span
-            class="text-xl sm:text-2xl tracking-widest uppercase font-bold bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent"
-            style="font-family:'Bebas Neue',sans-serif;">
-            Herco Detailing Garage
+        <a href="/" class="flex items-center gap-2.5" aria-label="Herco Detailing Garage home">
+          <svg class="size-9 shrink-0 text-brand" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <path d="M18 2l14 8v16l-14 8L4 26V10z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            <path d="M12.5 11v14M23.5 11v14M12.5 18h11" class="stroke-white" stroke-width="3" stroke-linecap="round" />
+          </svg>
+          <span class="flex flex-col leading-none">
+            <span class="font-heading text-2xl font-extrabold tracking-wider text-white">HERCO</span>
+            <span class="text-xs text-white/50 mt-0.5">Detailing Garage</span>
           </span>
         </a>
 
-        <nav class="hidden md:flex items-center gap-7">
-          <a href="/services"
-            class="nav-link text-sm text-white/50 hover:text-white transition-colors duration-200 tracking-wide">Services</a>
-          <a href="/track"
-            class="nav-link text-sm text-white/50 hover:text-white transition-colors duration-200 tracking-wide">Track
-            Booking</a>
-          <a href="/customer/login"
-            class="nav-link text-sm text-white/50 hover:text-white transition-colors duration-200 tracking-wide">Sign
-            In</a>
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="/services" class="nav-link text-sm text-white/60 hover:text-white transition-colors duration-200">Services</a>
+          <a href="/track" class="nav-link text-sm text-white/60 hover:text-white transition-colors duration-200">Track booking</a>
+          <a href="/customer/login" class="nav-link active text-sm">Sign in</a>
         </nav>
 
         <a href="/services"
-          class="hidden md:flex book-now-btn bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 items-center gap-2">
+          class="hidden md:flex book-now-btn items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-2.5 text-sm font-semibold text-white shadow-glow-sm transition-colors duration-200">
           <i class="ph ph-calendar-plus text-base"></i>
-          Book Now
+          Book now
         </a>
 
-        <button id="menu-toggle"
-          class="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-[5px] cursor-pointer">
-          <span class="w-5 h-px bg-white/60" id="bar1"></span>
-          <span class="w-5 h-px bg-white/60" id="bar2"></span>
-          <span class="w-5 h-px bg-white/60" id="bar3"></span>
+        <button id="menu-toggle" class="md:hidden size-11 -mr-2 flex flex-col items-center justify-center gap-1.25 cursor-pointer"
+          aria-label="Open menu" aria-controls="mobile-menu">
+          <span class="w-5 h-px bg-white/70" id="bar1"></span>
+          <span class="w-5 h-px bg-white/70" id="bar2"></span>
+          <span class="w-5 h-px bg-white/70" id="bar3"></span>
         </button>
-
       </div>
     </div>
 
-    <div id="mobile-menu" class="md:hidden border-t border-white/5 bg-[#0d0d0d]">
-      <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-1">
+    <div id="mobile-menu" class="md:hidden border-t border-white/10 bg-ink-900">
+      <div class="max-w-6xl mx-auto px-5 py-3 flex flex-col">
+        <a href="/services" class="py-4 text-base text-white/70 hover:text-white border-b border-white/5 transition-colors">Services</a>
+        <a href="/track" class="py-4 text-base text-white/70 hover:text-white border-b border-white/5 transition-colors">Track booking</a>
+        <a href="/customer/login" class="py-4 text-base text-white border-b border-white/5">Sign in</a>
         <a href="/services"
-          class="text-sm text-white/50 hover:text-white py-3 border-b border-white/5 transition-colors">Services</a>
-        <a href="/track"
-          class="text-sm text-white/50 hover:text-white py-3 border-b border-white/5 transition-colors">Track
-          Booking</a>
-        <a href="/customer/login"
-          class="text-sm text-white/50 hover:text-white py-3 border-b border-white/5 transition-colors">Sign In</a>
-        <a href="/services"
-          class="mt-3 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-3 rounded-xl text-center transition-colors">
-          Book Now
-        </a>
+          class="mt-3 flex h-12 items-center justify-center rounded-xl bg-red-600 hover:bg-red-700 text-base font-semibold text-white shadow-glow-sm transition-colors">Book now</a>
       </div>
     </div>
   </header>
 
   <!-- MAIN -->
-  <main class="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12">
+  <main class="auth-shell">
 
-    <div class="auth-card animate-fadeUp">
-
-      <!-- HEADER -->
-      <div class="text-center mb-8">
-        <div
-          class="w-14 h-14 rounded-2xl bg-red-600 flex items-center justify-center mx-auto mb-5 shadow-[0_0_32px_rgba(229,53,53,0.3)]"
-          style="transform:rotate(-3deg)">
-          <i class="ph ph-user-plus text-white text-2xl"></i>
+    <div class="auth-stage" aria-hidden="true">
+      <span class="auth-sweep" id="auth-sweep"></span>
+      <span class="auth-glow"></span>
+      <div class="auth-hero">
+        <h2 data-split>Join the <em>garage</em></h2>
+        <p>Create an account to book faster, track every detailing and keep your bike's history in one place.</p>
+        <div class="auth-chips">
+          <span>Faster booking</span>
+          <span>Live tracking</span>
+          <span>Booking history</span>
         </div>
-        <span
-          class="inline-flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-4">
-          <i class="ph ph-user-plus text-sm"></i>
-          New Account
-        </span>
-        <h1 class="text-2xl font-semibold text-white mt-3 mb-1">Create account</h1>
-        <p class="text-white/40 text-sm">Fill in your details to get started</p>
+      </div>
+    </div>
+
+    <div class="auth-sheet" id="auth-sheet">
+      <svg class="auth-edge" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+        <path class="auth-edge-glow" d="M0 30 L100 0" stroke="#e53535" />
+        <path id="auth-edge-line" d="M0 30 L100 0" stroke="#e53535" />
+      </svg>
+      <svg class="auth-edge auth-edge-wide" viewBox="0 0 44 100" preserveAspectRatio="none" aria-hidden="true">
+        <path class="auth-edge-glow" d="M44 0 L0 100" stroke="#e53535" />
+        <path d="M44 0 L0 100" stroke="#e53535" />
+      </svg>
+
+      <!-- CREATE ACCOUNT -->
+      <div id="section-register" class="auth-view">
+        <h1 class="auth-title" data-split>Create account</h1>
+        <p class="auth-lede">Fill in your details to get started.</p>
+
+        <div class="flex flex-col gap-5">
+
+          <div>
+            <label for="input-name" class="auth-label">Full name</label>
+            <div class="auth-control">
+              <i class="ph ph-user auth-icon"></i>
+              <input id="input-name" type="text" placeholder="Juan dela Cruz" autocomplete="name" class="auth-input" />
+            </div>
+            <p id="error-name" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
+              <i class="ph ph-warning-circle"></i>
+              <span></span>
+            </p>
+          </div>
+
+          <div>
+            <label for="input-email" class="auth-label">Email address</label>
+            <div class="auth-control">
+              <i class="ph ph-envelope auth-icon"></i>
+              <input id="input-email" type="email" placeholder="juan@email.com" autocomplete="email" class="auth-input" />
+            </div>
+            <p id="error-email" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
+              <i class="ph ph-warning-circle"></i>
+              <span></span>
+            </p>
+          </div>
+
+          <div>
+            <label for="input-phone" class="auth-label">Phone number</label>
+            <div class="auth-control">
+              <i class="ph ph-phone auth-icon"></i>
+              <input id="input-phone" type="tel" placeholder="09XX XXX XXXX" maxlength="11" autocomplete="tel" class="auth-input" />
+            </div>
+            <p id="error-phone" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
+              <i class="ph ph-warning-circle"></i>
+              <span></span>
+            </p>
+          </div>
+
+          <div>
+            <label for="input-password" class="auth-label">Password</label>
+            <div class="auth-control">
+              <i class="ph ph-lock auth-icon"></i>
+              <input id="input-password" type="password" placeholder="Min. 8 characters" autocomplete="new-password"
+                class="auth-input has-eye" />
+              <button type="button" class="auth-eye" id="toggle-pw" aria-label="Show or hide password">
+                <i class="ph ph-eye" id="pw-icon"></i>
+              </button>
+            </div>
+            <div class="strength-bar">
+              <div class="strength-fill" id="strength-fill"></div>
+            </div>
+            <p id="strength-label" class="text-white/30 text-xs mt-1.5"></p>
+            <p id="error-password" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
+              <i class="ph ph-warning-circle"></i>
+              <span></span>
+            </p>
+          </div>
+
+          <div>
+            <label for="input-confirm-password" class="auth-label">Confirm password</label>
+            <div class="auth-control">
+              <i class="ph ph-lock-key auth-icon"></i>
+              <input id="input-confirm-password" type="password" placeholder="Re-enter your password"
+                autocomplete="new-password" class="auth-input has-eye" />
+              <button type="button" class="auth-eye" id="toggle-confirm-pw" aria-label="Show or hide password">
+                <i class="ph ph-eye" id="confirm-pw-icon"></i>
+              </button>
+            </div>
+            <p id="error-confirm-password" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
+              <i class="ph ph-warning-circle"></i>
+              <span></span>
+            </p>
+          </div>
+
+          <div id="form-error"
+            class="hidden items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+            <i class="ph ph-warning-circle text-lg shrink-0"></i>
+            <span id="form-error-text"></span>
+          </div>
+
+          <button id="btn-submit" class="auth-btn flex items-center justify-center gap-2">
+            <i class="ph ph-user-plus text-base" id="btn-icon"></i>
+            <span id="btn-text">Create Account</span>
+          </button>
+        </div>
+
+        <div class="auth-alt">
+          <p>Already have an account? <a href="/customer/login" class="auth-link ml-1">Sign in</a></p>
+          <a href="/services" class="auth-alt-sub inline-flex items-center gap-1.5">
+            <i class="ph ph-arrow-left text-sm"></i>
+            Continue as guest
+          </a>
+        </div>
       </div>
 
-      <!-- FORM -->
-      <div class="flex flex-col gap-5">
+      <!-- EMAIL CODE -->
+      <div id="section-verify" class="auth-view hidden">
+        <h1 class="auth-title" data-split>Check your email</h1>
+        <p class="auth-lede">We sent a 6 digit code to <strong id="verify-email-text"></strong>. It expires in 10 minutes.</p>
 
-        <!-- Name -->
-        <div>
-          <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-            <i class="ph ph-user text-red-500 text-sm"></i>
-            Full Name
-          </label>
-          <input id="input-name" type="text" placeholder="Juan dela Cruz" autocomplete="name" class="input-field" />
-          <p id="error-name" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
-            <i class="ph ph-warning-circle"></i>
-            <span></span>
-          </p>
-        </div>
-
-        <!-- Email -->
-        <div>
-          <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-            <i class="ph ph-envelope text-red-500 text-sm"></i>
-            Email Address
-          </label>
-          <input id="input-email" type="email" placeholder="juan@email.com" autocomplete="email" class="input-field" />
-          <p id="error-email" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
-            <i class="ph ph-warning-circle"></i>
-            <span></span>
-          </p>
-        </div>
-
-        <!-- Phone (optional) -->
-        <div>
-          <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-            <i class="ph ph-phone text-red-500 text-sm"></i>
-            Phone Number
-          </label>
-          <input id="input-phone" type="tel" placeholder="09XX XXX XXXX" maxlength="11" autocomplete="tel"
-            class="input-field" />
-          <p id="error-phone" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
-            <i class="ph ph-warning-circle"></i>
-            <span></span>
-          </p>
-        </div>
-
-        <!-- Password -->
-        <div>
-          <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-            <i class="ph ph-lock text-red-500 text-sm"></i>
-            Password
-          </label>
-          <div class="pw-wrap">
-            <input id="input-password" type="password" placeholder="Min. 8 characters" autocomplete="new-password"
-              class="input-field pr-11" />
-            <button type="button" class="pw-toggle" id="toggle-pw">
-              <i class="ph ph-eye" id="pw-icon"></i>
-            </button>
+        <div class="flex flex-col gap-5">
+          <div>
+            <label for="verify-code" class="auth-label">Verification code</label>
+            <input id="verify-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+              placeholder="000000" class="auth-input auth-code" />
+            <p id="error-verify-code" class="hidden text-red-400 text-xs mt-2 items-center gap-1.5">
+              <i class="ph ph-warning-circle"></i>
+              <span></span>
+            </p>
           </div>
-          <div class="strength-bar mt-2">
-            <div class="strength-fill" id="strength-fill"></div>
+
+          <div id="verify-note" class="auth-note hidden"></div>
+
+          <div id="verify-form-error"
+            class="hidden items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+            <i class="ph ph-warning-circle text-lg shrink-0"></i>
+            <span id="verify-form-error-text"></span>
           </div>
-          <p id="strength-label" class="text-white/20 text-xs mt-1"></p>
-          <p id="error-password" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
-            <i class="ph ph-warning-circle"></i>
-            <span></span>
+
+          <button id="btn-verify" class="auth-btn flex items-center justify-center gap-2">
+            <i class="ph ph-shield-check text-base" id="verify-btn-icon"></i>
+            <span id="verify-btn-text">Verify and Continue</span>
+          </button>
+
+          <p class="auth-resend">
+            <span>Did not get it?</span>
+            <button type="button" id="btn-resend-code" class="auth-link" disabled>Resend code</button>
+            <span id="resend-code-count" class="auth-count"></span>
           </p>
         </div>
 
-        <!-- Confirm Password -->
-        <div>
-          <label class="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest mb-2">
-            <i class="ph ph-lock-key text-red-500 text-sm"></i>
-            Confirm Password
-          </label>
-          <div class="pw-wrap">
-            <input id="input-confirm-password" type="password" placeholder="Re-enter your password"
-              autocomplete="new-password" class="input-field pr-11" />
-            <button type="button" class="pw-toggle" id="toggle-confirm-pw">
-              <i class="ph ph-eye" id="confirm-pw-icon"></i>
-            </button>
-          </div>
-          <p id="error-confirm-password" class="hidden text-red-400 text-xs mt-1.5 items-center gap-1">
-            <i class="ph ph-warning-circle"></i>
-            <span></span>
-          </p>
+        <div class="auth-alt">
+          <p>Wrong email? <button type="button" id="btn-verify-back" class="auth-link ml-1">Use a different email</button></p>
         </div>
-
-        <!-- Form error -->
-        <div id="form-error"
-          class="hidden items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
-          <i class="ph ph-warning-circle text-lg flex-shrink-0"></i>
-          <span id="form-error-text"></span>
-        </div>
-
-        <!-- Submit -->
-        <button id="btn-submit"
-          class="book-now-btn w-full bg-red-600 hover:bg-red-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mt-1 cursor-pointer">
-          <i class="ph ph-user-plus text-base" id="btn-icon"></i>
-          <span id="btn-text">Create Account</span>
-        </button>
-
-      </div>
-
-      <!-- FOOTER -->
-      <div class="mt-8 pt-6 border-t border-white/5 flex flex-col items-center gap-3">
-        <p class="text-white/30 text-sm">
-          Already have an account?
-          <a href="/customer/login"
-            class="text-red-400 hover:text-red-300 font-medium transition-colors duration-200 ml-1">Sign in</a>
-        </p>
-        <a href="/services"
-          class="inline-flex items-center gap-1.5 text-white/20 hover:text-white/40 text-xs transition-colors duration-200">
-          <i class="ph ph-arrow-left text-sm"></i>
-          Continue as guest
-        </a>
       </div>
 
     </div>
@@ -224,6 +246,7 @@
       bar3.style.transform = menuOpen ? 'translateY(-6px) rotate(-45deg)' : '';
     });
   </script>
+  <script src="/gsap/gsap.min.js"></script>
   <script src="/customer/customer-auth.js"></script>
 </body>
 </html>

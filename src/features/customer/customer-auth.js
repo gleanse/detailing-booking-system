@@ -34,27 +34,30 @@ if (!isLoginPage && pwInput) {
     const label = document.getElementById('strength-label');
     if (!val) {
       fill.className = 'strength-fill';
-      fill.style.width = '0%';
+      fill.style.width = '';
       label.textContent = '';
       return;
     }
-    const strong =
-      val.length >= 8 &&
-      /[A-Z]/.test(val) &&
-      /[0-9]/.test(val) &&
-      /[^A-Za-z0-9]/.test(val);
-    const medium = val.length >= 8 && (/[A-Z]/.test(val) || /[0-9]/.test(val));
-    if (strong) {
+    const classes = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/].filter((r) =>
+      r.test(val),
+    ).length;
+    const longPassphrase = val.length >= 16 && new Set(val).size >= 8;
+
+    if (val.length < 8) {
+      fill.className = 'strength-fill weak';
+      label.textContent = 'Too short - use at least 8 characters';
+      label.className = 'text-red-400 text-xs mt-1';
+    } else if (classes >= 3 || longPassphrase) {
       fill.className = 'strength-fill strong';
       label.textContent = 'Strong password';
       label.className = 'text-green-400 text-xs mt-1';
-    } else if (medium) {
+    } else if (classes === 2) {
       fill.className = 'strength-fill medium';
-      label.textContent = 'Medium - add numbers or symbols';
+      label.textContent = 'Medium - add more variety or make it longer';
       label.className = 'text-yellow-400 text-xs mt-1';
     } else {
       fill.className = 'strength-fill weak';
-      label.textContent = 'Weak - too short';
+      label.textContent = 'Weak - mix in uppercase letters, numbers or symbols';
       label.className = 'text-red-400 text-xs mt-1';
     }
   });
@@ -90,6 +93,7 @@ function showFormError(message) {
   el.classList.remove('hidden');
   el.classList.add('flex');
   document.getElementById('form-error-text').textContent = message;
+  shakeEl(el);
 }
 
 function hideFormError() {
@@ -238,6 +242,8 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
       const json = await res.json();
       if (json.success) {
         window.location.href = json.redirect || '/customer/account';
+      } else if (json.needsVerification) {
+        openVerify(json.email);
       } else {
         showFormError(json.message || 'Invalid email or password.');
       }
@@ -261,7 +267,9 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
         }),
       });
       const json = await res.json();
-      if (json.success) {
+      if (json.success && json.verify) {
+        openVerify(json.email);
+      } else if (json.success) {
         window.location.href = json.redirect || '/customer/account';
       } else {
         showFormError(
@@ -310,10 +318,7 @@ if (isLoginPage) {
   let forgotEmail = '';
 
   function showSection(section) {
-    sectionLogin.classList.add('hidden');
-    sectionForgot.classList.add('hidden');
-    sectionReset.classList.add('hidden');
-    section.classList.remove('hidden');
+    showView(section);
   }
 
   document
@@ -645,4 +650,297 @@ if (isLoginPage) {
         text.textContent = 'Reset Password';
       }
     });
+}
+
+// MOTION
+const reduceMotion = window.matchMedia(
+  '(prefers-reduced-motion: reduce)',
+).matches;
+const canAnimate = typeof gsap !== 'undefined' && !reduceMotion;
+let activeView = document.querySelector('.auth-view:not(.hidden)');
+let switching = false;
+
+function wrapWord(html) {
+  return `<span class="auth-word" aria-hidden="true"><span>${html}</span></span>`;
+}
+
+function splitWords(el) {
+  const parts = [];
+  el.childNodes.forEach((node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      node.textContent
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .forEach((w) => parts.push(wrapWord(w)));
+    } else {
+      parts.push(wrapWord(node.outerHTML));
+    }
+  });
+  el.setAttribute('aria-label', el.textContent.trim());
+  el.innerHTML = parts.join(' ');
+}
+
+function shakeEl(el) {
+  if (!canAnimate || !el) return;
+  gsap.fromTo(
+    el,
+    { x: -8 },
+    {
+      x: 0,
+      duration: 0.5,
+      ease: 'elastic.out(1, 0.3)',
+      clearProps: 'transform',
+    },
+  );
+}
+
+function enterView(view) {
+  if (!canAnimate) return;
+  const rest = Array.from(view.children).filter(
+    (c) => !c.classList.contains('auth-title'),
+  );
+  gsap.fromTo(
+    view.querySelectorAll('.auth-title .auth-word > span'),
+    { yPercent: 110 },
+    { yPercent: 0, duration: 0.6, stagger: 0.06, ease: 'power3.out' },
+  );
+  gsap.fromTo(
+    rest,
+    { y: 16, opacity: 0 },
+    {
+      y: 0,
+      opacity: 1,
+      duration: 0.5,
+      stagger: 0.07,
+      delay: 0.1,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity',
+    },
+  );
+}
+
+function showView(next) {
+  const prev = activeView;
+  if (!next || next === prev || switching) return;
+
+  const swap = () => {
+    prev.classList.add('hidden');
+    next.classList.remove('hidden');
+    activeView = next;
+    enterView(next);
+    if (window.matchMedia('(hover: hover)').matches) {
+      next.querySelector('input')?.focus({ preventScroll: true });
+    }
+    switching = false;
+  };
+
+  if (!canAnimate) return swap();
+
+  switching = true;
+  gsap.to(prev, {
+    opacity: 0,
+    y: -10,
+    duration: 0.2,
+    ease: 'power1.in',
+    onComplete: () => {
+      swap();
+      gsap.set(prev, { clearProps: 'opacity,transform' });
+    },
+  });
+}
+
+if (canAnimate) {
+  document.querySelectorAll('[data-split]').forEach(splitWords);
+
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  tl.fromTo(
+    '.auth-hero h2 .auth-word > span',
+    { yPercent: 110 },
+    { yPercent: 0, duration: 0.7, stagger: 0.08 },
+    0,
+  )
+    .fromTo(
+      '.auth-hero p, .auth-chips span',
+      { y: 14, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.5,
+        stagger: 0.06,
+        clearProps: 'transform,opacity',
+      },
+      0.35,
+    )
+    .fromTo(
+      '#auth-sweep',
+      { xPercent: 0 },
+      { xPercent: 450, duration: 1.4, ease: 'power2.inOut' },
+      0.1,
+    )
+    .fromTo(
+      '#auth-sheet',
+      { y: 36, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.7, clearProps: 'transform,opacity' },
+      0.2,
+    );
+
+  gsap.delayedCall(0.35, () => enterView(activeView));
+}
+
+// EMAIL CODE STEP
+const verifyView = document.getElementById('section-verify');
+const verifyCode = document.getElementById('verify-code');
+const resendBtn = document.getElementById('btn-resend-code');
+const resendCount = document.getElementById('resend-code-count');
+let verifyEmail = '';
+let verifyTimer = null;
+
+function setVerifyError(message) {
+  const field = document.getElementById('error-verify-code');
+  field.querySelector('span').textContent = message;
+  field.classList.remove('hidden');
+  field.classList.add('flex');
+  verifyCode.classList.add('is-error');
+  shakeEl(verifyCode);
+}
+
+function showVerifyFormError(message) {
+  const el = document.getElementById('verify-form-error');
+  el.classList.remove('hidden');
+  el.classList.add('flex');
+  document.getElementById('verify-form-error-text').textContent = message;
+}
+
+function showVerifyNote(message) {
+  const el = document.getElementById('verify-note');
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+
+function clearVerifyErrors() {
+  const field = document.getElementById('error-verify-code');
+  field.classList.add('hidden');
+  field.classList.remove('flex');
+  verifyCode.classList.remove('is-error');
+  const form = document.getElementById('verify-form-error');
+  form.classList.add('hidden');
+  form.classList.remove('flex');
+  document.getElementById('verify-note').classList.add('hidden');
+}
+
+function startVerifyCooldown(seconds) {
+  clearInterval(verifyTimer);
+  let left = seconds;
+  resendBtn.disabled = true;
+  const tick = () => {
+    if (left <= 0) {
+      clearInterval(verifyTimer);
+      resendBtn.disabled = false;
+      resendCount.textContent = '';
+      return;
+    }
+    resendCount.textContent = `(${left}s)`;
+    left--;
+  };
+  tick();
+  verifyTimer = setInterval(tick, 1000);
+}
+
+function openVerify(email) {
+  verifyEmail = email;
+  document.getElementById('verify-email-text').textContent = email;
+  verifyCode.value = '';
+  clearVerifyErrors();
+  startVerifyCooldown(60);
+  showView(verifyView);
+}
+
+verifyCode.addEventListener('input', () => {
+  verifyCode.value = verifyCode.value.replace(/[^0-9]/g, '');
+  clearVerifyErrors();
+});
+
+verifyCode.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('btn-verify').click();
+});
+
+document.getElementById('btn-verify-back').addEventListener('click', () => {
+  clearInterval(verifyTimer);
+  showView(
+    document.getElementById(isLoginPage ? 'section-login' : 'section-register'),
+  );
+});
+
+document.getElementById('btn-verify').addEventListener('click', async () => {
+  clearVerifyErrors();
+  const otp = verifyCode.value.trim();
+
+  if (!/^\d{6}$/.test(otp)) {
+    setVerifyError('Enter the 6 digit code from your email.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-verify');
+  const icon = document.getElementById('verify-btn-icon');
+  const text = document.getElementById('verify-btn-text');
+  btn.disabled = true;
+  icon.className = 'ph ph-spinner animate-spin text-base';
+  text.textContent = 'Verifying...';
+
+  try {
+    const res = await fetch('/api/customer/register/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: verifyEmail, otp }),
+    });
+    const json = await res.json();
+    if (json.success) {
+      window.location.href = json.redirect || '/customer/account';
+      return;
+    }
+    setVerifyError(json.message || 'Could not verify. Please try again.');
+  } catch {
+    showVerifyFormError('Something went wrong. Please try again.');
+  }
+
+  btn.disabled = false;
+  icon.className = 'ph ph-shield-check text-base';
+  text.textContent = 'Verify and Continue';
+});
+
+resendBtn.addEventListener('click', async () => {
+  clearVerifyErrors();
+  resendBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/customer/register/resend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: verifyEmail }),
+    });
+    const json = await res.json();
+    if (json.success) {
+      verifyCode.value = '';
+      showVerifyNote(json.message);
+      startVerifyCooldown(60);
+      return;
+    }
+    if (res.status === 429 && json.retryAfter) {
+      startVerifyCooldown(json.retryAfter);
+      return;
+    }
+    showVerifyFormError(json.message || 'Could not resend. Please try again.');
+  } catch {
+    showVerifyFormError('Something went wrong. Please try again.');
+  }
+
+  resendBtn.disabled = false;
+});
+
+const resetOtpInput = document.getElementById('reset-otp');
+if (resetOtpInput) {
+  resetOtpInput.addEventListener('input', () => {
+    resetOtpInput.value = resetOtpInput.value.replace(/[^0-9]/g, '');
+  });
 }

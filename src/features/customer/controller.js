@@ -101,9 +101,10 @@ const register = async (req, res) => {
     });
   } catch (err) {
     console.error('Customer register error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -179,9 +180,10 @@ const login = async (req, res) => {
     });
   } catch (err) {
     console.error('Customer login error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -232,9 +234,10 @@ const verifyOtp = async (req, res) => {
     res.json({ success: true, message: 'Code verified.' });
   } catch (err) {
     console.error('Verify OTP error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -275,9 +278,10 @@ const forgotPassword = async (req, res) => {
     });
   } catch (err) {
     console.error('Forgot password error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -345,9 +349,10 @@ const resetPassword = async (req, res) => {
     res.json({ success: true, message: 'Password reset successfully.' });
   } catch (err) {
     console.error('Reset password error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -413,9 +418,10 @@ const verifySignup = async (req, res) => {
     });
   } catch (err) {
     console.error('Verify signup error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -445,9 +451,10 @@ const resendSignupCode = async (req, res) => {
     res.json({ success: true, message: 'A new code was sent to your email.' });
   } catch (err) {
     console.error('Resend signup code error:', err);
-    res
-      .status(500)
-      .json({ success: false, message: 'Server error: ' + err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 

@@ -260,14 +260,27 @@ const sendBookingConfirmationEmail = async (booking) => {
   return data;
 };
 
-const sendEmailVerificationEmail = async ({ email, name, otp }) => {
+const sendEmailVerificationEmail = async ({
+  email,
+  name,
+  otp,
+  purpose = 'change',
+}) => {
+  const isSignup = purpose === 'signup';
+  const subject = isSignup
+    ? 'Verify Your Email to Finish Signing Up'
+    : 'Verify Your New Email Address';
+  const intro = isSignup
+    ? `Hi ${name}, welcome to Herco Detailing Garage. Enter the code below to verify your email and finish creating your account.`
+    : `Hi ${name}, enter the code below to verify your new email address.`;
+
   const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify Your New Email</title>
+  <title>${subject}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#0a0a0a;font-family:Arial,sans-serif;color:#ffffff;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0a;padding:40px 16px;">
@@ -293,7 +306,7 @@ const sendEmailVerificationEmail = async ({ email, name, otp }) => {
               <p style="margin:0 0 4px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.4);">Email Verification</p>
               <h1 style="margin:0;font-size:32px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#ffffff;">Verify Your Email</h1>
               <p style="margin:12px 0 0;font-size:13px;color:rgba(255,255,255,0.4);line-height:1.6;max-width:360px;">
-                Hi ${name}, enter the code below to verify your new email address. This code expires in 10 minutes.
+                ${intro} This code expires in 10 minutes.
               </p>
             </td>
           </tr>
@@ -329,7 +342,7 @@ const sendEmailVerificationEmail = async ({ email, name, otp }) => {
   const data = await brevo.transactionalEmails.sendTransacEmail({
     sender: { name: 'Herco Detailing Garage', email: 'devglensprt@gmail.com' },
     to: [{ email, name }],
-    subject: 'Verify Your New Email Address',
+    subject,
     htmlContent: html,
   });
 
