@@ -77,6 +77,7 @@ stub('../src/config/xendit', {
 const pool = require('../src/config/database');
 const { lockSlot, createPayment } = require('../src/features/bookings/queries');
 const { releaseBookingSlot } = require('../src/features/bookings/controller');
+const { signBookingToken } = require('../src/features/bookings/booking-token');
 
 const fakeRes = () => {
   const res = { code: 200, body: null };
@@ -93,7 +94,10 @@ const fakeRes = () => {
 
 const release = (bookingId) => {
   const res = fakeRes();
-  return releaseBookingSlot({ body: { bookingId } }, res).then(() => res);
+  return releaseBookingSlot(
+    { body: { bookingId, bookingToken: signBookingToken(bookingId) } },
+    res,
+  ).then(() => res);
 };
 
 let ipCounter = 0;

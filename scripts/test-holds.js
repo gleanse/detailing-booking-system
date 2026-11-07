@@ -63,6 +63,7 @@ const {
   lockBookingSlot,
   releaseBookingSlot,
 } = require('../src/features/bookings/controller');
+const { signBookingToken } = require('../src/features/bookings/booking-token');
 
 const fakeRes = () => {
   const res = { code: 200, body: null };
@@ -92,7 +93,10 @@ const lock = (ip, userId) => {
 
 const release = (bookingId) => {
   const res = fakeRes();
-  return releaseBookingSlot({ body: { bookingId } }, res).then(() => res);
+  return releaseBookingSlot(
+    { body: { bookingId, bookingToken: signBookingToken(bookingId) } },
+    res,
+  ).then(() => res);
 };
 
 const lockMany = (count, ip, userId) =>

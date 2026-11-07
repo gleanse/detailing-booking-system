@@ -6,6 +6,7 @@ const redis = require('../../config/redis');
 const { incrementAbuseCounter } = require('../../shared/utils/cron');
 const { confirmPaidBooking } = require('./confirm');
 const { cancelHeldBooking } = require('./cancel');
+const { signBookingToken, hasValidBookingToken } = require('./booking-token');
 const {
   getServiceById,
   getAvailableDates,
@@ -58,6 +59,12 @@ const getAvailability = async (req, res) => {
   }
 };
 
+const notAllowed = {
+  success: false,
+  message:
+    'This reservation could not be verified. Please refresh the page and start again.',
+};
+
 const lockBookingSlot = async (req, res) => {
   try {
     const { availabilityId, serviceId, variantId } = req.body;
@@ -103,7 +110,11 @@ const lockBookingSlot = async (req, res) => {
       userId,
       ipAddress,
     });
-    res.json({ success: true, data: booking });
+    res.json({
+      success: true,
+      data: booking,
+      bookingToken: signBookingToken(booking.id),
+    });
   } catch (error) {
     // someone else took the last place, tell the page so it can reload the dates
     if (error.code === 'SLOT_FULL') {
@@ -120,7 +131,7 @@ const lockBookingSlot = async (req, res) => {
         holdLimit: true,
         message:
           error.scope === 'user'
-            ? `You already have ${MAX_USER_HOLDS} reservations in progress. Please finish or cancel one before reserving another date.`
+            ? `You already have ${MAX_USER_HOLDS} reservations in progress. Please finish one, or wait up to 10 minutes for an unused one to expire.`
             : 'Too many reservations are in progress from your network right now. Please try again in a few minutes.',
       });
     }
@@ -138,6 +149,10 @@ const releaseBookingSlot = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: 'Missing bookingId' });
+    }
+
+    if (!hasValidBookingToken(bookingId, req.body.bookingToken)) {
+      return res.status(403).json(notAllowed);
     }
 
     let booking;
@@ -198,6 +213,10 @@ const releaseBookingSlot = async (req, res) => {
 const updateBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;
+
+    if (!hasValidBookingToken(bookingId, req.body?.bookingToken)) {
+      return res.status(403).json(notAllowed);
+    }
     const {
       guestName,
       guestEmail,
@@ -281,6 +300,10 @@ const createInvoice = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: 'Missing required fields' });
+    }
+
+    if (!hasValidBookingToken(bookingId, req.body.bookingToken)) {
+      return res.status(403).json(notAllowed);
     }
 
     // get booking details

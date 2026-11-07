@@ -55,6 +55,7 @@ stub('../src/config/redis', {
 const pool = require('../src/config/database');
 const { lockSlot, createPayment } = require('../src/features/bookings/queries');
 const { createInvoice } = require('../src/features/bookings/controller');
+const { signBookingToken } = require('../src/features/bookings/booking-token');
 
 const fakeRes = () => {
   const res = { code: 200, body: null };
@@ -71,7 +72,10 @@ const fakeRes = () => {
 
 const press = async (bookingId) => {
   const res = fakeRes();
-  await createInvoice({ body: { bookingId } }, res);
+  await createInvoice(
+    { body: { bookingId, bookingToken: signBookingToken(bookingId) } },
+    res,
+  );
   return res;
 };
 

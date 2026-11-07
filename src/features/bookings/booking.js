@@ -7,6 +7,7 @@ let state = {
   selectedDate: null,
   availabilityId: null,
   bookingId: null,
+  bookingToken: null,
   expiresAt: null,
   timerInterval: null,
   timerSeconds: 10 * 60,
@@ -24,6 +25,7 @@ function saveSession() {
     SESSION_KEY,
     JSON.stringify({
       bookingId: state.bookingId,
+      bookingToken: state.bookingToken,
       expiresAt: state.expiresAt,
       currentStep: state.currentStep,
       selectedVariant: state.selectedVariant,
@@ -498,7 +500,10 @@ async function releaseAndRestart() {
   const res = await fetch('/api/booking/release', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bookingId: state.bookingId }),
+    body: JSON.stringify({
+      bookingId: state.bookingId,
+      bookingToken: state.bookingToken,
+    }),
   });
   const json = await res.json();
 
@@ -645,6 +650,7 @@ async function tryRestoreSession() {
     }
 
     state.bookingId = saved.bookingId;
+    state.bookingToken = saved.bookingToken;
     state.expiresAt = saved.expiresAt;
     state.selectedVariant = saved.selectedVariant;
     state.selectedDate = saved.selectedDate;
@@ -1082,6 +1088,7 @@ async function lockSlot() {
 
   if (json.success) {
     state.bookingId = json.data.id;
+    state.bookingToken = json.bookingToken;
     state.expiresAt = json.data.expires_at;
     saveSession();
     startTimer();
@@ -1113,7 +1120,10 @@ async function releaseAndReset() {
   const res = await fetch('/api/booking/release', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bookingId: state.bookingId }),
+    body: JSON.stringify({
+      bookingId: state.bookingId,
+      bookingToken: state.bookingToken,
+    }),
   });
   const json = await res.json();
 
@@ -1258,6 +1268,7 @@ document
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        bookingToken: state.bookingToken,
         guestName: name,
         guestEmail: email,
         guestPhone: phone,
@@ -1344,7 +1355,10 @@ document.getElementById('btn-pay').addEventListener('click', async () => {
     res = await fetch('/api/booking/pay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bookingId: state.bookingId }),
+      body: JSON.stringify({
+        bookingId: state.bookingId,
+        bookingToken: state.bookingToken,
+      }),
     });
     json = await res.json();
   } catch {
