@@ -3,6 +3,7 @@ const pool = require('../../config/database');
 const redis = require('../../config/redis');
 const { reconcileHeldBookings } = require('../../features/bookings/reconcile');
 const { releaseAbandonedBookings } = require('../../features/bookings/leaving');
+const { purgeExpiredBookings } = require('../../features/bookings/purge');
 
 const ABUSE_WINDOW_SECONDS = 60 * 60; // 1 hour window for counting abandons
 const ABUSE_BLOCK_SECONDS = 60 * 60 * 2; // 2 hour block
@@ -106,15 +107,12 @@ const startCronJobs = () => {
   // runs every SUNDAY midnight purges expired bookings older than 30 days
   cron.schedule('0 0 * * 0', async () => {
     try {
-      const result = await pool.query(
-        `DELETE FROM bookings
-         WHERE booking_status = 'expired'
-         AND expires_at < NOW() - INTERVAL '30 days'
-         RETURNING id`,
-      );
+      const { purged, kept } = await purgeExpiredBookings();
 
-      if (result.rows.length > 0) {
-        console.log(`[CRON] Purged ${result.rows.length} expired booking(s)`);
+      if (purged > 0 || kept > 0) {
+        console.log(
+          `[CRON] Purged ${purged} expired booking(s), kept ${kept} that hold a payment record`,
+        );
       }
     } catch (error) {
       console.error('[CRON] Error purging bookings:', error.message);
