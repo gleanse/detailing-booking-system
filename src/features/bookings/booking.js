@@ -1075,6 +1075,11 @@ async function lockSlot() {
     return false;
   }
 
+  if (json.holdLimit) {
+    showModal('Too Many Reservations', json.message, () => {}, 'Okay', true);
+    return false;
+  }
+
   if (json.success) {
     state.bookingId = json.data.id;
     state.expiresAt = json.data.expires_at;

@@ -9,6 +9,7 @@ const { cancelHeldBooking } = require('./cancel');
 const {
   getServiceById,
   getAvailableDates,
+  MAX_USER_HOLDS,
   lockSlot,
   releaseSlot,
   getHeldBookingWithPayment,
@@ -69,8 +70,8 @@ const lockBookingSlot = async (req, res) => {
         .json({ success: false, message: 'Missing required fields' });
     }
 
-    // check if IP is blocked
-    const ipBlocked = await redis.get(`block:ip:${ipAddress}`);
+    // guests are blocked by network, logged in customers by their own account
+    const ipBlocked = userId ? null : await redis.get(`block:ip:${ipAddress}`);
     if (ipBlocked) {
       const ttl = await redis.ttl(`block:ip:${ipAddress}`);
       const minutes = Math.ceil(ttl / 60);
@@ -110,6 +111,17 @@ const lockBookingSlot = async (req, res) => {
         success: false,
         full: true,
         message: 'This date is already full. Please choose another date.',
+      });
+    }
+
+    if (error.code === 'HOLD_LIMIT') {
+      return res.status(429).json({
+        success: false,
+        holdLimit: true,
+        message:
+          error.scope === 'user'
+            ? `You already have ${MAX_USER_HOLDS} reservations in progress. Please finish or cancel one before reserving another date.`
+            : 'Too many reservations are in progress from your network right now. Please try again in a few minutes.',
       });
     }
 
@@ -166,9 +178,11 @@ const releaseBookingSlot = async (req, res) => {
 
     await incrementAbuseCounter(booking.ip_address, booking.user_id);
 
-    // get current abuse count to warn user
-    const ipKey = `abuse:ip:${booking.ip_address}`;
-    const currentCount = await redis.get(ipKey);
+    // get current abuse count to warn user, logged in customers are counted by account
+    const abuseKey = booking.user_id
+      ? `abuse:user:${booking.user_id}`
+      : `abuse:ip:${booking.ip_address}`;
+    const currentCount = await redis.get(abuseKey);
 
     res.json({
       success: true,

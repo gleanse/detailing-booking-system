@@ -75,6 +75,18 @@ const slotFullError = () => {
   return error;
 };
 
+// how many reservations in progress one customer account or one guest network may have
+const MAX_USER_HOLDS = 2;
+const MAX_GUEST_IP_HOLDS = 5;
+
+// thrown when the customer or the network already has too many reservations in progress
+const holdLimitError = (scope) => {
+  const error = new Error('hold limit reached');
+  error.code = 'HOLD_LIMIT';
+  error.scope = scope;
+  return error;
+};
+
 const lockSlot = async ({
   availabilityId,
   serviceId,
@@ -85,6 +97,25 @@ const lockSlot = async ({
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+
+    // one line per customer or network, so two requests cannot both slip under the cap
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [
+      userId ? `hold:user:${userId}` : `hold:ip:${ipAddress}`,
+    ]);
+
+    // logged in customers are capped by account, guests by network
+    const holds = await client.query(
+      userId
+        ? `SELECT COUNT(*)::int AS count FROM bookings
+           WHERE user_id = $1 AND booking_status = 'locked' AND expires_at > NOW()`
+        : `SELECT COUNT(*)::int AS count FROM bookings
+           WHERE user_id IS NULL AND ip_address = $1
+           AND booking_status = 'locked' AND expires_at > NOW()`,
+      [userId || ipAddress],
+    );
+    if (holds.rows[0].count >= (userId ? MAX_USER_HOLDS : MAX_GUEST_IP_HOLDS)) {
+      throw holdLimitError(userId ? 'user' : 'ip');
+    }
 
     // lock the date row so simultaneous requests for it wait in line
     const slot = await client.query(
@@ -455,6 +486,8 @@ const expireHeldBooking = async (bookingId) => {
 module.exports = {
   getServiceById,
   getAvailableDates,
+  MAX_USER_HOLDS,
+  MAX_GUEST_IP_HOLDS,
   lockSlot,
   releaseSlot,
   getHeldBookingWithPayment,
