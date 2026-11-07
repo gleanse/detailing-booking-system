@@ -1,8 +1,8 @@
-// P21 pay reuse test
-// T1 pressing pay twice gives the same checkout, one payment row and an unchanged hold
-// T2 the first press saves the invoice and extends the hold
-// T3 a press after the payment window is refused and creates nothing
-// T4 a payment row with no invoice url never blocks a retry
+// T2 pay reuse test
+// pressing pay twice gives the same checkout, one payment row and an unchanged hold
+// the first press saves the invoice and extends the hold
+// a press after the payment window is refused and creates nothing
+// a payment row with no invoice url never blocks a retry
 // runs the real createInvoice handler against a local database, xendit email and redis are replaced by stubs
 require('dotenv').config();
 
@@ -124,7 +124,7 @@ const check = (name, ok, detail = '') => {
   );
   const availabilityId = slot.rows[0].id;
 
-  // T1 and T2 first press then a second press
+  // first press then a second press
   const b1 = await newBooking(serviceId, availabilityId);
   const first = await press(b1.id);
   const holdAfterFirst = await holdOf(b1.id);
@@ -150,23 +150,23 @@ const check = (name, ok, detail = '') => {
   const second = await press(b1.id);
   rows = await paymentsOf(b1.id);
   check(
-    'T1 second press returns the same checkout link',
+    'T2 second press returns the same checkout link',
     second.code === 200 &&
       second.body.invoiceUrl === first.body.invoiceUrl &&
       second.body.paymentId === first.body.paymentId &&
       second.body.reused === true,
   );
   check(
-    'T1 second press creates no invoice and no payment row',
+    'T2 second press creates no invoice and no payment row',
     xendit.calls === 1 && rows.length === 1,
     `${xendit.calls} invoices, ${rows.length} payment rows`,
   );
   check(
-    'T1 second press leaves the hold unchanged',
+    'T2 second press leaves the hold unchanged',
     (await holdOf(b1.id)) === holdAfterFirst,
   );
 
-  // T3 a press after the payment window
+  // a press after the payment window
   await pool.query(
     `UPDATE payments SET created_at = NOW() - INTERVAL '15 minutes' WHERE booking_id = $1`,
     [b1.id],
@@ -174,32 +174,32 @@ const check = (name, ok, detail = '') => {
   const late = await press(b1.id);
   rows = await paymentsOf(b1.id);
   check(
-    'T3 a press after the window is refused with 409',
+    'T2 a press after the window is refused with 409',
     late.code === 409 && late.body.success === false,
     `answered ${late.code}`,
   );
   check(
-    'T3 a refused press creates nothing and leaves the hold unchanged',
+    'T2 a refused press creates nothing and leaves the hold unchanged',
     xendit.calls === 1 &&
       rows.length === 1 &&
       (await holdOf(b1.id)) === holdAfterFirst,
     `${xendit.calls} invoices, ${rows.length} payment rows`,
   );
 
-  // T4 a payment row without an invoice url does not block a retry
+  // a payment row without an invoice url does not block a retry
   const b2 = await newBooking(serviceId, availabilityId);
   await createPayment({ bookingId: b2.id, amount: 100, amountPaid: 50 });
   const retry = await press(b2.id);
   rows = await paymentsOf(b2.id);
   check(
-    'T4 a retry after a failed attempt creates a new invoice',
+    'T2 a retry after a failed attempt creates a new invoice',
     retry.code === 200 &&
       retry.body.invoiceUrl === 'https://checkout.test/2' &&
       !retry.body.reused,
     `answered ${retry.code}`,
   );
   check(
-    'T4 the retry saved its invoice url on the new payment row',
+    'T2 the retry saved its invoice url on the new payment row',
     rows.length === 2 &&
       rows.filter((r) => r.invoice_url === 'https://checkout.test/2').length ===
         1,
