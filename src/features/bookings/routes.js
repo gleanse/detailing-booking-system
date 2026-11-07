@@ -15,6 +15,8 @@ const {
   getPublicTrackingPage,
   getPublicBookingDetails,
   getBookingSession,
+  markBookingLeaving,
+  keepBooking,
 } = require('./controller');
 
 // STATIC assets
@@ -46,6 +48,8 @@ router.get('/availability/:serviceId', getAvailability);
 router.post('/lock', lockBookingSlot);
 router.patch('/release', releaseBookingSlot);
 router.post('/release', releaseBookingSlot);
+router.post('/leaving', markBookingLeaving);
+router.post('/staying', keepBooking);
 router.post('/pay', createInvoice);
 router.post('/webhook', handleWebhook);
 router.patch('/:bookingId', updateBooking);

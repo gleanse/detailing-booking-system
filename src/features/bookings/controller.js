@@ -7,6 +7,7 @@ const { incrementAbuseCounter } = require('../../shared/utils/cron');
 const { confirmPaidBooking } = require('./confirm');
 const { cancelHeldBooking } = require('./cancel');
 const { signBookingToken, hasValidBookingToken } = require('./booking-token');
+const { markLeaving, clearLeaving } = require('./leaving');
 const {
   getServiceById,
   getAvailableDates,
@@ -14,6 +15,7 @@ const {
   lockSlot,
   releaseSlot,
   getHeldBookingWithPayment,
+  getUnpaidHeldBooking,
   expireHeldBooking,
   updateBookingDetails,
   createPayment,
@@ -59,6 +61,18 @@ const getAvailability = async (req, res) => {
   }
 };
 
+// turns the seconds left on a block into the shortest natural wording
+const formatWait = (seconds) => {
+  const totalMinutes = Math.max(1, Math.ceil(seconds / 60));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const parts = [];
+  if (hours) parts.push(`${hours} ${hours === 1 ? 'hour' : 'hours'}`);
+  if (minutes) {
+    parts.push(`${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`);
+  }
+  return parts.join(' ');
+};
 const notAllowed = {
   success: false,
   message:
@@ -81,11 +95,10 @@ const lockBookingSlot = async (req, res) => {
     const ipBlocked = userId ? null : await redis.get(`block:ip:${ipAddress}`);
     if (ipBlocked) {
       const ttl = await redis.ttl(`block:ip:${ipAddress}`);
-      const minutes = Math.ceil(ttl / 60);
       return res.status(429).json({
         success: false,
         blocked: true,
-        message: `Too many cancelled bookings. You are blocked for ${minutes} more minute(s).`,
+        message: `Too many cancelled or unused reservations. You are blocked from booking for ${formatWait(ttl)}.`,
       });
     }
 
@@ -94,11 +107,10 @@ const lockBookingSlot = async (req, res) => {
       const userBlocked = await redis.get(`block:user:${userId}`);
       if (userBlocked) {
         const ttl = await redis.ttl(`block:user:${userId}`);
-        const minutes = Math.ceil(ttl / 60);
         return res.status(429).json({
           success: false,
           blocked: true,
-          message: `Too many cancelled bookings. You are blocked for ${minutes} more minute(s).`,
+          message: `Too many cancelled or unused reservations. You are blocked from booking for ${formatWait(ttl)}.`,
         });
       }
     }
@@ -498,6 +510,43 @@ const getBookingSession = async (req, res) => {
   }
 };
 
+// the page is closing, mark the hold so the cron can free it unless the customer comes back
+const markBookingLeaving = async (req, res) => {
+  try {
+    const { bookingId, bookingToken } = req.body || {};
+
+    if (!bookingId || !hasValidBookingToken(bookingId, bookingToken)) {
+      return res.status(403).json(notAllowed);
+    }
+
+    // a hold with a payment is never marked, xendit decides what happens to it
+    const held = await getUnpaidHeldBooking(bookingId);
+    if (held) await markLeaving(bookingId);
+
+    res.status(204).end();
+  } catch (error) {
+    console.error('Mark leaving error:', error);
+    res.status(500).json({ success: false, message: 'Something went wrong.' });
+  }
+};
+
+// the customer is back on the page, so the hold is not abandoned
+const keepBooking = async (req, res) => {
+  try {
+    const { bookingId, bookingToken } = req.body || {};
+
+    if (!bookingId || !hasValidBookingToken(bookingId, bookingToken)) {
+      return res.status(403).json(notAllowed);
+    }
+
+    await clearLeaving(bookingId);
+    res.status(204).end();
+  } catch (error) {
+    console.error('Keep booking error:', error);
+    res.status(500).json({ success: false, message: 'Something went wrong.' });
+  }
+};
+
 module.exports = {
   getBookingPage,
   getServiceDetails,
@@ -511,4 +560,6 @@ module.exports = {
   getPublicTrackingPage,
   getPublicBookingDetails,
   getBookingSession,
+  markBookingLeaving,
+  keepBooking,
 };

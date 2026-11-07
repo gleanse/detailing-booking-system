@@ -522,13 +522,51 @@ async function releaseAndRestart() {
 
 function handleTimerExpired() {
   showModal(
-    'Time Expired',
-    'Your slot reservation has expired. Select a new date to continue.',
+    'Reservation Released',
+    'Your reservation was released because the time ran out or the page was closed or left for a while. Please pick your date again.',
     releaseAndRestart,
     'Select new date',
     true,
   );
 }
+
+// tells the server the customer is still here so a refresh is not treated as leaving
+function keepBooking() {
+  if (!state.bookingId || !state.bookingToken) return;
+  fetch('/api/booking/staying', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      bookingId: state.bookingId,
+      bookingToken: state.bookingToken,
+    }),
+    keepalive: true,
+  }).catch(() => {});
+}
+
+// the page is closing, so the server can free the hold soon unless the customer comes back
+// a hold with a payment started is never reported, xendit decides what happens to it
+window.addEventListener('pagehide', () => {
+  if (!state.bookingId || !state.bookingToken) return;
+  if (getSavedPaymentId(state.bookingId)) return;
+  navigator.sendBeacon?.(
+    '/api/booking/leaving',
+    new Blob(
+      [
+        JSON.stringify({
+          bookingId: state.bookingId,
+          bookingToken: state.bookingToken,
+        }),
+      ],
+      { type: 'application/json' },
+    ),
+  );
+});
+
+// a page restored from the back and forward cache never reloaded, so tell the server it is back
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) keepBooking();
+});
 
 // verify slot is still locked when the page becomes visible again
 document.addEventListener('visibilitychange', async () => {
@@ -537,6 +575,7 @@ document.addEventListener('visibilitychange', async () => {
     state.bookingId &&
     state.currentStep >= 3
   ) {
+    keepBooking();
     try {
       const res = await fetch(`/api/booking/session/${state.bookingId}`);
       if (!res.ok) return; // don't do anything on network errors
@@ -655,6 +694,7 @@ async function tryRestoreSession() {
     state.selectedVariant = saved.selectedVariant;
     state.selectedDate = saved.selectedDate;
     state.availabilityId = saved.availabilityId;
+    keepBooking();
 
     return { remainingSeconds, step: saved.currentStep };
   } catch {
@@ -738,8 +778,8 @@ async function loadService() {
   if (restored === 'expired') {
     renderVariants(state.service.variants);
     showModal(
-      'Slot Expired',
-      'Your slot reservation has expired. Please start your booking again.',
+      'Reservation Released',
+      'Your reservation was released because the time ran out or the page was closed or left for a while. Please pick your date again.',
       () => {
         clearSession();
       },

@@ -199,6 +199,17 @@ const getHeldBookingWithPayment = async (bookingId) => {
   return result.rows[0] || null;
 };
 
+// a hold that is still locked with no payment started, the only kind that may be freed for leaving
+const getUnpaidHeldBooking = async (bookingId) => {
+  const result = await pool.query(
+    `SELECT id FROM bookings
+     WHERE id = $1
+     AND booking_status = 'locked'
+     AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.booking_id = bookings.id)`,
+    [bookingId],
+  );
+  return result.rows[0] || null;
+};
 const updateBookingDetails = async (
   bookingId,
   {
@@ -491,6 +502,7 @@ module.exports = {
   lockSlot,
   releaseSlot,
   getHeldBookingWithPayment,
+  getUnpaidHeldBooking,
   updateBookingDetails,
   createPayment,
   getInvoicedPayment,

@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const pool = require('../../config/database');
 const redis = require('../../config/redis');
 const { reconcileHeldBookings } = require('../../features/bookings/reconcile');
+const { releaseAbandonedBookings } = require('../../features/bookings/leaving');
 
 const ABUSE_WINDOW_SECONDS = 60 * 60; // 1 hour window for counting abandons
 const ABUSE_BLOCK_SECONDS = 60 * 60 * 2; // 2 hour block
@@ -87,6 +88,18 @@ const startCronJobs = () => {
       if (summary.confirmed || summary.expired || summary.failed) {
         console.log('[CRON] Reconciled held bookings', summary);
       }
+    }),
+  );
+
+  // runs every minute frees holds whose page closed and never came back
+  cron.schedule(
+    '* * * * *',
+    runOnce('Abandoned', async () => {
+      const count = await releaseAbandonedBookings({
+        onReleased: incrementAbuseCounter,
+      });
+      if (count > 0)
+        console.log(`[CRON] Released ${count} abandoned booking(s)`);
     }),
   );
 
