@@ -10,15 +10,27 @@ function getRecommendedArrival(queueNumber, totalBookings) {
 const params = new URLSearchParams(window.location.search);
 const externalId = params.get('external_id');
 
+// payment ids are uuids, anything else is a wrong link and not a failure to wait out
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function loadBookingDetails(quiet = false) {
-  if (!externalId) {
+  if (!externalId || !UUID_PATTERN.test(externalId)) {
     document.getElementById('loadingCard').classList.add('hidden');
     document.getElementById('errorCard').classList.remove('hidden');
     return;
   }
 
   try {
-    const res = await fetch(`/api/booking/details?external_id=${externalId}`);
+    let res;
+    try {
+      res = await fetch(`/api/booking/details?external_id=${externalId}`);
+    } catch {
+      // a connection failure is not an answer about the booking so keep waiting
+      return 'pending';
+    }
+    // a server failure is not an answer either
+    if (res.status >= 500) return 'pending';
     const data = await res.json();
 
     if (!data.success) throw new Error(data.message);
