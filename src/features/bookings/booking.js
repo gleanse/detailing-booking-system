@@ -42,12 +42,26 @@ function clearSession() {
   sessionStorage.removeItem(INVOICE_KEY);
 }
 
+// the saved booking belongs to another service so free its slot now, the server decides what can be released
+function releaseOldBooking(bookingId, bookingToken) {
+  if (!bookingId || !bookingToken) return;
+  fetch('/api/booking/release', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bookingId, bookingToken }),
+  }).catch(() => {});
+}
+
 function loadSession() {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed.serviceId !== serviceId) {
+      // a started payment is left to xendit and the server, only an unpaid hold is freed here
+      if (!getSavedPaymentId(parsed.bookingId)) {
+        releaseOldBooking(parsed.bookingId, parsed.bookingToken);
+      }
       clearSession();
       return null;
     }
