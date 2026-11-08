@@ -171,13 +171,14 @@ const checkTodayCapacity = async () => {
   if (avail.noSlot) {
     showCapacityBadge('No availability set for today.', 'info');
     todayIsFull = false;
+    showFutureDatePicker();
     return;
   }
 
   if (avail.full) {
     todayIsFull = true;
     showCapacityBadge(
-      `Today is fully booked (${avail.confirmed}/${avail.capacity}). You can still book a future date below.`,
+      `Today is fully booked (${avail.confirmed}/${avail.capacity}).`,
       'full',
     );
     showFutureDatePicker();
@@ -234,6 +235,12 @@ const checkFutureDateCapacity = async () => {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    const res = await fetch('/staff/logout', { method: 'POST' });
+    const data = await res.json();
+    if (data.redirect) window.location.href = data.redirect;
+  });
+
   await loadServices();
 
   const [year, month, day] = today().split('-').map(Number);
