@@ -53,61 +53,6 @@ const hideAllActionModals = () =>
     'modal-logout',
   ].forEach(hideModal);
 
-const renderBookingRow = (b) => {
-  const name = b.guest_name || b.customer_name || '-';
-  const mismatch = isDateMismatch(b.booking_date);
-  const dateLabel =
-    viewMode === 'upcoming'
-      ? `<span class="text-[10px] bg-white/6 text-white/40 px-1.5 py-0.5 rounded-md">${new Date(
-          b.booking_date + 'T00:00:00',
-        ).toLocaleDateString('en-PH', {
-          month: 'short',
-          day: 'numeric',
-        })}</span>`
-      : '';
-  return `
-    <div class="booking-row px-5 py-4 hover:bg-white/2 transition-colors duration-150 cursor-pointer" data-id="${
-      b.id
-    }">
-      <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-8 h-8 rounded-xl bg-red-600/15 flex items-center justify-center flex-shrink-0 text-red-400 font-bold text-sm" style="font-family:'Bebas Neue',sans-serif;">${
-            b.queue_number ?? '-'
-          }</div>
-          <div class="min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <p class="text-white text-sm font-medium truncate">${escapeHtml(name)}</p>
-              ${dateLabel}
-              ${
-                b.is_walkin
-                  ? '<span class="text-[10px] bg-white/8 text-white/40 px-1.5 py-0.5 rounded-md">Walk-in</span>'
-                  : ''
-              }
-              ${
-                mismatch && viewMode === 'today'
-                  ? '<span class="text-[10px] bg-yellow-500/15 text-yellow-400 border border-yellow-500/20 px-1.5 py-0.5 rounded-md">⚠ Date mismatch</span>'
-                  : ''
-              }
-            </div>
-            <p class="text-white/30 text-xs mt-0.5">${escapeHtml(b.reference_code)} · ${escapeHtml(
-              b.service_name,
-            )}${escapeHtml(b.variant_name ? ' - ' + b.variant_name : '')}</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <span class="status-badge status-${b.status}">${statusLabel(
-            b.status,
-          )}</span>
-          ${
-            !b.is_fully_paid
-              ? '<span class="text-[10px] bg-red-500/15 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-full">Unpaid bal.</span>'
-              : ''
-          }
-        </div>
-      </div>
-    </div>`;
-};
-
 const renderEmpty = (msg) => `
   <div class="px-5 py-12 text-center">
     <i class="ph ph-clipboard-text text-white/10 text-4xl mb-3 block"></i>
