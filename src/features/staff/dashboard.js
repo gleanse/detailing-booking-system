@@ -839,7 +839,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           list.innerHTML = renderEmpty('No booking found');
           return;
         }
-        list.innerHTML = renderBookingRow(data.booking);
+        list.innerHTML = renderBoardRow(data.booking);
         list
           .querySelector('.booking-row')
           ?.addEventListener('click', () => openModal(data.booking));
