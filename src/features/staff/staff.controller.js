@@ -6,6 +6,7 @@ const PDFDocument = require('pdfkit');
 const {
   getUpcomingBookings,
   getBookingsForDate,
+  getCarriedOverBookings,
   getBookingByReferenceCode,
   getBookingById,
   getInProgressStaff,
@@ -66,10 +67,21 @@ const logout = (req, res) => {
 
 const getBookingsToday = async (req, res) => {
   try {
-    const date = req.query.date || todayInManila();
-    const page = parseInt(req.query.page) || 1;
-    const result = await getBookingsForDate(date, { page, limit: 5 });
-    res.json({ success: true, ...result });
+    const today = todayInManila();
+    const date = req.query.date || today;
+    const result = await getBookingsForDate(date);
+    const carriedOver =
+      date === today ? await getCarriedOverBookings(today) : [];
+
+    res.json({
+      success: true,
+      date,
+      bookings: result.bookings,
+      carriedOver,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages,
+    });
   } catch (err) {
     console.error('Get bookings today error:', err);
     res

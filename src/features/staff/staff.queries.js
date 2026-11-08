@@ -4,6 +4,56 @@ const {
   getNextQueueNumber: computeNextQueueNumber,
 } = require('../../shared/utils/queue-number');
 
+const BOOKING_SELECT = `
+  b.id,
+  b.reference_code,
+  b.queue_number,
+  b.guest_name,
+  b.guest_email,
+  b.guest_phone,
+  b.motorcycle_plate,
+  b.motorcycle_model,
+  b.motorcycle_color,
+  b.motorcycle_description,
+  b.status,
+  b.booking_status,
+  b.is_walkin,
+  b.payment_method,
+  b.created_at,
+  u.name AS customer_name,
+  u.email AS customer_email,
+  u.phone AS customer_phone,
+  s.name AS service_name,
+  s.id AS service_id,
+  sv.id AS variant_id,
+  sv.name AS variant_name,
+  sv.price AS variant_price,
+  sv.duration_hours,
+  p.amount,
+  p.amount_paid,
+  p.remaining_balance,
+  p.is_fully_paid,
+  TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date`;
+
+const BOOKING_JOINS = `
+  FROM bookings b
+  LEFT JOIN users u ON b.user_id = u.id
+  LEFT JOIN services s ON b.service_id = s.id
+  LEFT JOIN service_variants sv ON b.variant_id = sv.id
+  LEFT JOIN payments p ON p.booking_id = b.id
+  LEFT JOIN availability a ON b.availability_id = a.id`;
+
+const STATUS_ORDER = `CASE b.status
+  WHEN 'in_progress' THEN 1
+  WHEN 'pending' THEN 2
+  WHEN 'done' THEN 3
+  WHEN 'picked_up' THEN 4
+  ELSE 5
+END`;
+
+// provisional default, not a confirmed business rule
+const CARRY_OVER_DAYS = 7;
+
 const getUpcomingBookings = async ({
   page = 1,
   limit = 5,
@@ -85,9 +135,7 @@ const getUpcomingBookings = async ({
   };
 };
 
-const getBookingsForDate = async (date, { page = 1, limit = 5 } = {}) => {
-  const offset = (page - 1) * limit;
-
+const getBookingsForDate = async (date) => {
   const countResult = await pool.query(
     `SELECT COUNT(*) FROM bookings b
      LEFT JOIN availability a ON b.availability_id = a.id
@@ -97,56 +145,30 @@ const getBookingsForDate = async (date, { page = 1, limit = 5 } = {}) => {
   const total = parseInt(countResult.rows[0].count);
 
   const result = await pool.query(
-    `SELECT
-      b.id,
-      b.reference_code,
-      b.queue_number,
-      b.guest_name,
-      b.guest_email,
-      b.guest_phone,
-      b.motorcycle_plate,
-      b.motorcycle_model,
-      b.motorcycle_color,
-      b.motorcycle_description,
-      b.status,
-      b.booking_status,
-      b.is_walkin,
-      b.payment_method,
-      b.created_at,
-      u.name AS customer_name,
-      u.email AS customer_email,
-      u.phone AS customer_phone,
-      s.name AS service_name,
-      s.id AS service_id,
-      sv.id AS variant_id,
-      sv.name AS variant_name,
-      sv.price AS variant_price,
-      sv.duration_hours,
-      p.amount,
-      p.amount_paid,
-      p.remaining_balance,
-      p.is_fully_paid,
-      TO_CHAR(a.date, 'YYYY-MM-DD') AS booking_date
-    FROM bookings b
-    LEFT JOIN users u ON b.user_id = u.id
-    LEFT JOIN services s ON b.service_id = s.id
-    LEFT JOIN service_variants sv ON b.variant_id = sv.id
-    LEFT JOIN payments p ON p.booking_id = b.id
-    LEFT JOIN availability a ON b.availability_id = a.id
-    WHERE a.date = $1
-      AND b.booking_status = 'confirmed'
-    ORDER BY b.queue_number ASC NULLS LAST, b.created_at ASC
-    LIMIT $2 OFFSET $3`,
-    [date, limit, offset],
+    `SELECT ${BOOKING_SELECT}
+     ${BOOKING_JOINS}
+     WHERE a.date = $1
+       AND b.booking_status = 'confirmed'
+     ORDER BY s.name ASC, ${STATUS_ORDER}, b.queue_number ASC NULLS LAST, b.created_at ASC`,
+    [date],
   );
 
-  return {
-    bookings: result.rows,
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
-  };
+  return { bookings: result.rows, total, page: 1, totalPages: 1 };
+};
+
+const getCarriedOverBookings = async (today) => {
+  const result = await pool.query(
+    `SELECT ${BOOKING_SELECT}
+     ${BOOKING_JOINS}
+     WHERE a.date < $1::date
+       AND a.date >= ($1::date - ${CARRY_OVER_DAYS})
+       AND b.booking_status = 'confirmed'
+       AND b.status IN ('pending', 'in_progress', 'done')
+     ORDER BY a.date ASC, ${STATUS_ORDER}, b.queue_number ASC NULLS LAST, b.created_at ASC`,
+    [today],
+  );
+
+  return result.rows;
 };
 
 const getBookingByReferenceCode = async (referenceCode) => {
@@ -561,6 +583,7 @@ const getVariantsForService = async (serviceId) => {
 module.exports = {
   getUpcomingBookings,
   getBookingsForDate,
+  getCarriedOverBookings,
   getBookingByReferenceCode,
   getBookingById,
   getInProgressStaff,
