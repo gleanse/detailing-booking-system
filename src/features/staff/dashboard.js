@@ -1,5 +1,6 @@
 let allBookings = [];
 let carriedOver = [];
+let statusFilter = 'all';
 let currentBooking = null;
 let currentStaffId = null;
 let viewMode = 'today';
@@ -193,7 +194,7 @@ const renderBoardRow = (b) => `
     <span class="w-7 shrink-0 text-red-400 text-base font-bold" style="font-family:'Bebas Neue',sans-serif;">${b.queue_number ?? '-'}</span>
     <div class="flex-1 min-w-0">
       <p class="text-white text-sm truncate">${escapeHtml(b.motorcycle_plate || '-')} · ${escapeHtml(b.motorcycle_model || '-')}</p>
-      <p class="text-white/30 text-xs truncate">${escapeHtml(b.service_name)}${escapeHtml(b.variant_name ? ' - ' + b.variant_name : '')}${b.booking_date !== today() ? ' · ' + shortDate(b.booking_date) : ''}</p>
+      <p class="text-white/30 text-xs truncate">${escapeHtml(b.service_name)}${escapeHtml(b.variant_name ? ' - ' + b.variant_name : '')}${b.booking_date && b.booking_date !== today() ? ' · ' + shortDate(b.booking_date) : ''}</p>
     </div>
     <span class="w-2 h-2 rounded-full shrink-0 ${dotClass(b.status)}"></span>
   </div>`;
@@ -205,9 +206,27 @@ const renderBoard = (bookings, carried) => {
   const services = [...new Set(live.map((b) => b.service_name))];
 
   const earlierBlock = earlier.length
-    ? `<div class="border border-red-500/25 rounded-xl overflow-hidden mx-4 my-3">
-        <p class="px-4 py-2 text-xs text-red-400 bg-white/3">From earlier days</p>
-        ${earlier.map(renderBoardRow).join('')}
+    ? `<div class="relative border border-red-500/25 rounded-xl mx-4 my-3" data-collapse-section>
+        <div class="flex items-center gap-2 px-4 py-2 bg-white/3 rounded-t-xl">
+          <span class="text-xs text-red-400">Unfinished jobs</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">${earlier.length}</span>
+          <span data-hint class="relative inline-flex">
+            <button type="button" data-hint-toggle aria-label="What is this?"
+              class="w-4 h-4 rounded-full border border-white/25 text-white/50 text-xs leading-none flex items-center justify-center">?</button>
+            <span data-hint-panel
+              class="pointer-events-none absolute bottom-full left-1/2 mb-3 w-64 -translate-x-1/2 translate-y-1 z-10 rounded-xl border border-white/10 bg-neutral-800 px-3 py-2 text-xs leading-relaxed text-white/70 opacity-0 shadow-lg transition-all duration-200">
+              Jobs from the last 7 days that aren't picked up yet. They stay here until staff mark them picked up.
+              <span class="absolute left-1/2 -bottom-1.5 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r border-white/10 bg-neutral-800"></span>
+            </span>
+          </span>
+          <button type="button" data-collapse-toggle aria-label="Collapse or expand"
+            class="ml-auto p-1 text-white/40">
+            <i data-caret class="ph ph-caret-down text-xs transition-transform duration-200"></i>
+          </button>
+        </div>
+        <div data-collapse-body class="overflow-hidden transition-all duration-300">
+          ${earlier.map(renderBoardRow).join('')}
+        </div>
       </div>`
     : '';
 
@@ -234,18 +253,42 @@ const renderBoard = (bookings, carried) => {
   return earlierBlock + serviceBlocks + pickedBlock;
 };
 
+const matchesStatus = (b) =>
+  statusFilter === 'all' ||
+  (statusFilter === 'done'
+    ? ['done', 'picked_up'].includes(b.status)
+    : b.status === statusFilter);
+
+const setStatFilter = (value) => {
+  statusFilter = statusFilter === value ? 'all' : value;
+  document.querySelectorAll('[data-stat]').forEach((btn) => {
+    btn.classList.toggle('bg-white/8', btn.dataset.stat === statusFilter);
+  });
+  swapBoard();
+};
+
+const swapBoard = () => {
+  const list = document.getElementById('bookings-list');
+  list.classList.add('opacity-0');
+  setTimeout(() => {
+    applyFilter();
+    list.classList.remove('opacity-0');
+  }, 150);
+};
+
 const applyFilter = () => {
   const list = document.getElementById('bookings-list');
   if (viewMode === 'today') {
     const nothing = allBookings.length === 0 && carriedOver.length === 0;
     list.innerHTML = nothing
       ? renderEmpty('No bookings for this day')
-      : renderBoard(allBookings, carriedOver);
+      : renderBoard(allBookings.filter(matchesStatus), carriedOver) ||
+        renderEmpty('No bookings with this status');
   } else {
     list.innerHTML =
-      allBookings.length === 0
-        ? renderEmpty('No bookings found')
-        : allBookings.map(renderBookingRow).join('');
+      allBookings.filter(matchesStatus).length === 0
+        ? renderEmpty('No bookings with this status')
+        : allBookings.filter(matchesStatus).map(renderBoardRow).join('');
   }
   list.querySelectorAll('.booking-row').forEach((row) => {
     row.addEventListener('click', () => {
@@ -672,6 +715,26 @@ const commitMarkPaid = async () => {
 };
 
 // INIT
+const formatChipDate = (d) =>
+  new Date(d + 'T00:00:00').toLocaleDateString('en-PH', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+
+const updateDateChips = () => {
+  const picker = document.getElementById('date-picker');
+  if (!picker.value) picker.value = today();
+  document.getElementById('today-label').textContent = formatChipDate(
+    picker.value,
+  );
+
+  const upcomingPicker = document.getElementById('upcoming-date-filter');
+  document.getElementById('upcoming-label').textContent = upcomingPicker.value
+    ? formatChipDate(upcomingPicker.value)
+    : 'All dates';
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const res = await fetch('/staff/me');
@@ -684,17 +747,59 @@ document.addEventListener('DOMContentLoaded', async () => {
   const picker = document.getElementById('date-picker');
   const upcomingPicker = document.getElementById('upcoming-date-filter');
   picker.value = today();
+  updateDateChips();
   loadBookings(today());
 
   picker.addEventListener('change', () => {
+    updateDateChips();
     if (viewMode === 'today') loadBookings(picker.value, 1);
   });
 
   upcomingPicker.addEventListener('change', () => {
     upcomingDateFilter = upcomingPicker.value;
+    updateDateChips();
     loadUpcoming(1);
   });
 
+  const bookingsList = document.getElementById('bookings-list');
+  bookingsList.classList.add('transition-opacity', 'duration-150');
+  document.querySelectorAll('[data-stat]').forEach((btn) => {
+    btn.addEventListener('click', () => setStatFilter(btn.dataset.stat));
+  });
+
+  const setHint = (panel, open) => {
+    panel.classList.toggle('opacity-0', !open);
+    panel.classList.toggle('opacity-100', open);
+    panel.classList.toggle('translate-y-1', !open);
+    panel.classList.toggle('translate-y-0', open);
+    panel.classList.toggle('pointer-events-none', !open);
+    panel.classList.toggle('pointer-events-auto', open);
+  };
+
+  document.addEventListener('click', (e) => {
+    const hintBtn = e.target.closest('[data-hint-toggle]');
+    const ownPanel = hintBtn
+      ?.closest('[data-hint]')
+      .querySelector('[data-hint-panel]');
+    document.querySelectorAll('[data-hint-panel]').forEach((panel) => {
+      setHint(
+        panel,
+        panel === ownPanel && !panel.classList.contains('opacity-100'),
+      );
+    });
+
+    const collapse = e.target.closest('[data-collapse-toggle]');
+    if (collapse) {
+      const body = collapse
+        .closest('[data-collapse-section]')
+        .querySelector('[data-collapse-body]');
+      const isOpen = body.style.maxHeight !== '0px';
+      body.style.maxHeight = isOpen ? '0px' : body.scrollHeight + 'px';
+      collapse
+        .querySelector('[data-caret]')
+        .classList.toggle('rotate-180', isOpen);
+    }
+  });
   document.querySelectorAll('.view-toggle').forEach((btn) => {
     btn.addEventListener('click', () => {
       document

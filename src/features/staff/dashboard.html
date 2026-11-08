@@ -22,39 +22,59 @@
       </button>
     </div>
 
-        <!-- CONTROLS -->
+    <!-- CONTROLS -->
     <div class="flex gap-1 bg-[#111] border border-white/8 rounded-xl p-1 mb-3 animate-fadeUp">
       <button data-view="today"
         class="view-toggle active flex-1 text-sm py-2 rounded-lg transition-all duration-200 cursor-pointer">Today</button>
       <button data-view="upcoming"
         class="view-toggle flex-1 text-sm py-2 rounded-lg transition-all duration-200 cursor-pointer">Upcoming</button>
     </div>
-    <div id="today-controls" class="flex items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-4 py-2.5 mb-3">
-      <i class="ph ph-calendar text-red-500 text-sm flex-shrink-0"></i>
-      <input type="date" id="date-picker" class="bg-transparent text-sm outline-none cursor-pointer w-full" />
-    </div>
-    <div id="upcoming-controls"
-      class="hidden items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-4 py-2.5 mb-3">
-      <i class="ph ph-funnel text-white/30 text-sm flex-shrink-0"></i>
-      <input type="date" id="upcoming-date-filter" class="bg-transparent text-sm outline-none cursor-pointer" />
-      <span class="text-white/20 text-xs">filter by date</span>
-    </div>
-    <div class="flex items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-4 py-2.5 mb-3">
-      <i class="ph ph-magnifying-glass text-white/30 text-sm flex-shrink-0"></i>
-      <input type="text" id="search-input" placeholder="Search by reference code…"
-        class="bg-transparent text-white text-sm outline-none w-full placeholder:text-white/20" />
+    <div class="flex items-center gap-2 mb-3">
+      <div id="today-controls"
+        class="relative flex items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-3 py-2.5 shrink-0 text-xs cursor-pointer">
+        <i class="ph ph-calendar text-red-500 text-sm"></i>
+        <span id="today-label" class="whitespace-nowrap"></span>
+        <input type="date" id="date-picker" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+      </div>
+      <div id="upcoming-controls"
+        class="hidden relative items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-3 py-2.5 shrink-0 text-xs cursor-pointer">
+        <i class="ph ph-calendar text-red-500 text-sm"></i>
+        <span id="upcoming-label" class="whitespace-nowrap"></span>
+        <input type="date" id="upcoming-date-filter" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+      </div>
+      <div class="flex-1 flex items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-3 py-2.5">
+        <i class="ph ph-magnifying-glass text-white/30 text-sm flex-shrink-0"></i>
+        <input type="text" id="search-input" placeholder="Search reference code…"
+          class="bg-transparent text-white text-sm outline-none w-full min-w-0 placeholder:text-white/20" />
+      </div>
     </div>
 
     <!-- STATS -->
-    <div class="flex items-center justify-between bg-[#111] border border-white/6 rounded-xl px-4 py-2.5 mb-5 text-xs">
-      <span class="text-white/40"><span id="stat-total" class="text-white font-semibold">-</span> booked</span>
-      <span class="text-white/40"><span id="stat-pending" class="text-yellow-400 font-semibold">-</span> pending</span>
-      <span class="text-white/40"><span id="stat-inprogress" class="text-blue-400 font-semibold">-</span> in progress</span>
-      <span class="text-white/40"><span id="stat-done" class="text-green-400 font-semibold">-</span> done</span>
+    <div class="grid grid-cols-2 gap-1 bg-[#111] border border-white/6 rounded-2xl p-1 mb-5">
+      <button type="button" data-stat="all"
+        class="stat-btn bg-white/8 flex items-center gap-2 rounded-xl px-2.5 py-2 transition-all duration-200 cursor-pointer">
+        <span id="stat-total" class="text-lg leading-none text-white" style="font-family:'Bebas Neue',sans-serif;">-</span>
+        <span class="text-xs tracking-wide text-white/40">BOOKED</span>
+      </button>
+      <button type="button" data-stat="pending"
+        class="stat-btn flex items-center gap-2 rounded-xl px-2.5 py-2 transition-all duration-200 cursor-pointer">
+        <span id="stat-pending" class="text-lg leading-none text-yellow-400" style="font-family:'Bebas Neue',sans-serif;">-</span>
+        <span class="text-xs tracking-wide text-white/40">PENDING</span>
+      </button>
+      <button type="button" data-stat="in_progress"
+        class="stat-btn flex items-center gap-2 rounded-xl px-2.5 py-2 transition-all duration-200 cursor-pointer">
+        <span id="stat-inprogress" class="text-lg leading-none text-blue-400" style="font-family:'Bebas Neue',sans-serif;">-</span>
+        <span class="text-xs tracking-wide text-white/40">IN PROGRESS</span>
+      </button>
+      <button type="button" data-stat="done"
+        class="stat-btn flex items-center gap-2 rounded-xl px-2.5 py-2 transition-all duration-200 cursor-pointer">
+        <span id="stat-done" class="text-lg leading-none text-green-400" style="font-family:'Bebas Neue',sans-serif;">-</span>
+        <span class="text-xs tracking-wide text-white/40">DONE</span>
+      </button>
     </div>
 
     <!-- BOOKINGS LIST -->
-    <div class="bg-[#111] border border-white/6 rounded-2xl overflow-hidden animate-fadeUp">
+    <div class="bg-[#111] border border-white/6 rounded-2xl animate-fadeUp">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-5 py-4 border-b border-white/5 gap-3">
         <div class="flex items-center gap-2">
           <div class="w-1.5 h-5 bg-red-500 rounded-full"></div>
