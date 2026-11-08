@@ -40,6 +40,9 @@ router.get('/dashboard.js', (req, res) => {
 router.get('/walkin.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'walkin.js'));
 });
+router.get('/shell.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'shell.js'));
+});
 
 // PAGE ROUTES
 router.get('/', isStaff, (req, res) => res.redirect('/staff/dashboard'));
