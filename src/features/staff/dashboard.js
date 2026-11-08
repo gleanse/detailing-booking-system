@@ -677,7 +677,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const res = await fetch('/staff/me');
     const data = await res.json();
     if (data.success) {
-      document.getElementById('staff-name').textContent = data.user.name;
       currentStaffId = data.user.id;
     }
   } catch (_) {}

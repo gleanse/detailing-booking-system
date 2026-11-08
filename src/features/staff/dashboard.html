@@ -11,93 +11,46 @@
 </head>
 <body class="bg-[#0a0a0a] min-h-screen text-white overflow-x-hidden">
 
-  <!-- NAVBAR -->
-  <header
-    class="sticky top-0 z-50 border-b border-red-500/20 bg-[#0a0a0a]/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(229,53,53,0.1)] animate-slideDown">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
-      <div class="flex items-center justify-between h-16">
-        <a href="/staff/dashboard" class="flex items-center gap-3 group">
-          <div class="w-[3px] h-7 bg-red-500 rounded-full transition-all duration-300 group-hover:h-9"></div>
-          <span
-            class="text-xl sm:text-2xl tracking-widest uppercase font-bold bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent"
-            style="font-family:'Bebas Neue',sans-serif;">
-            Herco Detailing Garage
-          </span>
-        </a>
-        <div class="flex items-center gap-3">
-          <span
-            class="hidden sm:flex items-center gap-1.5 text-xs text-white/30 border border-white/10 px-3 py-1.5 rounded-lg">
-            <i class="ph ph-identification-badge text-red-500 text-sm"></i>
-            <span id="staff-name">Staff</span>
-          </span>
-          <a href="/staff/walkin"
-            class="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors duration-200">
-            <i class="ph ph-plus text-sm"></i>
-            Walk-in
-          </a>
-          <button id="btn-logout"
-            class="flex items-center gap-1.5 text-xs text-white/30 hover:text-red-400 border border-white/10 hover:border-red-500/30 px-3 py-2 rounded-xl transition-all duration-200 cursor-pointer">
-            <i class="ph ph-sign-out text-sm"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
   <!-- MAIN -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
-    <div class="mb-8 animate-fadeUp">
-      <p class="text-white/30 text-xs uppercase tracking-[0.2em] mb-1">Staff Portal</p>
-      <h1 class="text-5xl font-bold tracking-wide" style="font-family:'Bebas Neue',sans-serif;">Dashboard</h1>
+    <div class="flex items-center justify-between mb-5 animate-fadeUp">
+      <h1 class="text-4xl font-bold tracking-wide" style="font-family:'Bebas Neue',sans-serif;">Board</h1>
+      <button id="btn-logout"
+        class="flex items-center gap-1.5 text-xs text-white/30 hover:text-red-400 border border-white/10 hover:border-red-500/30 px-3 py-2 rounded-xl transition-all duration-200 cursor-pointer">
+        <i class="ph ph-sign-out text-sm"></i>
+      </button>
     </div>
 
-    <!-- CONTROLS -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-6 animate-fadeUp">
-      <div class="flex gap-1 bg-[#111] border border-white/8 rounded-xl p-1 flex-shrink-0">
-        <button data-view="today"
-          class="view-toggle active text-xs px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer">Today</button>
-        <button data-view="upcoming"
-          class="view-toggle text-xs px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer">All
-          Upcoming</button>
-      </div>
-      <div id="today-controls" class="flex items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-4 py-2.5">
-        <i class="ph ph-calendar text-red-500 text-sm flex-shrink-0"></i>
-        <input type="date" id="date-picker" class="bg-transparent text-sm outline-none cursor-pointer w-full" />
-      </div>
-      <div id="upcoming-controls"
-        class="hidden items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-4 py-2.5">
-        <i class="ph ph-funnel text-white/30 text-sm flex-shrink-0"></i>
-        <input type="date" id="upcoming-date-filter" class="bg-transparent text-sm outline-none cursor-pointer" />
-        <span class="text-white/20 text-xs">filter by date</span>
-      </div>
-      <div class="flex items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-4 py-2.5 flex-1">
-        <i class="ph ph-magnifying-glass text-white/30 text-sm flex-shrink-0"></i>
-        <input type="text" id="search-input" placeholder="Search by reference code…"
-          class="bg-transparent text-white text-sm outline-none w-full placeholder:text-white/20" />
-      </div>
+        <!-- CONTROLS -->
+    <div class="flex gap-1 bg-[#111] border border-white/8 rounded-xl p-1 mb-3 animate-fadeUp">
+      <button data-view="today"
+        class="view-toggle active flex-1 text-sm py-2 rounded-lg transition-all duration-200 cursor-pointer">Today</button>
+      <button data-view="upcoming"
+        class="view-toggle flex-1 text-sm py-2 rounded-lg transition-all duration-200 cursor-pointer">Upcoming</button>
+    </div>
+    <div id="today-controls" class="flex items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-4 py-2.5 mb-3">
+      <i class="ph ph-calendar text-red-500 text-sm flex-shrink-0"></i>
+      <input type="date" id="date-picker" class="bg-transparent text-sm outline-none cursor-pointer w-full" />
+    </div>
+    <div id="upcoming-controls"
+      class="hidden items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-4 py-2.5 mb-3">
+      <i class="ph ph-funnel text-white/30 text-sm flex-shrink-0"></i>
+      <input type="date" id="upcoming-date-filter" class="bg-transparent text-sm outline-none cursor-pointer" />
+      <span class="text-white/20 text-xs">filter by date</span>
+    </div>
+    <div class="flex items-center gap-2 bg-[#111] border border-white/8 rounded-xl px-4 py-2.5 mb-3">
+      <i class="ph ph-magnifying-glass text-white/30 text-sm flex-shrink-0"></i>
+      <input type="text" id="search-input" placeholder="Search by reference code…"
+        class="bg-transparent text-white text-sm outline-none w-full placeholder:text-white/20" />
     </div>
 
     <!-- STATS -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 animate-fadeUp">
-      <div class="bg-[#111] border border-white/6 rounded-2xl px-4 py-3">
-        <p class="text-white/30 text-xs uppercase tracking-widest mb-1">Total</p>
-        <p id="stat-total" class="text-2xl font-bold text-white" style="font-family:'Bebas Neue',sans-serif;">-</p>
-      </div>
-      <div class="bg-[#111] border border-white/6 rounded-2xl px-4 py-3">
-        <p class="text-white/30 text-xs uppercase tracking-widest mb-1">Pending</p>
-        <p id="stat-pending" class="text-2xl font-bold text-yellow-400" style="font-family:'Bebas Neue',sans-serif;">-
-        </p>
-      </div>
-      <div class="bg-[#111] border border-white/6 rounded-2xl px-4 py-3">
-        <p class="text-white/30 text-xs uppercase tracking-widest mb-1">In Progress</p>
-        <p id="stat-inprogress" class="text-2xl font-bold text-blue-400" style="font-family:'Bebas Neue',sans-serif;">-
-        </p>
-      </div>
-      <div class="bg-[#111] border border-white/6 rounded-2xl px-4 py-3">
-        <p class="text-white/30 text-xs uppercase tracking-widest mb-1">Done</p>
-        <p id="stat-done" class="text-2xl font-bold text-green-400" style="font-family:'Bebas Neue',sans-serif;">-</p>
-      </div>
+    <div class="flex items-center justify-between bg-[#111] border border-white/6 rounded-xl px-4 py-2.5 mb-5 text-xs">
+      <span class="text-white/40"><span id="stat-total" class="text-white font-semibold">-</span> booked</span>
+      <span class="text-white/40"><span id="stat-pending" class="text-yellow-400 font-semibold">-</span> pending</span>
+      <span class="text-white/40"><span id="stat-inprogress" class="text-blue-400 font-semibold">-</span> in progress</span>
+      <span class="text-white/40"><span id="stat-done" class="text-green-400 font-semibold">-</span> done</span>
     </div>
 
     <!-- BOOKINGS LIST -->
