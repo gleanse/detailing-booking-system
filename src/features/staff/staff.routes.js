@@ -47,6 +47,7 @@ router.get('/shell.js', (req, res) => {
 // PAGE ROUTES
 router.get('/', isStaff, (req, res) => res.redirect('/staff/dashboard'));
 router.get('/dashboard', isStaff, getDashboardPage);
+router.get('/scan', isStaff, getScanPage);
 router.get('/scan/:ref', isStaff, getScanPage);
 router.get('/walkin', isStaff, getWalkinPage);
 

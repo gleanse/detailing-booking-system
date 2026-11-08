@@ -11,30 +11,49 @@
 </head>
 <body class="bg-[#0a0a0a] min-h-screen text-white overflow-x-hidden">
 
-  <!-- NAVBAR -->
-  <header class="sticky top-0 z-50 border-b border-red-500/20 bg-[#0a0a0a]/95 backdrop-blur-md">
-    <div class="max-w-2xl mx-auto px-4 sm:px-6">
-      <div class="flex items-center justify-between h-16">
-        <a href="/staff/dashboard"
-          class="flex items-center gap-2 text-white/40 hover:text-white transition-colors duration-200 group">
-          <i class="ph ph-arrow-left group-hover:-translate-x-1 transition-transform duration-200 text-sm"></i>
-          <span class="text-sm">Dashboard</span>
-        </a>
-        <span class="flex items-center gap-1.5 text-xs text-white/30 border border-white/10 px-3 py-1.5 rounded-lg">
-          <i class="ph ph-qr-code text-red-500 text-sm"></i>
-          QR Scan
-        </span>
-        <span id="staff-name-badge"
-          class="hidden sm:flex items-center gap-1.5 text-xs text-white/30 border border-white/10 px-3 py-1.5 rounded-lg">
-          <i class="ph ph-identification-badge text-red-500 text-sm"></i>
-          <span id="staff-name">Staff</span>
-        </span>
-      </div>
+  <!-- TOP BAR -->
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 pt-6">
+    <div class="flex items-center justify-between mb-5">
+      <h1 class="text-4xl font-bold tracking-wide" style="font-family:'Bebas Neue',sans-serif;">Scan</h1>
+      <button id="btn-logout"
+        class="flex items-center gap-1.5 text-xs text-white/30 hover:text-red-400 border border-white/10 hover:border-red-500/30 px-3 py-2 rounded-xl transition-all duration-200 cursor-pointer">
+        <i class="ph ph-sign-out text-sm"></i>
+      </button>
     </div>
-  </header>
+  </div>
 
   <!-- MAIN -->
   <main class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- Scanner landing state -->
+    <div id="state-scanner" class="hidden animate-fadeUp">
+      <div class="mb-6">
+        <h2 class="text-3xl font-bold mb-2" style="font-family:'Bebas Neue',sans-serif;">Scan a booking</h2>
+        <p class="text-white/40 text-sm">Scan the customer's QR code to open their booking straight away. No typing the code and no switching apps.</p>
+      </div>
+      <div class="relative bg-black border border-white/10 rounded-2xl overflow-hidden aspect-square">
+        <video id="scan-video" class="w-full h-full object-cover" playsinline muted></video>
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div class="w-48 h-48 border-2 border-red-500 rounded-2xl"></div>
+        </div>
+      </div>
+      <p id="scan-status" class="text-white/30 text-xs text-center mt-3"></p>
+      <button id="scan-start"
+        class="hidden w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold py-3.5 rounded-xl transition-colors duration-200">
+        Start camera
+      </button>
+      <div class="mt-6 bg-[#111] border border-white/8 rounded-2xl p-4">
+        <p class="text-white/40 text-xs mb-2">Camera not working? Type the code</p>
+        <div class="flex gap-2">
+          <input id="scan-code" type="text" placeholder="HRC-XXXXXXXX"
+            class="flex-1 bg-transparent border border-white/10 rounded-xl px-3 py-2 text-sm outline-none uppercase" />
+          <button id="scan-open"
+            class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 rounded-xl transition-colors duration-200">
+            Open
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Loading state -->
     <div id="state-loading" class="animate-fadeUp">
@@ -356,6 +375,7 @@
   </style>
 
   <script src="/staff/shell.js"></script>
+  <script src="/jsqr/jsQR.js"></script>
   <script src="/staff/scan.js"></script>
 </body>
 </html>

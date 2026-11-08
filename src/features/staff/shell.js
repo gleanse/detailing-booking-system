@@ -1,5 +1,6 @@
 const STAFF_NAV = [
   { label: 'Board', href: '/staff/dashboard', icon: 'ph-squares-four' },
+  { label: 'Scan', href: '/staff/scan', icon: 'ph-qr-code' },
   { label: 'Walk-in', href: '/staff/walkin', icon: 'ph-user-plus' },
 ];
 

@@ -1,5 +1,5 @@
 // APP JAVASCRIPT
-process.env.TZ = 'Asia/Manila'; 
+process.env.TZ = 'Asia/Manila';
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
@@ -75,6 +75,10 @@ app.use(
 app.use(
   '/gsap',
   express.static(path.join(__dirname, '../node_modules/gsap/dist')),
+);
+app.use(
+  '/jsqr',
+  express.static(path.join(__dirname, '../node_modules/jsqr/dist')),
 );
 app.use(
   '/fonts/big-shoulders',

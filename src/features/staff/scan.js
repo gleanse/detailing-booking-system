@@ -338,17 +338,109 @@ const commitMarkPaid = async () => {
   }
 };
 
+const scanner = { stream: null, rafId: null };
+const scanCanvas = document.createElement('canvas');
+
+const setScanStatus = (msg) =>
+  (document.getElementById('scan-status').textContent = msg);
+
+const stopCamera = () => {
+  cancelAnimationFrame(scanner.rafId);
+  scanner.stream?.getTracks().forEach((t) => t.stop());
+  scanner.stream = null;
+};
+
+const openBookingCode = (code) => {
+  const clean = code.trim().toUpperCase();
+  if (!/^(HRC|WI)-[A-Z0-9-]+$/.test(clean)) {
+    setScanStatus('That is not a booking code. Try again.');
+    return false;
+  }
+  window.location.href = `/staff/scan/${encodeURIComponent(clean)}`;
+  return true;
+};
+
+const scanFrame = () => {
+  const video = document.getElementById('scan-video');
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    scanCanvas.width = video.videoWidth;
+    scanCanvas.height = video.videoHeight;
+    const ctx = scanCanvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(video, 0, 0);
+    const img = ctx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+    const code = jsQR(img.data, img.width, img.height);
+    if (code?.data) {
+      const ref = code.data.split('/').pop();
+      stopCamera();
+      if (!openBookingCode(ref))
+        scanner.rafId = requestAnimationFrame(scanFrame);
+      return;
+    }
+  }
+  scanner.rafId = requestAnimationFrame(scanFrame);
+};
+
+const startCamera = async () => {
+  document.getElementById('scan-start').classList.add('hidden');
+  try {
+    scanner.stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' },
+    });
+  } catch (_) {
+    setScanStatus('Camera unavailable. Type the code instead.');
+    return;
+  }
+  const video = document.getElementById('scan-video');
+  video.srcObject = scanner.stream;
+  await video.play();
+  setScanStatus('Point at the booking QR code');
+  scanner.rafId = requestAnimationFrame(scanFrame);
+};
+
+const showScannerLanding = async () => {
+  hideBlock('state-loading');
+  showBlock('state-scanner');
+
+  document.getElementById('scan-start').addEventListener('click', startCamera);
+  document
+    .getElementById('scan-open')
+    .addEventListener('click', () =>
+      openBookingCode(document.getElementById('scan-code').value),
+    );
+
+  let permission = 'prompt';
+  try {
+    permission = (await navigator.permissions.query({ name: 'camera' })).state;
+  } catch (_) {}
+
+  if (permission === 'granted') {
+    startCamera();
+  } else {
+    setScanStatus('Allow camera access once to start scanning.');
+    document.getElementById('scan-start').classList.remove('hidden');
+  }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const res = await fetch('/staff/me');
     const data = await res.json();
     if (data.success) {
-      document.getElementById('staff-name').textContent = data.user.name;
       currentStaffId = data.user.id;
     }
   } catch (_) {}
 
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    const res = await fetch('/staff/logout', { method: 'POST' });
+    const data = await res.json();
+    if (data.redirect) window.location.href = data.redirect;
+  });
+
   const ref = window.location.pathname.split('/').pop();
+  if (ref === 'scan') {
+    showScannerLanding();
+    return;
+  }
   if (!ref) {
     hideBlock('state-loading');
     showBlock('state-notfound');
