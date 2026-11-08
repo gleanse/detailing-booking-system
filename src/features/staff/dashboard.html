@@ -100,37 +100,12 @@
       </div>
     </div>
 
-    <!-- MY IN PROGRESS - bookings this staff personally started -->
-    <div id="my-inprogress-section" class="hidden mb-6 animate-fadeUp">
-      <div class="flex items-center gap-2 mb-4">
-        <div class="w-1.5 h-5 bg-blue-500 rounded-full"></div>
-        <h2 class="text-sm font-semibold text-white/60 uppercase tracking-widest">My In Progress</h2>
-        <span id="my-inprogress-count"
-          class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full"></span>
-      </div>
-      <div id="my-inprogress-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-    </div>
-
     <!-- BOOKINGS LIST -->
     <div class="bg-[#111] border border-white/6 rounded-2xl overflow-hidden animate-fadeUp">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-5 py-4 border-b border-white/5 gap-3">
         <div class="flex items-center gap-2">
           <div class="w-1.5 h-5 bg-red-500 rounded-full"></div>
           <h2 class="text-sm font-semibold text-white uppercase tracking-widest">Bookings</h2>
-        </div>
-        <div class="flex gap-1 bg-white/4 rounded-lg p-1 overflow-x-auto scrollbar-none">
-          <button data-filter="all"
-            class="filter-tab active text-xs px-3 py-1 rounded-md transition-all duration-200 whitespace-nowrap">All</button>
-          <button data-filter="pending"
-            class="filter-tab text-xs px-3 py-1 rounded-md transition-all duration-200 whitespace-nowrap">Pending</button>
-          <button data-filter="in_progress"
-            class="filter-tab text-xs px-3 py-1 rounded-md transition-all duration-200 whitespace-nowrap">In
-            Progress</button>
-          <button data-filter="done"
-            class="filter-tab text-xs px-3 py-1 rounded-md transition-all duration-200 whitespace-nowrap">Done</button>
-          <button data-filter="picked_up"
-            class="filter-tab text-xs px-3 py-1 rounded-md transition-all duration-200 whitespace-nowrap">Picked
-            Up</button>
         </div>
       </div>
       <div id="bookings-list" class="divide-y divide-white/4">
@@ -145,19 +120,6 @@
         </div>
       </div>
       <div id="pagination"></div>
-    </div>
-
-    <!-- DONE AWAITING PICKUP -->
-    <div class="mt-6 animate-fadeUp">
-      <div class="flex items-center gap-2 mb-4">
-        <div class="w-1.5 h-5 bg-green-500 rounded-full"></div>
-        <h2 class="text-sm font-semibold text-white/60 uppercase tracking-widest">Done - Awaiting Pickup</h2>
-        <span id="done-count"
-          class="hidden text-xs bg-green-500/20 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full"></span>
-      </div>
-      <div id="done-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <div class="skeleton-line h-20 rounded-2xl"></div>
-      </div>
     </div>
 
   </main>
@@ -428,15 +390,6 @@
     .scrollbar-none {
       -ms-overflow-style: none;
       scrollbar-width: none;
-    }
-
-    .filter-tab {
-      color: rgba(255, 255, 255, 0.4);
-    }
-
-    .filter-tab.active {
-      background: rgba(229, 53, 53, 0.15);
-      color: #fff;
     }
 
     .view-toggle {

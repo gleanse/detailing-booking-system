@@ -75,7 +75,7 @@ const statusConfig = {
 const infoRow = (id, icon, label, value) =>
   (document.getElementById(id).innerHTML = `
     <i class="ph ${icon} row-icon"></i>
-    <div><p class="row-label">${label}</p><p class="row-value">${value}</p></div>`);
+    <div><p class="row-label">${label}</p><p class="row-value">${escapeHtml(value)}</p></div>`);
 
 const renderBooking = (b) => {
   booking = b;

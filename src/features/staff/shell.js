@@ -3,6 +3,14 @@ const STAFF_NAV = [
   { label: 'Walk-in', href: '/staff/walkin', icon: 'ph-user-plus' },
 ];
 
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 const isActive = (href) => window.location.pathname.startsWith(href);
 
 const mobileItem = ({ label, href, icon }) => {

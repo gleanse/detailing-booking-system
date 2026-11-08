@@ -1,5 +1,5 @@
 let allBookings = [];
-let activeFilter = 'all';
+let carriedOver = [];
 let currentBooking = null;
 let currentStaffId = null;
 let viewMode = 'today';
@@ -75,7 +75,7 @@ const renderBookingRow = (b) => {
           }</div>
           <div class="min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <p class="text-white text-sm font-medium truncate">${name}</p>
+              <p class="text-white text-sm font-medium truncate">${escapeHtml(name)}</p>
               ${dateLabel}
               ${
                 b.is_walkin
@@ -88,9 +88,9 @@ const renderBookingRow = (b) => {
                   : ''
               }
             </div>
-            <p class="text-white/30 text-xs mt-0.5">${b.reference_code} · ${
-              b.service_name
-            }${b.variant_name ? ' - ' + b.variant_name : ''}</p>
+            <p class="text-white/30 text-xs mt-0.5">${escapeHtml(b.reference_code)} · ${escapeHtml(
+              b.service_name,
+            )}${escapeHtml(b.variant_name ? ' - ' + b.variant_name : '')}</p>
           </div>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
@@ -174,19 +174,84 @@ const goToPage = (page) => {
     : loadUpcoming(page);
 };
 
+const dotClass = (s) =>
+  ({
+    pending: 'bg-white/30',
+    in_progress: 'bg-yellow-400',
+    done: 'bg-green-400',
+    picked_up: 'bg-white/10',
+  })[s] || 'bg-white/30';
+
+const shortDate = (d) =>
+  new Date(d + 'T00:00:00').toLocaleDateString('en-PH', {
+    month: 'short',
+    day: 'numeric',
+  });
+
+const renderBoardRow = (b) => `
+  <div class="booking-row flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-white/3 transition-colors duration-150" data-id="${b.id}">
+    <span class="w-7 shrink-0 text-red-400 text-base font-bold" style="font-family:'Bebas Neue',sans-serif;">${b.queue_number ?? '-'}</span>
+    <div class="flex-1 min-w-0">
+      <p class="text-white text-sm truncate">${escapeHtml(b.motorcycle_plate || '-')} · ${escapeHtml(b.motorcycle_model || '-')}</p>
+      <p class="text-white/30 text-xs truncate">${escapeHtml(b.service_name)}${escapeHtml(b.variant_name ? ' - ' + b.variant_name : '')}${b.booking_date !== today() ? ' · ' + shortDate(b.booking_date) : ''}</p>
+    </div>
+    <span class="w-2 h-2 rounded-full shrink-0 ${dotClass(b.status)}"></span>
+  </div>`;
+
+const renderBoard = (bookings, carried) => {
+  const live = bookings.filter((b) => b.status !== 'picked_up');
+  const pickedUp = bookings.filter((b) => b.status === 'picked_up');
+  const earlier = carried.filter((b) => b.status !== 'picked_up');
+  const services = [...new Set(live.map((b) => b.service_name))];
+
+  const earlierBlock = earlier.length
+    ? `<div class="border border-red-500/25 rounded-xl overflow-hidden mx-4 my-3">
+        <p class="px-4 py-2 text-xs text-red-400 bg-white/3">From earlier days</p>
+        ${earlier.map(renderBoardRow).join('')}
+      </div>`
+    : '';
+
+  const serviceBlocks = services
+    .map((name) => {
+      const rows = live.filter((b) => b.service_name === name);
+      return `<div class="border-t border-white/5">
+        <div class="flex items-center justify-between px-4 py-2">
+          <span class="text-white text-base" style="font-family:'Bebas Neue',sans-serif;">${escapeHtml(name)}</span>
+          <span class="text-white/30 text-xs">${rows.length} booked</span>
+        </div>
+        ${rows.map(renderBoardRow).join('')}
+      </div>`;
+    })
+    .join('');
+
+  const pickedBlock = pickedUp.length
+    ? `<details class="border-t border-white/5 px-4 py-3">
+        <summary class="cursor-pointer text-xs text-white/30">Picked up · ${pickedUp.length}</summary>
+        ${pickedUp.map(renderBoardRow).join('')}
+      </details>`
+    : '';
+
+  return earlierBlock + serviceBlocks + pickedBlock;
+};
+
 const applyFilter = () => {
-  const filtered =
-    activeFilter === 'all'
-      ? allBookings
-      : allBookings.filter((b) => b.status === activeFilter);
   const list = document.getElementById('bookings-list');
-  list.innerHTML =
-    filtered.length === 0
-      ? renderEmpty('No bookings found')
-      : filtered.map(renderBookingRow).join('');
+  if (viewMode === 'today') {
+    const nothing = allBookings.length === 0 && carriedOver.length === 0;
+    list.innerHTML = nothing
+      ? renderEmpty('No bookings for this day')
+      : renderBoard(allBookings, carriedOver);
+  } else {
+    list.innerHTML =
+      allBookings.length === 0
+        ? renderEmpty('No bookings found')
+        : allBookings.map(renderBookingRow).join('');
+  }
   list.querySelectorAll('.booking-row').forEach((row) => {
     row.addEventListener('click', () => {
-      const b = allBookings.find((x) => x.id === row.dataset.id);
+      const b =
+        allBookings.find((x) => x.id === row.dataset.id) ||
+        carriedOver.find((x) => x.id === row.dataset.id);
       if (b) openModal(b);
     });
   });
@@ -219,6 +284,7 @@ const loadBookings = async (date, page = 1) => {
     const data = await res.json();
     if (!data.success) throw new Error(data.message);
     allBookings = data.bookings;
+    carriedOver = data.carriedOver || [];
     totalPages = data.totalPages;
     totalBookings = data.total;
     updateStats();
@@ -252,86 +318,6 @@ const loadUpcoming = async (page = 1) => {
   }
 };
 
-const loadDoneList = async () => {
-  try {
-    const res = await fetch('/staff/bookings/done');
-    const data = await res.json();
-    const container = document.getElementById('done-list');
-    const badge = document.getElementById('done-count');
-    if (!data.success || data.bookings.length === 0) {
-      container.innerHTML = `<p class="text-white/20 text-xs col-span-full py-4">No motorcycles waiting for pickup.</p>`;
-      badge.classList.add('hidden');
-      return;
-    }
-    badge.textContent = data.bookings.length;
-    badge.classList.remove('hidden');
-    container.innerHTML = data.bookings
-      .map(
-        (b) => `
-      <div class="bg-[#111] border border-green-500/15 rounded-2xl px-4 py-3 cursor-pointer hover:border-green-500/30 transition-colors duration-200" onclick="openModalById('${
-        b.id
-      }')">
-        <div class="flex items-center gap-2 mb-1">
-          <span class="text-lg font-bold text-green-400" style="font-family:'Bebas Neue',sans-serif;">#${
-            b.queue_number ?? '-'
-          }</span>
-          <span class="status-badge status-done">Done</span>
-        </div>
-        <p class="text-white text-xs font-medium">${b.guest_name || '-'}</p>
-        <p class="text-white/30 text-xs">${b.motorcycle_plate} · ${
-          b.service_name
-        }</p>
-        <p class="text-white/20 text-[10px] mt-1">${b.reference_code}</p>
-      </div>`,
-      )
-      .join('');
-  } catch (err) {
-    console.error('Load done list error:', err);
-  }
-};
-
-// loads bookings this staff personally started and are still in_progress
-const loadMyInProgress = async () => {
-  try {
-    const res = await fetch('/staff/bookings/mine');
-    const data = await res.json();
-    const container = document.getElementById('my-inprogress-list');
-    const badge = document.getElementById('my-inprogress-count');
-    const section = document.getElementById('my-inprogress-section');
-
-    if (!data.success || data.bookings.length === 0) {
-      section.classList.add('hidden');
-      return;
-    }
-
-    section.classList.remove('hidden');
-    badge.textContent = data.bookings.length;
-
-    container.innerHTML = data.bookings
-      .map(
-        (b) => `
-      <div class="bg-[#111] border border-blue-500/15 rounded-2xl px-4 py-3 cursor-pointer hover:border-blue-500/30 transition-colors duration-200" onclick="openModalById('${
-        b.id
-      }')">
-        <div class="flex items-center gap-2 mb-1">
-          <span class="text-lg font-bold text-blue-400" style="font-family:'Bebas Neue',sans-serif;">#${
-            b.queue_number ?? '-'
-          }</span>
-          <span class="status-badge status-in_progress">In Progress</span>
-        </div>
-        <p class="text-white text-xs font-medium">${b.guest_name || '-'}</p>
-        <p class="text-white/30 text-xs">${b.motorcycle_plate} · ${
-          b.service_name
-        }${b.variant_name ? ' - ' + b.variant_name : ''}</p>
-        <p class="text-white/20 text-[10px] mt-1">${b.reference_code}</p>
-      </div>`,
-      )
-      .join('');
-  } catch (err) {
-    console.error('Load my in progress error:', err);
-  }
-};
-
 const openModalById = async (id) => {
   const booking = allBookings.find((b) => b.id === id);
   if (booking) {
@@ -351,8 +337,8 @@ const modalField = (icon, label, value) => `
   <div class="flex items-center gap-3 bg-white/2 rounded-xl px-3 py-2">
     <i class="ph ${icon} text-red-500 text-sm flex-shrink-0"></i>
     <div class="min-w-0">
-      <p class="text-white/30 text-[10px] uppercase tracking-widest">${label}</p>
-      <p class="text-white text-xs font-medium truncate">${value}</p>
+      <p class="text-white/30 text-[10px] uppercase tracking-widest">${escapeHtml(label)}</p>
+      <p class="text-white text-xs font-medium truncate">${escapeHtml(value)}</p>
     </div>
   </div>`;
 
@@ -556,12 +542,12 @@ const commitStatus = async (status) => {
     if (!data.success) throw new Error(data.message);
     const idx = allBookings.findIndex((b) => b.id === currentBooking.id);
     if (idx !== -1) allBookings[idx].status = status;
+    const cidx = carriedOver.findIndex((b) => b.id === currentBooking.id);
+    if (cidx !== -1) carriedOver[cidx].status = status;
     hideAllActionModals();
     closeModal();
     updateStats();
     applyFilter();
-    loadDoneList();
-    loadMyInProgress();
   } catch (err) {
     hideAllActionModals();
     closeModal();
@@ -583,7 +569,7 @@ const triggerVariantSwap = async () => {
         (v) =>
           `<option value="${v.id}" data-price="${v.price}"${
             v.id === currentBooking.variant_id ? ' selected' : ''
-          }>${v.name} - PHP ${parseFloat(v.price).toLocaleString()}</option>`,
+          }>${escapeHtml(v.name)} - PHP ${parseFloat(v.price).toLocaleString()}</option>`,
       )
       .join('');
     updateVariantPreview();
@@ -700,8 +686,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const upcomingPicker = document.getElementById('upcoming-date-filter');
   picker.value = today();
   loadBookings(today());
-  loadDoneList();
-  loadMyInProgress();
 
   picker.addEventListener('change', () => {
     if (viewMode === 'today') loadBookings(picker.value, 1);
@@ -728,17 +712,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         : uc.classList.replace('flex', 'hidden');
       currentPage = 1;
       viewMode === 'upcoming' ? loadUpcoming(1) : loadBookings(picker.value, 1);
-    });
-  });
-
-  document.querySelectorAll('.filter-tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      document
-        .querySelectorAll('.filter-tab')
-        .forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      activeFilter = tab.dataset.filter;
-      applyFilter();
     });
   });
 

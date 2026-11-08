@@ -120,7 +120,7 @@ const loadServices = async () => {
     select.innerHTML =
       '<option value="">Select a service</option>' +
       services
-        .map((s) => `<option value="${s.id}">${s.name}</option>`)
+        .map((s) => `<option value="${s.id}">${escapeHtml(s.name)}</option>`)
         .join('');
   } catch (err) {
     console.error('Load services error:', err);
@@ -142,9 +142,12 @@ const loadVariants = (serviceId) => {
     svc.variants
       .map(
         (v) => `<option value="${v.id}">
-      ${v.name} - PHP ${parseFloat(v.price).toLocaleString('en-PH', {
-        minimumFractionDigits: 2,
-      })}
+      ${escapeHtml(v.name)} - PHP ${parseFloat(v.price).toLocaleString(
+        'en-PH',
+        {
+          minimumFractionDigits: 2,
+        },
+      )}
       ${v.duration_hours ? ' (' + v.duration_hours + 'h est.)' : ''}
     </option>`,
       )
