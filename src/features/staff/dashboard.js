@@ -283,6 +283,14 @@ const loadBookings = async (date, page = 1) => {
     allBookings = data.bookings;
     carriedOver = data.carriedOver || [];
     renderUnfinished(carriedOver);
+    document
+      .querySelectorAll('#unfinished-section .booking-row')
+      .forEach((row) => {
+        row.addEventListener('click', () => {
+          const b = carriedOver.find((x) => x.id === row.dataset.id);
+          if (b) openModal(b);
+        });
+      });
     totalPages = data.totalPages;
     totalBookings = data.total;
     updateStats();
