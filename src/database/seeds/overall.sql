@@ -1,49 +1,46 @@
--- ========================================
--- COMPLETE SEED DATA FOR HERCO DATABASE (FIXED)
--- ========================================
+-- DEMO SEED DATA FOR HERCO
+-- every row follows what the app really writes: reference codes, queue numbers, payments, status logs and audit entries
+-- all demo accounts use the password 'password' and @example.test addresses, a reserved domain that can never receive mail
+-- run only on a local or throwaway database, scripts/seeds.js wipes every table first
 
--- 1. USERS SEED (all use password = 'password')
-INSERT INTO users (id, name, email, phone, password, role, email_verified) VALUES
-(gen_random_uuid(), 'Admin User', 'admin@gmail.com', '09123456789', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'admin', true),
-(gen_random_uuid(), 'Staff One', 'staff1@gmail.com', '09234567890', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'staff', true),
-(gen_random_uuid(), 'Staff Two', 'staff2@gmail.com', '09345678901', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'staff', true),
-(gen_random_uuid(), 'Customer One', 'customer1@gmail.com', '09456789012', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'customer', true),
-(gen_random_uuid(), 'Customer Two', 'customer2@gmail.com', '09567890123', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'customer', true),
-(gen_random_uuid(), 'Customer Three', 'customer3@gmail.com', '09678901234', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'customer', true);
+-- 1. USERS
+INSERT INTO users (name, email, phone, password, role, email_verified) VALUES
+('Admin User', 'admin@example.test', '09123456789', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'admin', true),
+('Staff One', 'staff1@example.test', '09234567890', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'staff', true),
+('Staff Two', 'staff2@example.test', '09345678901', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'staff', true),
+('Customer One', 'customer1@example.test', '09456789012', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'customer', true),
+('Customer Two', 'customer2@example.test', '09567890123', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'customer', true),
+('Customer Three', 'customer3@example.test', '09678901234', '$2b$10$ow3xxDLv.wyTDcZ4hAhilOP1czcdPtIdYSU6x8HJqkonCtou9iKje', 'customer', true);
 
--- 2. SERVICES SEED
-INSERT INTO services (id, name, description, price, down_payment_amount, duration_hours, image_url, is_active) VALUES
-(gen_random_uuid(), 'Ceramic Coating', 'Ceramic coating for the whole motorcycle body, for lasting protection and shine. Graphene coating, a longer-lasting upgrade, is available and confirmed in shop.', 1500.00, 300.00, 3, 'https://placehold.co/400x200?text=Ceramic+Coating', true),
-(gen_random_uuid(), 'Powder Coating', 'Durable powder coating for mags and other metal parts. Not applicable to plastic parts.', 800.00, 300.00, 12, 'https://placehold.co/400x200?text=Powder+Coating', true);
+-- 2. SERVICES
+INSERT INTO services (name, description, price, down_payment_amount, duration_hours, image_url, is_active) VALUES
+('Ceramic Coating', 'Ceramic coating for the whole motorcycle body, for lasting protection and shine. Graphene coating, a longer-lasting upgrade, is available and confirmed in shop.', 1500.00, 300.00, 3, 'https://placehold.co/400x200?text=Ceramic+Coating', true),
+('Powder Coating', 'Durable powder coating for mags and other metal parts. Not applicable to plastic parts.', 800.00, 300.00, 12, 'https://placehold.co/400x200?text=Powder+Coating', true);
 
--- 3. SERVICE VARIANTS SEED
--- Ceramic Coating variants (by motorcycle body size)
-INSERT INTO service_variants (id, service_id, name, price, duration_hours, is_active)
-SELECT gen_random_uuid(), s.id, 'Scooter / Underbone', 1500.00, 2, true FROM services s WHERE s.name = 'Ceramic Coating';
-INSERT INTO service_variants (id, service_id, name, price, duration_hours, is_active)
-SELECT gen_random_uuid(), s.id, 'Standard', 2500.00, 3, true FROM services s WHERE s.name = 'Ceramic Coating';
-INSERT INTO service_variants (id, service_id, name, price, duration_hours, is_active)
-SELECT gen_random_uuid(), s.id, 'Big Bike', 4000.00, 4, true FROM services s WHERE s.name = 'Ceramic Coating';
+-- 3. SERVICE VARIANTS
+INSERT INTO service_variants (service_id, name, price, duration_hours, is_active)
+SELECT s.id, v.name, v.price, v.duration_hours, true
+FROM services s
+JOIN (VALUES
+  ('Ceramic Coating', 'Scooter / Underbone', 1500.00, 2),
+  ('Ceramic Coating', 'Standard', 2500.00, 3),
+  ('Ceramic Coating', 'Big Bike', 4000.00, 4),
+  ('Powder Coating', 'Mags', 1200.00, 12),
+  ('Powder Coating', 'Swing Arm', 800.00, 12),
+  ('Powder Coating', 'Crankcase', 800.00, 12)
+) AS v(service_name, name, price, duration_hours) ON v.service_name = s.name;
 
--- Powder Coating variants (by part, metal parts only)
-INSERT INTO service_variants (id, service_id, name, price, duration_hours, is_active)
-SELECT gen_random_uuid(), s.id, 'Mags', 1200.00, 12, true FROM services s WHERE s.name = 'Powder Coating';
-INSERT INTO service_variants (id, service_id, name, price, duration_hours, is_active)
-SELECT gen_random_uuid(), s.id, 'Swing Arm', 800.00, 12, true FROM services s WHERE s.name = 'Powder Coating';
-INSERT INTO service_variants (id, service_id, name, price, duration_hours, is_active)
-SELECT gen_random_uuid(), s.id, 'Crankcase', 800.00, 12, true FROM services s WHERE s.name = 'Powder Coating';
-
--- 4. CLOSED DATES SEED
+-- 4. CLOSED DATES
 INSERT INTO closed_dates (type, day_of_week, reason) VALUES
 ('recurring', 1, 'Closed on Mondays'),
 ('recurring', 2, 'Closed on Tuesdays');
 
--- 5. AVAILABILITY SEED (2 weeks back to 30 days ahead)
--- Ceramic Coating: Wednesday to Sunday, capacity 10
--- Powder Coating: Wednesday, Friday and Sunday only, capacity 8
-INSERT INTO availability (id, service_id, date, capacity, is_open)
+-- 5. AVAILABILITY
+-- 2 weeks back to 30 days ahead
+-- ceramic coating: wednesday to sunday, capacity 10
+-- powder coating: wednesday, friday and sunday only, capacity 8
+INSERT INTO availability (service_id, date, capacity, is_open)
 SELECT
-  gen_random_uuid(),
   s.id,
   (CURRENT_DATE + offsets.days_offset)::DATE,
   CASE WHEN s.name = 'Ceramic Coating' THEN 10 ELSE 8 END,
@@ -60,257 +57,302 @@ WHERE
   )
 ON CONFLICT (service_id, date) DO NOTHING;
 
--- 6. BOOKINGS SEED
-DO $$
+-- 6. HELPERS
+-- temporary, they vanish when the connection closes
+
+-- a time on a given day, never later than a few minutes ago so seeded history is never in the future
+CREATE FUNCTION pg_temp.day_at(p_day date, p_hour numeric) RETURNS timestamptz
+LANGUAGE sql AS $fn$
+  SELECT LEAST(p_day::timestamptz + p_hour::float8 * INTERVAL '1 hour', NOW() - INTERVAL '5 minutes');
+$fn$;
+
+CREATE FUNCTION pg_temp.seed_audit(p_user uuid, p_action text, p_booking uuid, p_details text, p_at timestamptz)
+RETURNS void LANGUAGE sql AS $fn$
+  INSERT INTO audit_logs (user_id, action, target_table, target_id, details, created_at)
+  VALUES (p_user, p_action, 'bookings', p_booking, p_details, p_at);
+$fn$;
+
+-- same writes as staff changing a status: the booking, the status log and the audit entry
+CREATE FUNCTION pg_temp.seed_status(p_booking uuid, p_status text, p_staff uuid, p_at timestamptz)
+RETURNS void LANGUAGE plpgsql AS $fn$
 DECLARE
-  admin_id UUID;
-  staff1_id UUID;
-  staff2_id UUID;
-  customer1_id UUID;
-  customer2_id UUID;
-  ceramic_service_id UUID;
-  powder_service_id UUID;
-  ceramic_small_id UUID;
-  ceramic_big_id UUID;
-  powder_mags_id UUID;
-  powder_swingarm_id UUID;
-  avail_ceramic_done_id UUID;
-  avail_ceramic_next_id UUID;
-  avail_powder_current_id UUID;
-  avail_powder_next_id UUID;
+  v_ref text;
 BEGIN
-  -- Get user IDs
-  SELECT id INTO admin_id FROM users WHERE email = 'admin@gmail.com';
-  SELECT id INTO staff1_id FROM users WHERE email = 'staff1@gmail.com';
-  SELECT id INTO staff2_id FROM users WHERE email = 'staff2@gmail.com';
-  SELECT id INTO customer1_id FROM users WHERE email = 'customer1@gmail.com';
-  SELECT id INTO customer2_id FROM users WHERE email = 'customer2@gmail.com';
+  UPDATE bookings
+  SET status = p_status, updated_by = p_staff, updated_at = p_at
+  WHERE id = p_booking
+  RETURNING reference_code INTO v_ref;
 
-  -- Get service IDs
-  SELECT id INTO ceramic_service_id FROM services WHERE name = 'Ceramic Coating';
-  SELECT id INTO powder_service_id FROM services WHERE name = 'Powder Coating';
+  INSERT INTO booking_status_logs (booking_id, status, changed_by, created_at)
+  VALUES (p_booking, p_status, p_staff, p_at);
 
-  -- Get variant IDs
-  SELECT id INTO ceramic_small_id FROM service_variants WHERE service_id = ceramic_service_id AND name = 'Scooter / Underbone';
-  SELECT id INTO ceramic_big_id FROM service_variants WHERE service_id = ceramic_service_id AND name = 'Big Bike';
-  SELECT id INTO powder_mags_id FROM service_variants WHERE service_id = powder_service_id AND name = 'Mags';
-  SELECT id INTO powder_swingarm_id FROM service_variants WHERE service_id = powder_service_id AND name = 'Swing Arm';
+  PERFORM pg_temp.seed_audit(
+    p_staff, 'status_changed_to_' || p_status, p_booking,
+    'Booking ' || v_ref || ' marked as ' || p_status, p_at
+  );
+END
+$fn$;
 
-  -- Get availability IDs from real open days of each service
-  SELECT id INTO avail_ceramic_done_id FROM availability WHERE service_id = ceramic_service_id AND date <= CURRENT_DATE - 7 ORDER BY date DESC LIMIT 1;
-  SELECT id INTO avail_ceramic_next_id FROM availability WHERE service_id = ceramic_service_id AND date > CURRENT_DATE ORDER BY date ASC LIMIT 1;
-  SELECT id INTO avail_powder_current_id FROM availability WHERE service_id = powder_service_id AND date <= CURRENT_DATE ORDER BY date DESC LIMIT 1;
-  SELECT id INTO avail_powder_next_id FROM availability WHERE service_id = powder_service_id AND date > CURRENT_DATE ORDER BY date ASC LIMIT 1 OFFSET 1;
+-- a confirmed booking the way the app creates one
+-- online: paid through an xendit invoice, confirmed by the webhook, held 16 minutes while paying
+-- walk-in: created by staff with cash, optional down payment, no invoice and no hold
+CREATE FUNCTION pg_temp.seed_booking(
+  p_user uuid, p_avail uuid, p_service uuid, p_variant uuid,
+  p_name text, p_email text, p_phone text,
+  p_plate text, p_model text, p_color text, p_desc text,
+  p_walkin boolean, p_staff uuid, p_created timestamptz,
+  p_paid numeric, p_ip text
+) RETURNS uuid LANGUAGE plpgsql AS $fn$
+DECLARE
+  v_id uuid := gen_random_uuid();
+  v_ref text := 'HRC-' || UPPER(SUBSTRING(v_id::text, 1, 8));
+  v_invoice text := SUBSTRING(md5(random()::text || v_id::text), 1, 24);
+  v_price numeric;
+  v_paid_at timestamptz := p_created + INTERVAL '6 minutes';
+BEGIN
+  SELECT price INTO v_price FROM service_variants WHERE id = p_variant;
 
   INSERT INTO bookings (
     id, user_id, service_id, variant_id, availability_id,
-    reference_code, queue_number, motorcycle_plate, motorcycle_model, motorcycle_color, motorcycle_description,
-    status, booking_status, payment_method, is_walkin,
-    expires_at, created_at
-  ) VALUES
-  -- Pending/confirmed ceramic booking on the next open ceramic day
-  (
-    gen_random_uuid(), customer1_id, ceramic_service_id, ceramic_small_id, avail_ceramic_next_id,
-    'HRC-' || TO_CHAR(NOW(), 'YYMMDD') || '-001', 1, 'ABC123', 'Honda Click', 'Red', 'Stock condition',
-    'pending', 'confirmed', 'online', false,
-    NOW() + INTERVAL '1 hour', NOW() - INTERVAL '2 days'
-  ),
-  -- In-progress powder booking on the latest powder day (started by staff1)
-  (
-    gen_random_uuid(), customer2_id, powder_service_id, powder_mags_id, avail_powder_current_id,
-    'HRC-' || TO_CHAR(NOW(), 'YYMMDD') || '-002', 1, 'XYZ789', 'Yamaha Mio', 'Blue', 'With accessories',
-    'in_progress', 'confirmed', 'online', false,
-    NOW() + INTERVAL '1 hour', NOW() - INTERVAL '1 day'
-  ),
-  -- Walk-in customer (no user_id) on the next open ceramic day
-  (
-    gen_random_uuid(), NULL, ceramic_service_id, ceramic_small_id, avail_ceramic_next_id,
-    'HRC-' || TO_CHAR(NOW() + INTERVAL '1 day', 'YYMMDD') || '-001', 2, 'WALK001', 'Suzuki Raider', 'Black', 'Modified exhaust',
-    'pending', 'confirmed', 'cash', true,
-    NOW() + INTERVAL '1 hour' + INTERVAL '1 day', NOW()
-  ),
-  -- Completed big bike booking (for history) from at least a week ago
-  (
-    gen_random_uuid(), customer1_id, ceramic_service_id, ceramic_big_id, avail_ceramic_done_id,
-    'HRC-' || TO_CHAR(NOW() - INTERVAL '7 days', 'YYMMDD') || '-001', 1, 'DONE123', 'Kawasaki Ninja', 'Green', 'Full fairing',
-    'done', 'confirmed', 'online', false,
-    NOW() - INTERVAL '7 days' + INTERVAL '1 hour', NOW() - INTERVAL '8 days'
-  ),
-  -- Pending powder booking on the second upcoming powder day
-  (
-    gen_random_uuid(), customer2_id, powder_service_id, powder_swingarm_id, avail_powder_next_id,
-    'HRC-' || TO_CHAR(NOW() + INTERVAL '7 days', 'YYMMDD') || '-001', 1, 'PEND456', 'Honda Beat', 'White', 'Stock',
-    'pending', 'confirmed', 'online', false,
-    NOW() + INTERVAL '7 days' + INTERVAL '1 hour', NOW() - INTERVAL '1 day'
+    guest_name, guest_email, guest_phone,
+    reference_code, queue_number,
+    motorcycle_plate, motorcycle_model, motorcycle_color, motorcycle_description,
+    is_walkin, payment_method, status, booking_status,
+    expires_at, ip_address, updated_by, updated_at, created_at
+  ) VALUES (
+    v_id, p_user, p_service, p_variant, p_avail,
+    p_name, p_email, p_phone,
+    v_ref,
+    (SELECT COALESCE(MAX(queue_number), 0) + 1 FROM bookings WHERE availability_id = p_avail),
+    p_plate, p_model, p_color, p_desc,
+    p_walkin,
+    CASE WHEN p_walkin THEN 'cash' ELSE 'online' END,
+    'pending', 'confirmed',
+    CASE WHEN p_walkin THEN NULL ELSE p_created + INTERVAL '16 minutes' END,
+    CASE WHEN p_walkin THEN NULL ELSE p_ip END,
+    CASE WHEN p_walkin THEN p_staff END,
+    CASE WHEN p_walkin THEN p_created ELSE v_paid_at END,
+    p_created
   );
 
-  -- Update guest info for walk-in
-  UPDATE bookings SET
-    guest_name = 'John Doe',
-    guest_email = 'john.doe@email.com',
-    guest_phone = '09789012345'
-  WHERE motorcycle_plate = 'WALK001';
+  IF p_walkin THEN
+    INSERT INTO payments (
+      booking_id, amount, amount_paid, remaining_balance, is_fully_paid,
+      status, paid_at, created_at
+    ) VALUES (
+      v_id, v_price, p_paid, v_price - p_paid, v_price - p_paid = 0,
+      CASE WHEN p_paid > 0 THEN 'paid' ELSE 'unpaid' END,
+      CASE WHEN p_paid > 0 THEN p_created END,
+      p_created
+    );
 
-  -- 7. BOOKING STATUS LOGS (timeline)
-  -- For the first booking (pending/confirmed)
-  INSERT INTO booking_status_logs (id, booking_id, status, changed_by, created_at)
-  SELECT gen_random_uuid(), b.id, 'confirmed', admin_id, b.created_at + INTERVAL '5 minutes'
-  FROM bookings b WHERE b.motorcycle_plate = 'ABC123';
+    INSERT INTO booking_status_logs (booking_id, status, changed_by, created_at)
+    VALUES (v_id, 'confirmed', p_staff, p_created);
 
-  -- For in-progress booking (XYZ789) - full timeline
-  INSERT INTO booking_status_logs (id, booking_id, status, changed_by, created_at) VALUES
-  (gen_random_uuid(), (SELECT id FROM bookings WHERE motorcycle_plate = 'XYZ789'), 'confirmed', admin_id, NOW() - INTERVAL '1 day' + INTERVAL '10 minutes'),
-  (gen_random_uuid(), (SELECT id FROM bookings WHERE motorcycle_plate = 'XYZ789'), 'in_progress', staff1_id, NOW() - INTERVAL '2 hours');
+    PERFORM pg_temp.seed_audit(
+      p_staff, 'walkin_created', v_id,
+      'Walk-in booking created: ' || v_ref || ' for ' || p_name, p_created
+    );
+  ELSE
+    INSERT INTO payments (
+      booking_id, xendit_invoice_id, invoice_url, amount, amount_paid,
+      remaining_balance, is_fully_paid, status, paid_at, created_at
+    ) VALUES (
+      v_id, v_invoice, 'https://checkout.xendit.co/web/' || v_invoice,
+      v_price, p_paid, v_price - p_paid, v_price - p_paid = 0,
+      'paid', v_paid_at, p_created
+    );
 
-  -- For completed booking (DONE123) - full timeline
-  INSERT INTO booking_status_logs (id, booking_id, status, changed_by, created_at) VALUES
-  (gen_random_uuid(), (SELECT id FROM bookings WHERE motorcycle_plate = 'DONE123'), 'confirmed', admin_id, NOW() - INTERVAL '8 days' + INTERVAL '10 minutes'),
-  (gen_random_uuid(), (SELECT id FROM bookings WHERE motorcycle_plate = 'DONE123'), 'in_progress', staff2_id, NOW() - INTERVAL '7 days' + INTERVAL '2 hours'),
-  (gen_random_uuid(), (SELECT id FROM bookings WHERE motorcycle_plate = 'DONE123'), 'done', staff2_id, NOW() - INTERVAL '7 days' + INTERVAL '6 hours');
+    INSERT INTO booking_status_logs (booking_id, status, changed_by, created_at)
+    VALUES (v_id, 'confirmed', NULL, v_paid_at);
+  END IF;
 
-  -- For walk-in booking (WALK001) - just confirmed
-  INSERT INTO booking_status_logs (id, booking_id, status, changed_by, created_at)
-  SELECT gen_random_uuid(), b.id, 'confirmed', staff1_id, b.created_at + INTERVAL '2 minutes'
-  FROM bookings b WHERE b.motorcycle_plate = 'WALK001';
+  RETURN v_id;
+END
+$fn$;
 
-  -- For pending next week booking (PEND456) - just confirmed
-  INSERT INTO booking_status_logs (id, booking_id, status, changed_by, created_at)
-  SELECT gen_random_uuid(), b.id, 'confirmed', admin_id, b.created_at + INTERVAL '5 minutes'
-  FROM bookings b WHERE b.motorcycle_plate = 'PEND456';
+-- 7. BOOKINGS, PAYMENTS, STATUS LOGS AND AUDIT LOGS
+DO $seed$
+DECLARE
+  admin_id uuid;
+  staff1_id uuid;
+  staff2_id uuid;
+  c1 uuid;
+  c2 uuid;
+  c3 uuid;
+  ceramic uuid;
+  powder uuid;
+  cer_scooter uuid;
+  cer_standard uuid;
+  cer_big uuid;
+  pow_mags uuid;
+  pow_swing uuid;
 
-  -- 8. PAYMENTS SEED
-  INSERT INTO payments (
-    id, booking_id, xendit_invoice_id, amount, amount_paid, remaining_balance,
-    is_fully_paid, status, paid_at, payment_attempts
-  )
-  SELECT
-    gen_random_uuid(),
-    b.id,
-    'xendit_' || b.reference_code,
-    sv.price,
-    CASE
-      WHEN b.motorcycle_plate IN ('ABC123', 'XYZ789', 'DONE123') THEN s.down_payment_amount
-      ELSE 0
-    END,
-    CASE
-      WHEN b.motorcycle_plate IN ('ABC123', 'XYZ789') THEN sv.price - s.down_payment_amount
-      WHEN b.motorcycle_plate = 'DONE123' THEN 0
-      ELSE sv.price
-    END,
-    b.motorcycle_plate = 'DONE123',
-    CASE
-      WHEN b.motorcycle_plate IN ('ABC123', 'XYZ789', 'DONE123') THEN 'paid'
-      ELSE 'unpaid'
-    END,
-    CASE
-      WHEN b.motorcycle_plate IN ('ABC123', 'XYZ789', 'DONE123') THEN b.created_at + INTERVAL '10 minutes'
-    END,
-    1
-  FROM bookings b
-  JOIN service_variants sv ON b.variant_id = sv.id
-  JOIN services s ON s.id = b.service_id
-  WHERE b.variant_id IS NOT NULL;
+  a_history uuid;      d_history date;
+  a_ready uuid;        d_ready date;
+  a_carried uuid;      d_carried date;
+  a_powder_now uuid;   d_powder_now date;
+  a_powder_past uuid;  d_powder_past date;
+  a_cer_next1 uuid;
+  a_cer_next2 uuid;
+  a_cer_next3 uuid;
+  a_pow_next1 uuid;
+  a_pow_next2 uuid;
 
-  -- 9. NOTIFICATIONS SEED
-  INSERT INTO notifications (id, booking_id, email, type, sent_at)
-  SELECT
-    gen_random_uuid(),
-    b.id,
-    COALESCE(u.email, b.guest_email),
-    CASE
-      WHEN b.status = 'pending' AND b.booking_status = 'confirmed' THEN 'booking_confirmed'
-      WHEN b.status = 'in_progress' THEN 'in_progress'
-      WHEN b.status = 'done' THEN 'done'
-    END,
-    CASE
-      WHEN b.status = 'pending' AND b.booking_status = 'confirmed' THEN b.created_at + INTERVAL '5 minutes'
-      WHEN b.status = 'in_progress' AND b.motorcycle_plate = 'XYZ789' THEN NOW() - INTERVAL '2 hours'
-      WHEN b.status = 'done' AND b.motorcycle_plate = 'DONE123' THEN NOW() - INTERVAL '7 days' + INTERVAL '6 hours'
-    END
-  FROM bookings b
-  LEFT JOIN users u ON b.user_id = u.id
-  WHERE
-    (b.status = 'pending' AND b.booking_status = 'confirmed')
-    OR b.status = 'in_progress'
-    OR b.status = 'done';
+  b uuid;
+  v_ref text;
+BEGIN
+  SELECT id INTO admin_id FROM users WHERE email = 'admin@example.test';
+  SELECT id INTO staff1_id FROM users WHERE email = 'staff1@example.test';
+  SELECT id INTO staff2_id FROM users WHERE email = 'staff2@example.test';
+  SELECT id INTO c1 FROM users WHERE email = 'customer1@example.test';
+  SELECT id INTO c2 FROM users WHERE email = 'customer2@example.test';
+  SELECT id INTO c3 FROM users WHERE email = 'customer3@example.test';
 
-  -- 10. AUDIT LOGS SEED (same action names and wording the app writes)
-  INSERT INTO audit_logs (id, user_id, action, target_table, target_id, details, created_at)
-  SELECT
-    gen_random_uuid(),
-    bsl.changed_by,
-    'status_changed_to_' || bsl.status,
-    'bookings',
-    bsl.booking_id,
-    'Booking ' || b.reference_code || ' marked as ' || bsl.status,
-    bsl.created_at
-  FROM booking_status_logs bsl
-  JOIN bookings b ON bsl.booking_id = b.id
-  WHERE bsl.status IN ('in_progress', 'done');
+  SELECT id INTO ceramic FROM services WHERE name = 'Ceramic Coating';
+  SELECT id INTO powder FROM services WHERE name = 'Powder Coating';
 
-  INSERT INTO audit_logs (id, user_id, action, target_table, target_id, details, created_at)
-  SELECT
-    gen_random_uuid(),
-    staff2_id,
-    'marked_fully_paid',
-    'bookings',
-    b.id,
-    'Remaining balance collected for booking ' || b.reference_code,
-    NOW() - INTERVAL '7 days' + INTERVAL '6 hours' + INTERVAL '5 minutes'
-  FROM bookings b WHERE b.motorcycle_plate = 'DONE123';
+  SELECT id INTO cer_scooter FROM service_variants WHERE service_id = ceramic AND name = 'Scooter / Underbone';
+  SELECT id INTO cer_standard FROM service_variants WHERE service_id = ceramic AND name = 'Standard';
+  SELECT id INTO cer_big FROM service_variants WHERE service_id = ceramic AND name = 'Big Bike';
+  SELECT id INTO pow_mags FROM service_variants WHERE service_id = powder AND name = 'Mags';
+  SELECT id INTO pow_swing FROM service_variants WHERE service_id = powder AND name = 'Swing Arm';
 
-  INSERT INTO audit_logs (id, user_id, action, target_table, target_id, details, created_at)
-  SELECT
-    gen_random_uuid(),
-    staff1_id,
-    'walkin_created',
-    'bookings',
-    b.id,
-    'Walk-in booking created: ' || b.reference_code || ' for ' || b.guest_name,
-    b.created_at + INTERVAL '2 minutes'
-  FROM bookings b WHERE b.motorcycle_plate = 'WALK001';
+  -- open days of each service, picked relative to today
+  SELECT id, date INTO a_history, d_history FROM availability WHERE service_id = ceramic AND date <= CURRENT_DATE - 7 ORDER BY date DESC LIMIT 1;
+  SELECT id, date INTO a_ready, d_ready FROM availability WHERE service_id = ceramic AND date <= CURRENT_DATE ORDER BY date DESC LIMIT 1;
+  SELECT id, date INTO a_carried, d_carried FROM availability WHERE service_id = ceramic AND date < CURRENT_DATE ORDER BY date DESC LIMIT 1 OFFSET 1;
+  SELECT id, date INTO a_powder_now, d_powder_now FROM availability WHERE service_id = powder AND date <= CURRENT_DATE ORDER BY date DESC LIMIT 1;
+  SELECT id, date INTO a_powder_past, d_powder_past FROM availability WHERE service_id = powder AND date < CURRENT_DATE ORDER BY date DESC LIMIT 1;
+  SELECT id INTO a_cer_next1 FROM availability WHERE service_id = ceramic AND date > CURRENT_DATE ORDER BY date ASC LIMIT 1;
+  SELECT id INTO a_cer_next2 FROM availability WHERE service_id = ceramic AND date > CURRENT_DATE ORDER BY date ASC LIMIT 1 OFFSET 1;
+  SELECT id INTO a_cer_next3 FROM availability WHERE service_id = ceramic AND date > CURRENT_DATE ORDER BY date ASC LIMIT 1 OFFSET 2;
+  SELECT id INTO a_pow_next1 FROM availability WHERE service_id = powder AND date > CURRENT_DATE ORDER BY date ASC LIMIT 1;
+  SELECT id INTO a_pow_next2 FROM availability WHERE service_id = powder AND date > CURRENT_DATE ORDER BY date ASC LIMIT 1 OFFSET 1;
 
-END $$;
+  -- picked up: a finished job from over a week ago, full timeline, balance settled at handover
+  b := pg_temp.seed_booking(c1, a_history, ceramic, cer_big,
+    'Customer One', 'customer1@example.test', '09456789012',
+    'NBC 4821', 'Kawasaki Ninja 400', 'Green', 'Full fairing',
+    false, NULL, pg_temp.day_at(d_history - 3, 10), 300, '203.0.113.21');
+  SELECT reference_code INTO v_ref FROM bookings WHERE id = b;
+  PERFORM pg_temp.seed_status(b, 'in_progress', staff2_id, pg_temp.day_at(d_history, 9));
+  PERFORM pg_temp.seed_status(b, 'done', staff2_id, pg_temp.day_at(d_history, 14));
+  UPDATE payments SET remaining_balance = 0, is_fully_paid = true, paid_at = pg_temp.day_at(d_history, 14.25) WHERE booking_id = b;
+  UPDATE bookings SET updated_by = staff2_id, updated_at = pg_temp.day_at(d_history, 14.25) WHERE id = b;
+  PERFORM pg_temp.seed_audit(staff2_id, 'marked_fully_paid', b,
+    'Remaining balance collected for booking ' || v_ref, pg_temp.day_at(d_history, 14.25));
+  PERFORM pg_temp.seed_status(b, 'picked_up', staff2_id, pg_temp.day_at(d_history, 15));
 
--- ========================================
--- VERIFICATION QUERIES (run these to check)
--- ========================================
+  -- done, waiting for pickup: staff changed the variant on the day, so the price and balance changed
+  b := pg_temp.seed_booking(c3, a_ready, ceramic, cer_scooter,
+    'Customer Three', 'customer3@example.test', '09678901234',
+    'TKR 7305', 'Yamaha Mio Gear', 'White', 'Stock condition',
+    false, NULL, pg_temp.day_at(d_ready - 2, 11), 300, '203.0.113.34');
+  SELECT reference_code INTO v_ref FROM bookings WHERE id = b;
+  PERFORM pg_temp.seed_status(b, 'in_progress', staff1_id, pg_temp.day_at(d_ready, 8));
+  UPDATE bookings SET variant_id = cer_standard, updated_by = staff1_id, updated_at = pg_temp.day_at(d_ready, 8.5) WHERE id = b;
+  UPDATE payments SET amount = 2500, remaining_balance = 2200, is_fully_paid = false WHERE booking_id = b;
+  PERFORM pg_temp.seed_audit(staff1_id, 'variant_updated', b,
+    'Variant changed on booking ' || v_ref || '. Old price: 1500.00, New price: 2500, Remaining: 2200',
+    pg_temp.day_at(d_ready, 8.5));
+  PERFORM pg_temp.seed_status(b, 'done', staff1_id, pg_temp.day_at(d_ready, 10));
 
--- Check users
-SELECT 'users' AS table_name, COUNT(*) FROM users
-UNION ALL
-SELECT 'services', COUNT(*) FROM services
-UNION ALL
-SELECT 'service_variants', COUNT(*) FROM service_variants
-UNION ALL
-SELECT 'availability', COUNT(*) FROM availability
-UNION ALL
-SELECT 'bookings', COUNT(*) FROM bookings
-UNION ALL
-SELECT 'booking_status_logs', COUNT(*) FROM booking_status_logs
-UNION ALL
-SELECT 'payments', COUNT(*) FROM payments
-UNION ALL
-SELECT 'notifications', COUNT(*) FROM notifications
-UNION ALL
-SELECT 'audit_logs', COUNT(*) FROM audit_logs;
+  -- in progress: started today by staff, final price adjusted with a reason
+  b := pg_temp.seed_booking(c2, a_powder_now, powder, pow_mags,
+    'Customer Two', 'customer2@example.test', '09567890123',
+    'PQR 2918', 'Honda Click 160', 'Blue', 'Both mags have small chips',
+    false, NULL, pg_temp.day_at(d_powder_now - 3, 15), 300, '203.0.113.45');
+  SELECT reference_code INTO v_ref FROM bookings WHERE id = b;
+  PERFORM pg_temp.seed_status(b, 'in_progress', staff1_id, pg_temp.day_at(d_powder_now, 8));
+  UPDATE payments SET amount = 1500, remaining_balance = 1200 WHERE booking_id = b;
+  UPDATE bookings SET updated_by = staff1_id, updated_at = pg_temp.day_at(d_powder_now, 8.5) WHERE id = b;
+  PERFORM pg_temp.seed_audit(staff1_id, 'price_adjusted', b,
+    'Final price changed on booking ' || v_ref || ': 1200 to 1500. Reason: Extra chipped area on the left mag',
+    pg_temp.day_at(d_powder_now, 8.5));
 
--- Show sample booking with full details
-SELECT
-  b.reference_code,
-  b.motorcycle_plate,
-  b.motorcycle_model,
-  b.status AS current_status,
-  b.booking_status,
-  s.name AS service,
-  sv.name AS variant,
-  p.amount_paid,
-  p.remaining_balance,
-  COUNT(bsl.id) AS status_log_count
-FROM bookings b
-JOIN services s ON b.service_id = s.id
-JOIN service_variants sv ON b.variant_id = sv.id
-JOIN payments p ON p.booking_id = b.id
-LEFT JOIN booking_status_logs bsl ON bsl.booking_id = b.id
-GROUP BY b.id, s.name, sv.name, p.amount_paid, p.remaining_balance
-ORDER BY b.created_at DESC;
+  -- walk-in today with no down payment, nothing paid yet
+  b := pg_temp.seed_booking(NULL, a_ready, ceramic, cer_scooter,
+    'Rico Santos', NULL, '09171230001',
+    'WXY 6612', 'Suzuki Raider 150', 'Black', 'Modified exhaust',
+    true, staff1_id, pg_temp.day_at(d_ready, 8), 0, NULL);
+
+  -- unfinished from an earlier day, never started (shows in the carried over part of the staff board)
+  b := pg_temp.seed_booking(NULL, a_carried, ceramic, cer_standard,
+    'Mark Villanueva', 'mark.villanueva@example.test', '09171230002',
+    'LMN 3340', 'Honda ADV 160', 'Gray', 'Scratches on the left side',
+    true, staff2_id, pg_temp.day_at(d_carried - 1, 13), 500, NULL);
+
+  -- unfinished from an earlier day, started but not done
+  b := pg_temp.seed_booking(c1, a_powder_past, powder, pow_swing,
+    'Customer One', 'customer1@example.test', '09456789012',
+    'TRB 9051', 'Honda Beat', 'Red', 'Swing arm only',
+    false, NULL, pg_temp.day_at(d_powder_past - 4, 9), 300, '203.0.113.21');
+  PERFORM pg_temp.seed_status(b, 'in_progress', staff2_id, pg_temp.day_at(d_powder_past, 10));
+
+  -- upcoming online bookings, paid down payment, waiting for their date
+  b := pg_temp.seed_booking(c1, a_cer_next1, ceramic, cer_scooter,
+    'Customer One', 'customer1@example.test', '09456789012',
+    'ABC 1234', 'Honda Click 125', 'Red', 'Stock condition',
+    false, NULL, NOW() - INTERVAL '2 days', 300, '203.0.113.21');
+
+  b := pg_temp.seed_booking(c3, a_cer_next2, ceramic, cer_standard,
+    'Customer Three', 'customer3@example.test', '09678901234',
+    'DEF 5678', 'Yamaha NMAX', 'Silver', 'Needs a polish first',
+    false, NULL, NOW() - INTERVAL '1 day', 300, '203.0.113.34');
+
+  b := pg_temp.seed_booking(c2, a_pow_next2, powder, pow_swing,
+    'Customer Two', 'customer2@example.test', '09567890123',
+    'GHI 9012', 'Honda Beat', 'White', 'Stock',
+    false, NULL, NOW() - INTERVAL '1 day', 300, '203.0.113.45');
+
+  -- upcoming walk-in, a down payment is required for a future date
+  b := pg_temp.seed_booking(NULL, a_cer_next1, ceramic, cer_big,
+    'Angela Cruz', 'angela.cruz@example.test', '09171230003',
+    'JKL 3456', 'Kawasaki Z650', 'Orange', 'Full body',
+    true, staff1_id, NOW() - INTERVAL '3 hours', 500, NULL);
+
+  -- cancelled by admin, down payment still to be refunded (shows the refund action)
+  b := pg_temp.seed_booking(c2, a_pow_next1, powder, pow_mags,
+    'Customer Two', 'customer2@example.test', '09567890123',
+    'MNO 7890', 'Suzuki Raider', 'Black', 'Mags only',
+    false, NULL, NOW() - INTERVAL '4 days', 300, '203.0.113.45');
+  SELECT reference_code INTO v_ref FROM bookings WHERE id = b;
+  UPDATE bookings SET status = 'cancelled', booking_status = 'cancelled', updated_by = admin_id, updated_at = NOW() - INTERVAL '1 day' WHERE id = b;
+  PERFORM pg_temp.seed_audit(admin_id, 'Booking cancelled', b, 'Ref: ' || v_ref, NOW() - INTERVAL '1 day');
+
+  -- cancelled and refunded, the refund is recorded by admin, the money itself is returned in xendit
+  b := pg_temp.seed_booking(c1, a_cer_next3, ceramic, cer_standard,
+    'Customer One', 'customer1@example.test', '09456789012',
+    'PQS 1357', 'Yamaha Aerox', 'Blue', 'Stock',
+    false, NULL, NOW() - INTERVAL '5 days', 300, '203.0.113.21');
+  SELECT reference_code INTO v_ref FROM bookings WHERE id = b;
+  UPDATE bookings SET status = 'cancelled', booking_status = 'cancelled', updated_by = admin_id, updated_at = NOW() - INTERVAL '3 days' WHERE id = b;
+  PERFORM pg_temp.seed_audit(admin_id, 'Booking cancelled', b, 'Ref: ' || v_ref, NOW() - INTERVAL '3 days');
+  UPDATE payments SET status = 'refunded', refunded_at = NOW() - INTERVAL '2 days', refunded_by = admin_id WHERE booking_id = b;
+  PERFORM pg_temp.seed_audit(admin_id, 'Marked as refunded', b,
+    'Ref: ' || v_ref || ' | ₱300.00 (recorded only, manual refund in Xendit)', NOW() - INTERVAL '2 days');
+
+  -- expired holds: the customer never paid, the hold ran out and the cron expired it (no payment row, no reference code, no queue number)
+  INSERT INTO bookings (
+    user_id, service_id, variant_id, availability_id, ip_address,
+    booking_status, expires_at, created_at
+  ) VALUES (
+    NULL, ceramic, cer_standard, a_cer_next2, '203.0.113.77',
+    'expired', NOW() - INTERVAL '2 days' + INTERVAL '10 minutes', NOW() - INTERVAL '2 days'
+  );
+
+  INSERT INTO bookings (
+    user_id, service_id, variant_id, availability_id, ip_address,
+    guest_name, guest_email, guest_phone,
+    motorcycle_plate, motorcycle_model, motorcycle_color, motorcycle_description,
+    booking_status, expires_at, created_at
+  ) VALUES (
+    c3, powder, pow_mags, a_pow_next1, '203.0.113.34',
+    'Customer Three', 'customer3@example.test', '09678901234',
+    'STU 2468', 'Honda Click 125', 'Gray', 'Stock',
+    'expired', NOW() - INTERVAL '3 days' + INTERVAL '10 minutes', NOW() - INTERVAL '3 days'
+  );
+END
+$seed$;
+

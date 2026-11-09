@@ -1,8 +1,9 @@
--- Current schema, edited in place with every migration
--- Reference only, the source of truth is the migrations folder
--- Full snapshots of each version live in versions/
+-- current schema, edited in place with every migration
+-- reference only, the source of truth is the migrations folder
+-- full snapshots of each version live in versions/
 
--- USERS (customers + admin + staff)
+-- USERS
+-- customers + admin + staff
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255) NOT NULL,
@@ -10,10 +11,11 @@ CREATE TABLE users (
   google_id VARCHAR(255),
   phone VARCHAR(20) NULL,
   password VARCHAR(255), -- null for google oauth customers, required for admin and staff
+  email_verified BOOLEAN NOT NULL DEFAULT false, -- customers must enter the code mailed at sign up
   role VARCHAR(50) DEFAULT 'customer', -- customer, admin, staff
   active_session_id TEXT, -- single-session login (admin/staff)
   active_session_expires TIMESTAMPTZ,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- SERVICES
@@ -26,11 +28,12 @@ CREATE TABLE services (
   duration_hours INT, -- estimated duration, used for workload estimate
   image_url VARCHAR(500),
   is_active BOOLEAN DEFAULT true, -- soft delete
-  created_at TIMESTAMP DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT check_down_payment_positive CHECK (down_payment_amount > 0)
 );
 
--- SERVICE VARIANTS (by body size or part, price is an estimate until confirmed in shop)
+-- SERVICE VARIANTS
+-- by body size or part, price is an estimate until confirmed in shop
 CREATE TABLE service_variants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   service_id UUID REFERENCES services(id),
@@ -38,28 +41,30 @@ CREATE TABLE service_variants (
   price DECIMAL(10,2) NOT NULL,
   duration_hours INT,
   is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- AVAILABILITY (admin sets capacity per date per service)
+-- AVAILABILITY
+-- admin sets capacity per date per service
 CREATE TABLE availability (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   service_id UUID REFERENCES services(id),
   date DATE NOT NULL,
   capacity INT NOT NULL,
   is_open BOOLEAN DEFAULT true,
-  created_at TIMESTAMP DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(service_id, date)
 );
 
--- CLOSED DATES (recurring days and specific holidays)
+-- CLOSED DATES
+-- recurring days and specific holidays
 CREATE TABLE closed_dates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   type VARCHAR(50) NOT NULL, -- 'recurring', 'specific'
-  day_of_week INT NULL, -- 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday
+  day_of_week INT NULL, -- 0=sunday, 1=monday, 2=tuesday, 3=wednesday, 4=thursday, 5=friday, 6=saturday
   date DATE NULL, -- for specific one time closures only
   reason VARCHAR(255),
-  created_at TIMESTAMP DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT check_closure_type CHECK (
     (type = 'recurring' AND day_of_week IS NOT NULL AND date IS NULL) OR
     (type = 'specific' AND date IS NOT NULL AND day_of_week IS NULL)
@@ -87,11 +92,11 @@ CREATE TABLE bookings (
   status VARCHAR(50) DEFAULT 'pending', -- pending, in_progress, done, picked_up, cancelled
   booking_status VARCHAR(50) DEFAULT 'locked', -- locked, confirmed, expired, cancelled
   qr_code TEXT,
-  expires_at TIMESTAMP,
+  expires_at TIMESTAMPTZ,
   ip_address VARCHAR(45),
   updated_by UUID REFERENCES users(id) NULL,
-  updated_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW()
+  updated_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- PAYMENTS
@@ -106,10 +111,10 @@ CREATE TABLE payments (
   is_fully_paid BOOLEAN DEFAULT false,
   status VARCHAR(50) DEFAULT 'unpaid', -- unpaid, paid, failed, refunded
   payment_attempts INT DEFAULT 0,
-  paid_at TIMESTAMP,
-  refunded_at TIMESTAMP, -- when the refund was recorded
+  paid_at TIMESTAMPTZ,
+  refunded_at TIMESTAMPTZ, -- when the refund was recorded
   refunded_by UUID REFERENCES users(id) NULL, -- admin who marked it as refunded
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- NOTIFICATIONS
@@ -118,7 +123,7 @@ CREATE TABLE notifications (
   booking_id UUID REFERENCES bookings(id),
   email VARCHAR(255) NOT NULL,
   type VARCHAR(100) NOT NULL, -- booking_confirmed, in_progress, done, picked_up, expired
-  sent_at TIMESTAMP DEFAULT NOW()
+  sent_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- AUDIT LOGS
@@ -129,15 +134,16 @@ CREATE TABLE audit_logs (
   target_table VARCHAR(100),
   target_id UUID,
   details TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Tracks each booking status change with timestamp
--- Used for displaying status timeline on the booking tracking page
+-- tracks each booking status change with timestamp
+-- used for displaying status timeline on the booking tracking page
 CREATE TABLE booking_status_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID REFERENCES bookings(id),
   status VARCHAR(50) NOT NULL, -- confirmed, in_progress, done, picked_up
   changed_by UUID REFERENCES users(id) NULL, -- null if system/webhook
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
