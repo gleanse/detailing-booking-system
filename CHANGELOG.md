@@ -2,9 +2,64 @@
 
 All notable changes to this project are documented in this file.
 
-![Version](https://img.shields.io/badge/version-1.2.0-blue)
+
+
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
+
+
+
+
 ![Status](https://img.shields.io/badge/status-stable-brightgreen)
-![Release Date](https://img.shields.io/badge/released-2026--11--08-informational)
+
+
+
+
+![Release Date](https://img.shields.io/badge/released-2026--11--09-informational)
+
+
+
+---
+
+## [1.3.0] - 2026-11-09
+
+Staff app redesign on `stable-v1`: board, in-app scanner, account page, and consistent queue numbering.
+
+### Added
+
+| Change | Area |
+|---|---|
+| In-app QR scanner on the Scan tab, reads booking codes with jsQR, with a typed-code fallback | Staff |
+| Account page with editable name and phone, saved through a staff profile route | Staff |
+| Password change and email change by one-time code, locked after five wrong codes | Staff, Auth |
+| Shared top bar with the Herco mark and an account button on every staff page | Staff UI |
+| Future date picker on walk-in when today has no slot | Staff |
+| Stat card filters on the board, filtering today's bookings and the upcoming list | Staff |
+| Unfinished jobs section above the board, collapsed by default, with a count and hint | Staff |
+
+### Changed
+
+| Change | Area |
+|---|---|
+| Queue numbers stay unique per slot and are never reused across online, admin walk-in, staff walk-in, and reschedule | Bookings |
+| Board groups today's bookings by service and includes carried-over jobs from the last 7 days | Staff |
+| Board, Upcoming, Walk-in, and Account share the same header and row design | Staff UI |
+| Logout moved from the Board to the Account page, behind a confirmation popup | Staff |
+
+### Fixed
+
+| Change | Area |
+|---|---|
+| Cancelled queue numbers are no longer reused | Bookings |
+| Reschedule renumbers moved bookings and skips cancelled or picked up ones | Bookings |
+| Staff-facing user input is escaped before it is rendered | Staff |
+| Account page had no top bar | Staff UI |
+
+### Removed
+
+| Change | Area |
+|---|---|
+| Board filter tabs, My In Progress and Done boxes, and the old Dashboard header | Staff |
+| Logout button and popup from the Board, Scan, and Walk-in title rows | Staff |
 
 ---
 
@@ -185,4 +240,3 @@ Defended baseline, stabilized after panel feedback.
 | Navbar redesigned, feature static files reorganized | Landing |
 
 ---
-
