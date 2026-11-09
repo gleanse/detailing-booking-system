@@ -32,6 +32,34 @@ const railItem = ({ label, href, icon }) => {
 
 document.body.classList.add('pb-20', 'md:pb-0', 'md:pl-56');
 document.body.insertAdjacentHTML(
+  'afterbegin',
+  `<header class="sticky top-0 z-50 h-16 flex items-center justify-between px-4 sm:px-6 bg-neutral-950 border-b border-white/10">
+    <div class="flex items-center gap-2">
+      <svg class="w-7 h-7 text-red-500" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+        <path d="M18 2l14 8v16l-14 8L4 26V10z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M12.5 11v14M23.5 11v14M12.5 18h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="text-white text-base tracking-widest" style="font-family:'Bebas Neue',sans-serif;">HERCO</span>
+    </div>
+    <a href="/staff/account" id="btn-account" aria-label="Account"
+      class="w-8 h-8 rounded-full bg-red-500/15 text-red-400 text-xs font-semibold flex items-center justify-center">··</a>
+  </header>`,
+);
+
+fetch('/staff/me')
+  .then((res) => res.json())
+  .then((data) => {
+    if (!data.success) return;
+    const initials = data.user.name
+      .split(' ')
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+    document.getElementById('btn-account').textContent = initials;
+  })
+  .catch(() => {});
+document.body.insertAdjacentHTML(
   'beforeend',
   `<nav aria-label="Staff navigation" class="fixed inset-x-0 bottom-0 z-40 flex border-t border-white/10 bg-neutral-950 md:hidden">
     ${STAFF_NAV.map(mobileItem).join('')}

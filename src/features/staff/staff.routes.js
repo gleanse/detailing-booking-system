@@ -43,6 +43,9 @@ router.get('/walkin.js', (req, res) => {
 router.get('/shell.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'shell.js'));
 });
+router.get('/account.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'account.js'));
+});
 
 // PAGE ROUTES
 router.get('/', isStaff, (req, res) => res.redirect('/staff/dashboard'));
@@ -50,6 +53,9 @@ router.get('/dashboard', isStaff, getDashboardPage);
 router.get('/scan', isStaff, getScanPage);
 router.get('/scan/:ref', isStaff, getScanPage);
 router.get('/walkin', isStaff, getWalkinPage);
+router.get('/account', isStaff, (req, res) =>
+  res.sendFile(path.join(__dirname, 'account.html')),
+);
 
 // API ROUTES
 router.get('/me', isStaff, getMe);

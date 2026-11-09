@@ -235,12 +235,6 @@ const checkFutureDateCapacity = async () => {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-  document.getElementById('btn-logout').addEventListener('click', async () => {
-    const res = await fetch('/staff/logout', { method: 'POST' });
-    const data = await res.json();
-    if (data.redirect) window.location.href = data.redirect;
-  });
-
   await loadServices();
 
   const [year, month, day] = today().split('-').map(Number);

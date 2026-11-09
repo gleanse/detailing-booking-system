@@ -50,7 +50,6 @@ const hideAllActionModals = () =>
     'modal-paid',
     'modal-variant',
     'modal-price',
-    'modal-logout',
   ].forEach(hideModal);
 
 const renderEmpty = (msg) => `
@@ -931,20 +930,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         errorEl.textContent = err.message;
         errorEl.classList.remove('hidden');
       }
-    });
-
-  // logout
-  document
-    .getElementById('btn-logout')
-    .addEventListener('click', () => showModal('modal-logout'));
-  document
-    .getElementById('logout-cancel')
-    .addEventListener('click', () => hideModal('modal-logout'));
-  document
-    .getElementById('logout-confirm')
-    .addEventListener('click', async () => {
-      const res = await fetch('/staff/logout', { method: 'POST' });
-      const data = await res.json();
-      if (data.redirect) window.location.href = data.redirect;
     });
 });

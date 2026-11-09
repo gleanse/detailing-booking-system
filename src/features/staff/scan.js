@@ -430,12 +430,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   } catch (_) {}
 
-  document.getElementById('btn-logout').addEventListener('click', async () => {
-    const res = await fetch('/staff/logout', { method: 'POST' });
-    const data = await res.json();
-    if (data.redirect) window.location.href = data.redirect;
-  });
-
   const ref = window.location.pathname.split('/').pop();
   if (ref === 'scan') {
     showScannerLanding();
