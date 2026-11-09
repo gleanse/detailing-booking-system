@@ -85,6 +85,7 @@ async function loadProfile() {
     document.getElementById('profile-name').textContent = u.name;
     document.getElementById('profile-email').textContent = u.email;
     document.getElementById('profile-role').textContent = u.role;
+    renderDetails(u);
   } catch (err) {
     console.error('Load profile error:', err);
   }
@@ -362,8 +363,82 @@ function startResendCooldown() {
 
 loadProfile();
 
-document.getElementById('btn-logout').addEventListener('click', async () => {
-  const res = await fetch('/staff/logout', { method: 'POST' });
+document
+  .getElementById('logout-confirm')
+  .addEventListener('click', async () => {
+    const res = await fetch('/staff/logout', { method: 'POST' });
+    const data = await res.json();
+    if (data.redirect) window.location.href = data.redirect;
+  });
+
+function initialsOf(name) {
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
+
+function renderDetails(u) {
+  const initials = initialsOf(u.name);
+  document.getElementById('avatar').textContent = initials;
+  document.getElementById('btn-account').textContent = initials;
+  document.getElementById('view-name').textContent = u.name;
+  document.getElementById('view-phone').textContent = u.phone || 'Not set';
+  document.getElementById('view-email').textContent = u.email;
+  document.getElementById('input-name').value = u.name;
+  document.getElementById('input-phone').value = u.phone || '';
+}
+
+function openEdit(field) {
+  document.getElementById(`row-${field}`).classList.add('hidden');
+  document.getElementById(`edit-${field}`).classList.remove('hidden');
+}
+
+function closeEdit(field) {
+  document.getElementById(`row-${field}`).classList.remove('hidden');
+  document.getElementById(`edit-${field}`).classList.add('hidden');
+  document.getElementById('details-error').textContent = '';
+}
+
+async function saveDetails() {
+  const name = document.getElementById('input-name').value;
+  const phone = document.getElementById('input-phone').value;
+  const res = await fetch('/staff/account/profile', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, phone }),
+  });
   const data = await res.json();
-  if (data.redirect) window.location.href = data.redirect;
-});
+  if (!data.success) {
+    document.getElementById('details-error').textContent = data.message;
+    return;
+  }
+  renderDetails(data.user);
+  document.getElementById('profile-name').textContent = data.user.name;
+  closeEdit('name');
+  closeEdit('phone');
+}
+
+document
+  .querySelectorAll('[data-edit]')
+  .forEach((btn) =>
+    btn.addEventListener('click', () => openEdit(btn.dataset.edit)),
+  );
+document
+  .querySelectorAll('[data-cancel]')
+  .forEach((btn) =>
+    btn.addEventListener('click', () => closeEdit(btn.dataset.cancel)),
+  );
+document
+  .querySelectorAll('[data-save]')
+  .forEach((btn) => btn.addEventListener('click', saveDetails));
+
+const logoutModal = document.getElementById('modal-logout');
+document
+  .getElementById('btn-logout')
+  .addEventListener('click', () => logoutModal.classList.remove('hidden'));
+document
+  .getElementById('logout-cancel')
+  .addEventListener('click', () => logoutModal.classList.add('hidden'));

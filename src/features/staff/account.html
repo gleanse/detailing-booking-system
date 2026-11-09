@@ -19,20 +19,62 @@
       <h1 class="text-5xl font-bold tracking-wide" style="font-family:'Bebas Neue',sans-serif;">My Account</h1>
     </div>
 
-    <!-- PROFILE CARD -->
-    <div class="bg-[#111] border border-white/6 rounded-2xl p-6 mb-5 animate-fadeUp">
-      <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-2xl bg-red-500/15 flex items-center justify-center flex-shrink-0">
-          <i class="ph ph-user text-red-400 text-2xl"></i>
-        </div>
-        <div>
-          <p id="profile-name" class="text-white font-semibold text-lg">-</p>
-          <p id="profile-email" class="text-white/40 text-sm mt-0.5">-</p>
-          <span id="profile-role"
-            class="inline-block mt-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 uppercase tracking-wider">-</span>
-        </div>
+    <!-- PROFILE HEADER -->
+    <div class="flex items-center gap-4 mb-5 animate-fadeUp">
+      <div id="avatar" class="w-14 h-14 rounded-2xl bg-red-500/15 text-red-400 flex items-center justify-center text-xl flex-shrink-0" style="font-family:'Bebas Neue',sans-serif;">--</div>
+      <div class="min-w-0">
+        <p id="profile-name" class="text-white font-semibold text-lg truncate">-</p>
+        <p id="profile-email" class="text-white/40 text-sm truncate">-</p>
+        <span id="profile-role" class="inline-block mt-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 uppercase tracking-wider">-</span>
       </div>
     </div>
+
+    <!-- DETAILS -->
+    <p class="text-xs text-white/30 tracking-widest uppercase mb-2 px-1">Details</p>
+    <div class="bg-[#111] border border-white/6 rounded-2xl divide-y divide-white/5 mb-5 animate-fadeUp">
+      <div class="px-4 py-3">
+        <div id="row-name" class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-xs text-white/30">Name</p>
+            <p id="view-name" class="text-sm text-white truncate">-</p>
+          </div>
+          <button type="button" data-edit="name" class="text-xs text-red-400 cursor-pointer">Edit</button>
+        </div>
+        <div id="edit-name" class="hidden">
+          <p class="text-xs text-white/30 mb-2">Name</p>
+          <input id="input-name" type="text" class="w-full bg-transparent border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none" />
+          <div class="flex gap-2 mt-3">
+            <button type="button" data-save="name" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 rounded-xl cursor-pointer">Save</button>
+            <button type="button" data-cancel="name" class="flex-1 border border-white/10 text-white/60 text-sm py-2 rounded-xl cursor-pointer">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 py-3">
+        <div id="row-phone" class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-xs text-white/30">Phone</p>
+            <p id="view-phone" class="text-sm text-white truncate">-</p>
+          </div>
+          <button type="button" data-edit="phone" class="text-xs text-red-400 cursor-pointer">Edit</button>
+        </div>
+        <div id="edit-phone" class="hidden">
+          <p class="text-xs text-white/30 mb-2">Phone</p>
+          <input id="input-phone" type="tel" placeholder="09XXXXXXXXX (optional)" class="w-full bg-transparent border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none placeholder:text-white/20" />
+          <div class="flex gap-2 mt-3">
+            <button type="button" data-save="phone" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 rounded-xl cursor-pointer">Save</button>
+            <button type="button" data-cancel="phone" class="flex-1 border border-white/10 text-white/60 text-sm py-2 rounded-xl cursor-pointer">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 py-3 flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-xs text-white/30">Email</p>
+          <p id="view-email" class="text-sm text-white truncate">-</p>
+        </div>
+        <span class="text-xs text-white/30 text-right">Changed with a code below</span>
+      </div>
+    </div>
+    <p id="details-error" class="text-xs text-red-400 mb-4 px-1"></p>
 
     <!-- CHANGE PASSWORD -->
     <div class="bg-[#111] border border-white/6 rounded-2xl p-6 mb-5 animate-fadeUp">
@@ -171,12 +213,24 @@
 
     </div>
 
-    <button id="btn-logout"
+    <button id="btn-logout" type="button"
       class="w-full flex items-center justify-center gap-2 border border-white/10 hover:border-red-500/30 hover:text-red-400 text-white/60 text-sm font-semibold py-3 rounded-xl transition-all duration-200 cursor-pointer">
       <i class="ph ph-sign-out"></i>
       Log out
     </button>
 
+    <div id="modal-logout" class="hidden fixed inset-0 z-50 bg-black/60">
+      <div class="h-full flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-2xl p-5">
+          <p class="text-white font-semibold mb-1">Log out?</p>
+          <p class="text-white/40 text-sm mb-5">You'll need to sign in again to use the staff app.</p>
+          <div class="flex gap-2">
+            <button id="logout-cancel" type="button" class="flex-1 border border-white/10 text-white/60 text-sm py-2.5 rounded-xl cursor-pointer">Cancel</button>
+            <button id="logout-confirm" type="button" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 rounded-xl cursor-pointer">Log out</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script src="/staff/shell.js"></script>

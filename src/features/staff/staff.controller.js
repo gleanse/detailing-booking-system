@@ -9,6 +9,7 @@ const {
   updateStaffPassword,
   findEmailOwner,
   updateStaffEmail,
+  updateStaffDetails,
 } = require('./staff.queries');
 const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
@@ -813,7 +814,39 @@ const verifyStaffEmailChange = async (req, res) => {
   }
 };
 
+const updateStaffProfile = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const name = (req.body.name || '').trim();
+    const phone = (req.body.phone || '').trim();
+
+    if (!name) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Name is required.' });
+    }
+    if (name.length > 255) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Name is too long.' });
+    }
+    if (phone && !/^\+?[0-9]{7,20}$/.test(phone)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Enter a valid phone number.' });
+    }
+
+    const user = await updateStaffDetails(userId, name, phone || null);
+    req.session.user = { ...req.session.user, name: user.name };
+    res.json({ success: true, message: 'Profile updated.', user });
+  } catch (err) {
+    console.error('Update staff profile error:', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 module.exports = {
+  updateStaffProfile,
   changeStaffPassword,
   requestStaffEmailChange,
   verifyStaffEmailChange,

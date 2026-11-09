@@ -610,7 +610,16 @@ const updateStaffEmail = async (userId, newEmail) => {
   return result.rows[0];
 };
 
+const updateStaffDetails = async (userId, name, phone) => {
+  const result = await pool.query(
+    'UPDATE users SET name = $1, phone = $2 WHERE id = $3 RETURNING id, name, email, phone, role',
+    [name, phone, userId],
+  );
+  return result.rows[0];
+};
+
 module.exports = {
+  updateStaffDetails,
   getPasswordHash,
   updateStaffPassword,
   findEmailOwner,

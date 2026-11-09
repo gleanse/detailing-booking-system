@@ -28,6 +28,7 @@ const {
   changeStaffPassword,
   requestStaffEmailChange,
   verifyStaffEmailChange,
+  updateStaffProfile,
 } = require('./staff.controller');
 
 // STATIC ASSETS
@@ -65,6 +66,7 @@ router.get('/me', isStaff, getMe);
 router.post('/logout', isStaff, logout);
 router.patch('/account/password', isStaff, changeStaffPassword);
 router.patch('/account/email', isStaff, requestStaffEmailChange);
+router.patch('/account/profile', isStaff, updateStaffProfile);
 router.post('/account/email/verify', isStaff, verifyStaffEmailChange);
 router.get('/bookings', isStaff, getBookingsToday);
 router.get('/bookings/upcoming', isStaff, getUpcoming);
