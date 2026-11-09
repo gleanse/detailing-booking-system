@@ -1,6 +1,7 @@
 let allBookings = [];
 let carriedOver = [];
 let statusFilter = 'all';
+let unfinishedOpen = false;
 let currentBooking = null;
 let currentStaffId = null;
 let viewMode = 'today';
@@ -149,31 +150,6 @@ const renderBoard = (bookings, carried) => {
   const earlier = carried.filter((b) => b.status !== 'picked_up');
   const services = [...new Set(live.map((b) => b.service_name))];
 
-  const earlierBlock = earlier.length
-    ? `<div class="relative border border-red-500/25 rounded-xl mx-4 my-3" data-collapse-section>
-        <div class="flex items-center gap-2 px-4 py-2 bg-white/3 rounded-t-xl">
-          <span class="text-xs text-red-400">Unfinished jobs</span>
-          <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">${earlier.length}</span>
-          <span data-hint class="relative inline-flex">
-            <button type="button" data-hint-toggle aria-label="What is this?"
-              class="w-4 h-4 rounded-full border border-white/25 text-white/50 text-xs leading-none flex items-center justify-center">?</button>
-            <span data-hint-panel
-              class="pointer-events-none absolute bottom-full left-1/2 mb-3 w-64 -translate-x-1/2 translate-y-1 z-10 rounded-xl border border-white/10 bg-neutral-800 px-3 py-2 text-xs leading-relaxed text-white/70 opacity-0 shadow-lg transition-all duration-200">
-              Jobs from the last 7 days that aren't picked up yet. They stay here until staff mark them picked up.
-              <span class="absolute left-1/2 -bottom-1.5 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r border-white/10 bg-neutral-800"></span>
-            </span>
-          </span>
-          <button type="button" data-collapse-toggle aria-label="Collapse or expand"
-            class="ml-auto p-1 text-white/40">
-            <i data-caret class="ph ph-caret-down text-xs transition-transform duration-200"></i>
-          </button>
-        </div>
-        <div data-collapse-body class="overflow-hidden transition-all duration-300">
-          ${earlier.map(renderBoardRow).join('')}
-        </div>
-      </div>`
-    : '';
-
   const serviceBlocks = services
     .map((name) => {
       const rows = live.filter((b) => b.service_name === name);
@@ -194,7 +170,40 @@ const renderBoard = (bookings, carried) => {
       </details>`
     : '';
 
-  return earlierBlock + serviceBlocks + pickedBlock;
+  return serviceBlocks + pickedBlock;
+};
+
+const renderUnfinished = (carried) => {
+  const container = document.getElementById('unfinished-section');
+  const open = carried.filter((b) => b.status !== 'picked_up');
+  unfinishedOpen = false;
+  if (open.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = `
+    <div class="relative border border-red-500/25 rounded-xl" data-collapse-section>
+      <div class="flex items-center gap-2 px-4 py-2 bg-white/3 rounded-t-xl">
+        <span class="text-xs text-red-400">Unfinished jobs</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">${open.length}</span>
+        <span data-hint class="relative inline-flex">
+          <button type="button" data-hint-toggle aria-label="What is this?"
+            class="w-4 h-4 rounded-full border border-white/25 text-white/50 text-xs leading-none flex items-center justify-center">?</button>
+          <span data-hint-panel
+            class="pointer-events-none absolute bottom-full left-1/2 mb-3 w-64 -translate-x-1/2 translate-y-1 z-10 rounded-xl border border-white/10 bg-neutral-800 px-3 py-2 text-xs leading-relaxed text-white/70 opacity-0 shadow-lg transition-all duration-200">
+            Jobs from the last 7 days that aren't picked up yet. They stay here until staff mark them picked up.
+            <span class="absolute left-1/2 -bottom-1.5 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r border-white/10 bg-neutral-800"></span>
+          </span>
+        </span>
+        <button type="button" data-collapse-toggle aria-label="Collapse or expand"
+          class="ml-auto p-1 text-white/40">
+          <i data-caret class="ph ph-caret-down text-xs transition-transform duration-200"></i>
+        </button>
+      </div>
+      <div data-collapse-body class="overflow-hidden transition-all duration-300" style="max-height:0px">
+        ${open.map(renderBoardRow).join('')}
+      </div>
+    </div>`;
 };
 
 const matchesStatus = (b) =>
@@ -223,12 +232,13 @@ const swapBoard = () => {
 const applyFilter = () => {
   const list = document.getElementById('bookings-list');
   if (viewMode === 'today') {
-    const nothing = allBookings.length === 0 && carriedOver.length === 0;
+    const nothing = allBookings.length === 0;
     list.innerHTML = nothing
       ? renderEmpty('No bookings for this day')
       : renderBoard(allBookings.filter(matchesStatus), carriedOver) ||
         renderEmpty('No bookings with this status');
   } else {
+    document.getElementById('unfinished-section').innerHTML = '';
     list.innerHTML =
       allBookings.filter(matchesStatus).length === 0
         ? renderEmpty('No bookings with this status')
@@ -272,6 +282,7 @@ const loadBookings = async (date, page = 1) => {
     if (!data.success) throw new Error(data.message);
     allBookings = data.bookings;
     carriedOver = data.carriedOver || [];
+    renderUnfinished(carriedOver);
     totalPages = data.totalPages;
     totalBookings = data.total;
     updateStats();
