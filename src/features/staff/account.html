@@ -34,6 +34,143 @@
       </div>
     </div>
 
+    <!-- CHANGE PASSWORD -->
+    <div class="bg-[#111] border border-white/6 rounded-2xl p-6 mb-5 animate-fadeUp">
+      <div class="flex items-center gap-2 mb-5">
+        <div class="w-1.5 h-5 bg-red-500 rounded-full"></div>
+        <h2 class="text-sm font-semibold text-white uppercase tracking-widest">Change Password</h2>
+      </div>
+
+      <div class="flex flex-col gap-4">
+
+        <div>
+          <label class="text-xs text-white/40 uppercase tracking-widest mb-2 block">Current Password</label>
+          <div class="relative">
+            <input type="password" id="current-password"
+              class="w-full bg-white/4 border border-white/8 focus:border-red-500 outline-none rounded-xl px-4 py-3 text-white text-sm pr-12 transition-colors duration-200"
+              placeholder="Enter current password" />
+            <button type="button" data-target="current-password"
+              class="toggle-pw absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+              <i class="ph ph-eye text-lg"></i>
+            </button>
+          </div>
+          <p id="err-current-password" class="hidden text-red-400 text-xs mt-1"></p>
+        </div>
+
+        <div>
+          <label class="text-xs text-white/40 uppercase tracking-widest mb-2 block">New Password</label>
+          <div class="relative">
+            <input type="password" id="new-password"
+              class="w-full bg-white/4 border border-white/8 focus:border-red-500 outline-none rounded-xl px-4 py-3 text-white text-sm pr-12 transition-colors duration-200"
+              placeholder="Min 8 characters" />
+            <button type="button" data-target="new-password"
+              class="toggle-pw absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+              <i class="ph ph-eye text-lg"></i>
+            </button>
+          </div>
+          <!-- strength bar -->
+          <div id="pw-strength-bar" class="hidden mt-2">
+            <div class="h-1 rounded-full bg-white/5 overflow-hidden">
+              <div id="pw-strength-fill" class="h-full rounded-full transition-all duration-300 w-0"></div>
+            </div>
+            <p id="pw-strength-label" class="text-xs mt-1 text-white/30"></p>
+          </div>
+          <p id="err-new-password" class="hidden text-red-400 text-xs mt-1"></p>
+        </div>
+
+        <div>
+          <label class="text-xs text-white/40 uppercase tracking-widest mb-2 block">Confirm New Password</label>
+          <div class="relative">
+            <input type="password" id="confirm-password"
+              class="w-full bg-white/4 border border-white/8 focus:border-red-500 outline-none rounded-xl px-4 py-3 text-white text-sm pr-12 transition-colors duration-200"
+              placeholder="Re-enter new password" />
+            <button type="button" data-target="confirm-password"
+              class="toggle-pw absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+              <i class="ph ph-eye text-lg"></i>
+            </button>
+          </div>
+          <p id="err-confirm-password" class="hidden text-red-400 text-xs mt-1"></p>
+        </div>
+
+        <p id="pw-form-error"
+          class="hidden text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2"></p>
+        <p id="pw-form-success"
+          class="hidden text-green-400 text-xs bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2"></p>
+
+        <button id="btn-save-password"
+          class="w-full bg-red-600 hover:bg-red-700 active:scale-95 text-white text-sm font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+          <i id="pw-btn-icon" class="ph ph-floppy-disk text-base"></i>
+          <span id="pw-btn-text">Save Password</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- CHANGE EMAIL -->
+    <div class="bg-[#111] border border-white/6 rounded-2xl p-6 animate-fadeUp">
+      <div class="flex items-center gap-2 mb-5">
+        <div class="w-1.5 h-5 bg-red-500 rounded-full"></div>
+        <h2 class="text-sm font-semibold text-white uppercase tracking-widest">Change Email</h2>
+      </div>
+
+      <!-- Step 1: enter new email -->
+      <div id="email-step-1" class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs text-white/40 uppercase tracking-widest mb-2 block">New Email Address</label>
+          <input type="email" id="new-email-input"
+            class="w-full bg-white/4 border border-white/8 focus:border-red-500 outline-none rounded-xl px-4 py-3 text-white text-sm transition-colors duration-200"
+            placeholder="new@email.com" />
+          <p id="err-new-email" class="hidden text-red-400 text-xs mt-1"></p>
+        </div>
+        <p id="email-step1-error"
+          class="hidden text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2"></p>
+        <button id="btn-send-email-otp"
+          class="w-full bg-red-600 hover:bg-red-700 active:scale-95 text-white text-sm font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+          <i id="send-otp-icon" class="ph ph-paper-plane-tilt text-base"></i>
+          <span id="send-otp-text">Send Verification Code</span>
+        </button>
+      </div>
+
+      <!-- Step 2: enter OTP -->
+      <div id="email-step-2" class="hidden flex-col gap-4">
+        <div class="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-xl px-4 py-3">
+          <i class="ph ph-envelope text-blue-400 text-sm flex-shrink-0"></i>
+          <p id="otp-sent-to" class="text-blue-300 text-xs"></p>
+        </div>
+
+        <div>
+          <label class="text-xs text-white/40 uppercase tracking-widest mb-2 block">Verification Code</label>
+          <input type="text" id="otp-input" maxlength="6" inputmode="numeric"
+            class="w-full bg-white/4 border border-white/8 focus:border-red-500 outline-none rounded-xl px-4 py-3 text-white text-sm tracking-[0.3em] transition-colors duration-200"
+            placeholder="6-digit code" />
+          <p id="err-otp" class="hidden text-red-400 text-xs mt-1"></p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <p id="otp-expires" class="text-yellow-400 text-xs"></p>
+          <button id="btn-resend-otp"
+            class="text-xs text-white/30 hover:text-red-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            <span id="resend-text">Resend code</span>
+          </button>
+        </div>
+
+        <p id="email-step2-error"
+          class="hidden text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2"></p>
+
+        <div class="flex gap-3">
+          <button id="btn-back-email"
+            class="w-1/3 border border-white/10 hover:border-white/20 text-white/50 hover:text-white text-sm font-medium py-3 rounded-xl transition-all duration-200 cursor-pointer">
+            Back
+          </button>
+          <button id="btn-verify-otp"
+            class="w-2/3 bg-red-600 hover:bg-red-700 active:scale-95 text-white text-sm font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+            <i id="verify-otp-icon" class="ph ph-shield-check text-base"></i>
+            <span id="verify-otp-text">Verify & Update Email</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
     <button id="btn-logout"
       class="w-full flex items-center justify-center gap-2 border border-white/10 hover:border-red-500/30 hover:text-red-400 text-white/60 text-sm font-semibold py-3 rounded-xl transition-all duration-200 cursor-pointer">
       <i class="ph ph-sign-out"></i>

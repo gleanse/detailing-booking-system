@@ -25,6 +25,9 @@ const {
   postWalkIn,
   downloadSlip,
   getDoneList,
+  changeStaffPassword,
+  requestStaffEmailChange,
+  verifyStaffEmailChange,
 } = require('./staff.controller');
 
 // STATIC ASSETS
@@ -60,6 +63,9 @@ router.get('/account', isStaff, (req, res) =>
 // API ROUTES
 router.get('/me', isStaff, getMe);
 router.post('/logout', isStaff, logout);
+router.patch('/account/password', isStaff, changeStaffPassword);
+router.patch('/account/email', isStaff, requestStaffEmailChange);
+router.post('/account/email/verify', isStaff, verifyStaffEmailChange);
 router.get('/bookings', isStaff, getBookingsToday);
 router.get('/bookings/upcoming', isStaff, getUpcoming);
 router.get('/bookings/done', isStaff, getDoneList);

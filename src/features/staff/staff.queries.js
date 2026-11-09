@@ -580,7 +580,41 @@ const getVariantsForService = async (serviceId) => {
   return result.rows;
 };
 
+const getPasswordHash = async (userId) => {
+  const result = await pool.query('SELECT password FROM users WHERE id = $1', [
+    userId,
+  ]);
+  return result.rows[0];
+};
+
+const updateStaffPassword = async (userId, hashed) => {
+  await pool.query('UPDATE users SET password = $1 WHERE id = $2', [
+    hashed,
+    userId,
+  ]);
+};
+
+const findEmailOwner = async (email, userId) => {
+  const result = await pool.query(
+    'SELECT id FROM users WHERE email = $1 AND id != $2',
+    [email, userId],
+  );
+  return result.rows[0];
+};
+
+const updateStaffEmail = async (userId, newEmail) => {
+  const result = await pool.query(
+    'UPDATE users SET email = $1 WHERE id = $2 RETURNING id, name, email, role',
+    [newEmail, userId],
+  );
+  return result.rows[0];
+};
+
 module.exports = {
+  getPasswordHash,
+  updateStaffPassword,
+  findEmailOwner,
+  updateStaffEmail,
   getUpcomingBookings,
   getBookingsForDate,
   getCarriedOverBookings,

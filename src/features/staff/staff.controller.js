@@ -1,6 +1,15 @@
 //CONTROLLER
 const path = require('path');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+const redis = require('../../config/redis');
+const { sendEmailVerificationEmail } = require('../../shared/utils/email');
+const {
+  getPasswordHash,
+  updateStaffPassword,
+  findEmailOwner,
+  updateStaffEmail,
+} = require('./staff.queries');
 const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
 const {
@@ -659,7 +668,155 @@ const getDoneList = async (req, res) => {
   }
 };
 
+const OTP_MAX_ATTEMPTS = 5;
+const otpKey = (userId) => `staff_email_otp:${userId}`;
+
+const changeStaffPassword = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'All fields are required.' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters.',
+      });
+    }
+
+    const user = await getPasswordHash(userId);
+    if (!user?.password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password change is not available for this account.',
+      });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Current password is incorrect.' });
+    }
+
+    await updateStaffPassword(userId, await bcrypt.hash(newPassword, 10));
+    res.json({ success: true, message: 'Password updated.' });
+  } catch (err) {
+    console.error('Change staff password error:', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+const requestStaffEmailChange = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const normalized = (req.body.email || '').trim().toLowerCase();
+
+    if (!normalized) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Email is required.' });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Enter a valid email address.' });
+    }
+    if (normalized === req.session.user.email.toLowerCase()) {
+      return res.status(400).json({
+        success: false,
+        message: 'This is already your current email.',
+      });
+    }
+    if (await findEmailOwner(normalized, userId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Email is already in use.' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    await redis.set(
+      otpKey(userId),
+      JSON.stringify({ otp, newEmail: normalized, attempts: 0 }),
+      'EX',
+      600,
+    );
+    await sendEmailVerificationEmail({
+      email: normalized,
+      name: req.session.user.name,
+      otp,
+    });
+
+    res.json({
+      success: true,
+      message: 'Verification code sent to your new email.',
+    });
+  } catch (err) {
+    console.error('Request staff email change error:', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+const verifyStaffEmailChange = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const otp = (req.body.otp || '').trim();
+
+    if (!otp) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Verification code is required.' });
+    }
+
+    const key = otpKey(userId);
+    const stored = await redis.get(key);
+    if (!stored) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification code expired or not found. Request a new one.',
+      });
+    }
+
+    const data = JSON.parse(stored);
+    if (otp !== data.otp) {
+      data.attempts += 1;
+      if (data.attempts >= OTP_MAX_ATTEMPTS) {
+        await redis.del(key);
+        return res.status(429).json({
+          success: false,
+          message: 'Too many wrong codes. Request a new one.',
+        });
+      }
+      const ttl = await redis.ttl(key);
+      await redis.set(key, JSON.stringify(data), 'EX', ttl > 0 ? ttl : 600);
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid verification code.' });
+    }
+
+    const user = await updateStaffEmail(userId, data.newEmail);
+    await redis.del(key);
+    req.session.user = { ...req.session.user, email: user.email };
+    res.json({ success: true, message: 'Email updated.', user });
+  } catch (err) {
+    if (err.code === '23505') {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Email is already in use.' });
+    }
+    console.error('Verify staff email change error:', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 module.exports = {
+  changeStaffPassword,
+  requestStaffEmailChange,
+  verifyStaffEmailChange,
   getDashboardPage,
   getWalkinPage,
   getScanPage,
