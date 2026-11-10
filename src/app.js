@@ -13,7 +13,10 @@ const app = express();
 // MIDDLEWARE
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.set('trust proxy', 1);
+// IMPORTANT!!!!!
+// trust proxy counts the proxies in front of the app: cloudflare, then render's proxy, then the app
+// recheck this number if the host, domain or cdn setup changes, or guest strikes and holds will track the wrong address
+app.set('trust proxy', 3);
 // custom session store using ioredis
 class RedisSessionStore extends session.Store {
   async get(sid, cb) {

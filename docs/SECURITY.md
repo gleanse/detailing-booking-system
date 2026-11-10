@@ -62,6 +62,7 @@ These are known and accepted for v1.
 **Web**
 - No CSRF token and no security headers package (such as helmet). In production the session cookie uses `sameSite: none`, which sends it on cross-site requests.
 - Sessions are not regenerated at login.
+- `trust proxy` is set to 3 for Cloudflare plus Render, so the visitor address is the third address from the app side. It must be rechecked if the hosting or domain setup changes. Reaching the app directly through the default `onrender.com` address skips Cloudflare, and a visitor there could fake their address, so the default address should be disabled or unused.
 - JSON bodies up to 10 MB are accepted.
 - About 68 error responses still return the raw error message (tracked as a separate issue).
 - `SESSION_SECRET` has a development fallback in `app.js`. Booking tokens refuse to sign in production without a real secret, so it must be set on the host.

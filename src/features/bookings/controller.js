@@ -84,14 +84,6 @@ const lockBookingSlot = async (req, res) => {
     const { availabilityId, serviceId, variantId } = req.body;
     const userId = req.session?.user?.id || null;
     const ipAddress = req.ip;
-    // NOTE: temporary, remove after measuring proxy hops
-    console.log('[IPCHECK]', {
-      reqIp: req.ip,
-      reqIps: req.ips,
-      remote: req.socket.remoteAddress,
-      xff: req.headers['x-forwarded-for'],
-      cf: req.headers['cf-connecting-ip'],
-    });
 
     if (!availabilityId || !serviceId) {
       return res
