@@ -5,6 +5,11 @@ const bcrypt = require('bcrypt');
 const { sendPasswordResetEmail } = require('../../shared/utils/email');
 const { issueCode, checkCode } = require('./signup-verify');
 const { issueOtp, checkOtp, OTP_MESSAGES } = require('./security/otp');
+const {
+  checkLoginBlock,
+  recordLoginFailure,
+  clearLoginFailures,
+} = require('./security/login-limiter');
 
 const getLoginPage = (req, res) => {
   // redirect to account if already logged in as customer
@@ -107,6 +112,28 @@ const register = async (req, res) => {
   }
 };
 
+const rejectLogin = async (res, status, { email, ip }) => {
+  const failure = await recordLoginFailure({ email, ip });
+
+  if (failure.locked) {
+    return res.status(429).json({
+      success: false,
+      retryAfter: failure.retryAfter,
+      message: failure.pairLocked
+        ? `Invalid email or password. You've used all ${failure.limit} attempts, so login is locked.`
+        : 'Too many failed login attempts.',
+    });
+  }
+
+  const left = failure.attemptsLeft;
+  const message =
+    left !== null && left <= 2
+      ? `Invalid email or password. ${left} ${left === 1 ? 'attempt' : 'attempts'} left before login is locked for 15 minutes.`
+      : 'Invalid email or password.';
+
+  return res.status(status).json({ success: false, message });
+};
+
 const login = async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
@@ -117,31 +144,39 @@ const login = async (req, res) => {
         .json({ success: false, message: 'Email and password are required.' });
     }
 
+    const normalizedEmail = email.toLowerCase();
+    const ip = req.ip;
+
+    const block = await checkLoginBlock({ email: normalizedEmail, ip });
+    if (block.blocked) {
+      return res.status(429).json({
+        success: false,
+        retryAfter: block.retryAfter,
+        message: 'Too many failed login attempts.',
+      });
+    }
+
     const result = await pool.query(
       'SELECT id, name, email, phone, password, role, email_verified FROM users WHERE email = $1',
-      [email.toLowerCase()],
+      [normalizedEmail],
     );
 
     if (result.rows.length === 0) {
-      return res
-        .status(401)
-        .json({ success: false, message: 'Invalid email or password.' });
+      return rejectLogin(res, 401, { email: normalizedEmail, ip });
     }
 
     const user = result.rows[0];
 
     if (user.role !== 'customer') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Invalid email or password.' });
+      return rejectLogin(res, 403, { email: normalizedEmail, ip });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res
-        .status(401)
-        .json({ success: false, message: 'Invalid email or password.' });
+      return rejectLogin(res, 401, { email: normalizedEmail, ip });
     }
+
+    await clearLoginFailures({ email: normalizedEmail, ip });
 
     if (!user.email_verified) {
       await issueCode({ email: user.email, name: user.name });

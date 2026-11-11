@@ -96,10 +96,34 @@ function showFormError(message) {
   shakeEl(el);
 }
 
+let loginLockTimer;
+
 function hideFormError() {
+  clearInterval(loginLockTimer);
   const el = document.getElementById('form-error');
   el.classList.add('hidden');
   el.classList.remove('flex');
+}
+
+function showLoginLock(message, seconds) {
+  clearInterval(loginLockTimer);
+  const deadline = Date.now() + seconds * 1000;
+  showFormError(message);
+
+  const tick = () => {
+    const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+    if (left === 0) {
+      hideFormError();
+      return;
+    }
+    const mm = Math.floor(left / 60);
+    const ss = String(left % 60).padStart(2, '0');
+    document.getElementById('form-error-text').textContent =
+      `${message} Try again in ${mm}:${ss}.`;
+  };
+
+  tick();
+  loginLockTimer = setInterval(tick, 1000);
 }
 
 function setLoading(loading) {
@@ -244,6 +268,8 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
         window.location.href = json.redirect || '/customer/account';
       } else if (json.needsVerification) {
         openVerify(json.email);
+      } else if (json.retryAfter) {
+        showLoginLock(json.message, json.retryAfter);
       } else {
         showFormError(json.message || 'Invalid email or password.');
       }
