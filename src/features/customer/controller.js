@@ -10,6 +10,11 @@ const {
   recordLoginFailure,
   clearLoginFailures,
 } = require('./security/login-limiter');
+const {
+  startSession,
+  endSession,
+  revokeSessions,
+} = require('./security/sessions');
 
 const getLoginPage = (req, res) => {
   // redirect to account if already logged in as customer
@@ -188,18 +193,7 @@ const login = async (req, res) => {
       });
     }
 
-    req.session.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-    };
-
-    // remember me: 30 days, otherwise 8 hours
-    req.session.cookie.maxAge = rememberMe
-      ? 1000 * 60 * 60 * 24 * 30
-      : 1000 * 60 * 60 * 8;
+    await startSession(req, user, rememberMe);
 
     res.json({
       success: true,
@@ -221,7 +215,8 @@ const login = async (req, res) => {
   }
 };
 
-const logout = (req, res) => {
+const logout = async (req, res) => {
+  await endSession(req);
   req.session.destroy((err) => {
     if (err) {
       return res
@@ -380,6 +375,8 @@ const resetPassword = async (req, res) => {
       hashedPassword,
       email.toLowerCase(),
     ]);
+
+    await revokeSessions(result.rows[0].id);
 
     res.json({ success: true, message: 'Password reset successfully.' });
   } catch (err) {

@@ -4,6 +4,7 @@ const pool = require('../../config/database');
 const bcrypt = require('bcrypt');
 const { sendEmailVerificationEmail } = require('../../shared/utils/email');
 const { issueOtp, checkOtp, OTP_MESSAGES } = require('./security/otp');
+const { revokeSessions } = require('./security/sessions');
 const {
   getBookingsByUserId,
   getBookingByReferenceCode,
@@ -22,12 +23,10 @@ const getBookings = async (req, res) => {
     res.json({ success: true, data: bookings });
   } catch (err) {
     console.error('Get bookings error:', err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: 'Something went wrong. Please try again.',
-      });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -46,12 +45,10 @@ const getBooking = async (req, res) => {
     res.json({ success: true, data: booking });
   } catch (err) {
     console.error('Get booking error:', err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: 'Something went wrong. Please try again.',
-      });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -98,12 +95,10 @@ const updateProfile = async (req, res) => {
     res.json({ success: true, message: 'Profile updated.', user });
   } catch (err) {
     console.error('Update profile error:', err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: 'Something went wrong. Please try again.',
-      });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -171,12 +166,10 @@ const requestEmailChange = async (req, res) => {
     });
   } catch (err) {
     console.error('Request email change error:', err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: 'Something went wrong. Please try again.',
-      });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -213,12 +206,10 @@ const verifyEmailChange = async (req, res) => {
     res.json({ success: true, message: 'Email updated successfully.', user });
   } catch (err) {
     console.error('Verify email change error:', err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: 'Something went wrong. Please try again.',
-      });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -229,12 +220,10 @@ const getLastBooking = async (req, res) => {
     res.json({ success: true, data: booking });
   } catch (err) {
     console.error('Get last booking error:', err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: 'Something went wrong. Please try again.',
-      });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
@@ -283,15 +272,15 @@ const changePassword = async (req, res) => {
       userId,
     ]);
 
+    await revokeSessions(userId, req.sessionID);
+
     res.json({ success: true, message: 'Password changed successfully.' });
   } catch (err) {
     console.error('Change password error:', err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: 'Something went wrong. Please try again.',
-      });
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
