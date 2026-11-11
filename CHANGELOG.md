@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 
 
-![Version](https://img.shields.io/badge/version-1.3.0-blue)
+![Version](https://img.shields.io/badge/version-1.4.0-blue)
 
 
 
@@ -14,9 +14,47 @@ All notable changes to this project are documented in this file.
 
 
 
-![Release Date](https://img.shields.io/badge/released-2026--11--09-informational)
+![Release Date](https://img.shields.io/badge/released-2026--11--12-informational)
 
 
+
+---
+
+## [1.4.0] - 2026-11-12
+
+Security hardening for the v1 line: login protection, safer sessions and cookies, correct visitor addresses behind the proxy, and a demo seed that matches the app. Details are in [docs/SECURITY.md](docs/SECURITY.md).
+
+### Added
+
+| Change | Area |
+|---|---|
+| Customer login limit, 5 wrong tries per email and address and 20 per address, then a 15 minute block | Auth |
+| Fresh session id at customer login, and other devices signed out when the password changes | Auth |
+| Wrong code and resend limits on password reset and email change | Auth |
+| Login and logout events in the audit log | Admin |
+| Security reference rewritten per protection, with titles and known trade-offs | Docs |
+
+### Changed
+
+| Change | Area |
+|---|---|
+| Guests are tracked by their real visitor address, `trust proxy` is set to 3 for Cloudflare plus Render | Security |
+| Session cookie uses `sameSite: lax` in production instead of `none` | Security |
+| Staff login block restored to 15 minutes after a temporary test value | Security |
+| Admin walk-in reference codes use the `HRC-` format like online bookings | Bookings |
+| Demo seed follows how the app really writes data, with `@example.test` demo accounts | Database |
+| Schema reference updated with timezone columns and `email_verified`, snapshots v1.11.0 and v1.12.0 added | Database |
+
+### Fixed
+
+| Change | Area |
+|---|---|
+| Guest strikes and blocks were split across proxy addresses, so slow abandons never reached a block | Security |
+| Account endpoints no longer send raw error text to the browser | Security |
+| Down payment migration failed on existing services, it now backfills before requiring the column | Database |
+| Staff booking modal did not open from unfinished jobs | Staff |
+| Back button after login no longer loses the session | Auth |
+| Login page logo centering and favicon | Auth UI |
 
 ---
 

@@ -87,10 +87,10 @@ Each protection has a title that names the kind of security, then what it protec
 ### Resource cleanup - closed tab handling
 
 - **Protects against:** dates stuck on hold after a customer leaves.
-- **How it works:** a page that closes reports it, and the hold is freed after 60 seconds unless the customer comes back. A hold with any payment row is never touched.
+- **How it works:** a page that closes reports it. The mark must be at least 60 seconds old and the check runs once a minute, so the hold is freed 1 to 2 minutes after leaving, unless the customer comes back first. A hold with any payment row is never touched.
 - **Where:** `bookings/leaving.js`
 - **Known trade-offs:**
-  - A reload slower than 60 seconds counts as abandoned, with one strike.
+  - A reload slower than the 60 second minimum, once the minute check has run, counts as abandoned, with one strike.
     - Why accepted: a slow reload cannot be told apart from a closed tab, and one strike is far below the block.
   - A killed browser, app switching or Redis downtime means the hold simply expires after 10 minutes.
     - Why accepted: the 10 minute expiry is the safety net, and it is short.
