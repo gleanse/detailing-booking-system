@@ -1127,3 +1127,15 @@
   .status-cancelled { background: rgba(239,68,68,0.12); color: #ef4444; }
   .status-refunded  { background: rgba(59,130,246,0.12); color: #3b82f6; }
 }
+/* ===== LOGIN LOGO ===== */
+@layer components {
+  .login-logo {
+    @apply w-[120px] h-[120px] mx-auto mb-6 rounded-full overflow-hidden flex items-center justify-center;
+    box-shadow: none;
+  }
+  .login-logo img {
+    @apply w-full h-full object-cover rounded-full;
+    box-shadow: none;
+    filter: none;
+  }
+}
