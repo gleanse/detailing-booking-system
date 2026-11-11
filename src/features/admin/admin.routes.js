@@ -5,6 +5,7 @@ const router  = express.Router();
 const path    = require('path');
 const fs      = require('fs');
 const pool    = require('../../config/database');
+const crypto = require('crypto');
 const { resolveWalkInDownPayment } = require('../../shared/utils/walkin-down-payment');
 const { getNextQueueNumber } = require('../../shared/utils/queue-number');
 
@@ -491,8 +492,7 @@ router.post('/bookings/walkin', async (req, res) => {
     }
 
     // Generate reference code 
-    const refCode = 'WI-' + Date.now().toString(36).toUpperCase().slice(-6) +
-                    Math.random().toString(36).toUpperCase().slice(-3);
+    const refCode = 'HRC-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 
     //  Insert booking 
     // Ginagamit ang availability_id, at ang columns na nasa actual schema
