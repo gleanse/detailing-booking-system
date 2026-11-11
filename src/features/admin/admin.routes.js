@@ -1209,7 +1209,7 @@ router.get('/audit-logs', async (req, res) => {
     const result = await pool.query(`
       SELECT al.id,al.action,al.target_table,al.target_id,al.details,al.created_at,u.name AS user_name
       FROM audit_logs al LEFT JOIN users u ON u.id=al.user_id
-      ORDER BY al.created_at DESC LIMIT 100
+      ORDER BY al.created_at DESC LIMIT 500
     `);
     res.json({ success: true, data: result.rows });
   } catch (err) {

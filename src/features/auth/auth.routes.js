@@ -6,6 +6,19 @@ const path = require('path');
 const { checkLoginBlock, recordFailedAttempt, clearLoginAttempts } = require('../../shared/utils/rateLimiter');
 const redis = require('../../config/redis');
 
+// Audit helper: hindi niya ipapa-fail ang login/logout kapag nag-error
+async function logAudit(userId, action, details) {
+  try {
+    await pool.query(
+      `INSERT INTO audit_logs (user_id, action, target_table, target_id, details)
+       VALUES ($1, $2, 'users', $1, $3)`,
+      [userId, action, details]
+    );
+  } catch (e) {
+    console.error('Audit log error:', e);
+  }
+}
+
 router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'login.html'));
 });
@@ -77,6 +90,7 @@ router.post('/login', async (req, res) => {
     const expires = new Date(Date.now() + maxAge);
 
     let claimed = false;
+    let kickedOther = false;
 
     if (force === true) {
       // pinili ng user na i-logout ang kabilang device
@@ -96,6 +110,7 @@ router.post('/login', async (req, res) => {
       if (oldSid && oldSid !== req.sessionID) {
         try {
           await redis.del(`sess:${oldSid}`);
+          kickedOther = true;
         } catch (e) {
           console.error('Failed to remove old session:', e);
         }
@@ -135,6 +150,16 @@ router.post('/login', async (req, res) => {
       role: user.role,
     };
 
+    // audit log
+    await logAudit(user.id, 'Login', `Logged in from ${ip}`);
+    if (kickedOther) {
+      await logAudit(
+        user.id,
+        'Logout (forced)',
+        `Previous device logged out by new login from ${ip}`
+      );
+    }
+
     res.json({
       success: true,
       message: 'Login successful',
@@ -168,6 +193,9 @@ router.post('/logout', async (req, res) => {
 
   try {
     if (userId) {
+      // audit log (bago i-destroy ang session)
+      await logAudit(userId, 'Logout', `Logged out from ${req.ip}`);
+
       await pool.query(
         `UPDATE users
             SET active_session_id = NULL, active_session_expires = NULL
