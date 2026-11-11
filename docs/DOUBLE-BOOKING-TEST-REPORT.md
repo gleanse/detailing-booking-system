@@ -27,7 +27,7 @@ The "before" column comes from reading the earlier code, not from running it. Ol
 | Fake accounts | Anyone could sign up with any email | Email must be verified with a code before sign in | T10 |
 | One person hoards slots | Unlimited holds | Logged in customers are capped at 2 holds per account, guests at 5 per network | T11 |
 | Someone else releases, edits or pays for a hold | A booking id was enough | A signed token is required, wrong or missing token gets 403 before any work | T12 |
-| Closed tab blocks a slot | Slot stayed blocked for the full 10 minutes | Freed after 60 seconds away, one strike, never when a payment exists | T13 |
+| Closed tab blocks a slot | Slot stayed blocked for the full 10 minutes | Freed 1 to 2 minutes after leaving, one strike, never when a payment exists | T13 | 
 | Weekly purge | Failed on bookings that had payment rows | One transaction clears unpaid leftovers, keeps anything with a paid, failed or refunded payment, rolls back on failure | T14 |
 
 ### Hold timing
@@ -105,7 +105,7 @@ These are choices, not oversights. v1 does not protect against the following.
 
 **Closed tab handling (T13)**
 
-- A reload slower than 60 seconds counts as abandoned and adds one strike.
+- A reload slower than the 60 second minimum, once the minute check has run, counts as abandoned and adds one strike.
 - If the browser is killed, the app is switched away, or Redis is down, the hold simply expires on its normal 10 minute timer.
 - Closing one copy of a duplicated tab can release a hold the other copy still shows.
 - A hold that already has a payment row is never freed early, it waits the full 16 minutes. This is deliberate, to protect paid customers.
