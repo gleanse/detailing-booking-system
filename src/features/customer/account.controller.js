@@ -1,9 +1,9 @@
 // ACCOUNT CONTROLLER
 const path = require('path');
-const redis = require('../../config/redis');
 const pool = require('../../config/database');
 const bcrypt = require('bcrypt');
 const { sendEmailVerificationEmail } = require('../../shared/utils/email');
+const { issueOtp, checkOtp, OTP_MESSAGES } = require('./security/otp');
 const {
   getBookingsByUserId,
   getBookingByReferenceCode,
@@ -130,22 +130,25 @@ const requestEmailChange = async (req, res) => {
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const key = `email_otp:${userId}`;
-
-    // store otp and pending email together, expire in 10 minutes
-    await redis.set(
-      key,
-      JSON.stringify({ otp, newEmail: normalized }),
-      'EX',
-      600,
-    );
-
-    await sendEmailVerificationEmail({
-      email: normalized,
-      name: req.session.user.name,
-      otp,
+    const issued = await issueOtp({
+      purpose: 'email_change',
+      id: userId,
+      payload: { newEmail: normalized },
+      send: (otp) =>
+        sendEmailVerificationEmail({
+          email: normalized,
+          name: req.session.user.name,
+          otp,
+        }),
     });
+
+    if (!issued.sent) {
+      return res.status(429).json({
+        success: false,
+        retryAfter: issued.retryAfter,
+        message: `Please wait ${issued.retryAfter} seconds before asking for a new code.`,
+      });
+    }
 
     res.json({
       success: true,
@@ -168,27 +171,19 @@ const verifyEmailChange = async (req, res) => {
         .json({ success: false, message: 'Verification code is required.' });
     }
 
-    const key = `email_otp:${userId}`;
-    const stored = await redis.get(key);
+    const check = await checkOtp({
+      purpose: 'email_change',
+      id: userId,
+      otp: otp.trim(),
+    });
 
-    if (!stored) {
-      return res.status(400).json({
-        success: false,
-        message: 'Verification code expired or not found. Request a new one.',
-      });
-    }
-
-    const { otp: storedOtp, newEmail } = JSON.parse(stored);
-
-    if (otp.trim() !== storedOtp) {
+    if (!check.ok) {
       return res
         .status(400)
-        .json({ success: false, message: 'Invalid verification code.' });
+        .json({ success: false, message: OTP_MESSAGES[check.reason] });
     }
 
-    const user = await updateUserEmail(userId, newEmail);
-
-    await redis.del(key);
+    const user = await updateUserEmail(userId, check.payload.newEmail);
 
     req.session.user = {
       ...req.session.user,

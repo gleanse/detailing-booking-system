@@ -2,10 +2,9 @@
 const path = require('path');
 const pool = require('../../config/database');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
-const redis = require('../../config/redis');
 const { sendPasswordResetEmail } = require('../../shared/utils/email');
 const { issueCode, checkCode } = require('./signup-verify');
+const { issueOtp, checkOtp, OTP_MESSAGES } = require('./security/otp');
 
 const getLoginPage = (req, res) => {
   // redirect to account if already logged in as customer
@@ -217,20 +216,19 @@ const verifyOtp = async (req, res) => {
         .json({ success: false, message: 'Email and code are required.' });
     }
 
-    const storedOtp = await redis.get(`pw_reset:${email.toLowerCase()}`);
+    const check = await checkOtp({
+      purpose: 'pw_reset',
+      id: String(email).trim().toLowerCase(),
+      otp: String(otp).trim(),
+      consume: false,
+    });
 
-    if (!storedOtp) {
-      return res.status(400).json({
-        success: false,
-        message: 'Reset code has expired. Please request a new one.',
-      });
-    }
-
-    if (String(storedOtp) !== String(otp)) {
+    if (!check.ok) {
       return res
         .status(400)
-        .json({ success: false, message: 'Incorrect reset code.' });
+        .json({ success: false, message: OTP_MESSAGES[check.reason] });
     }
+
     res.json({ success: true, message: 'Code verified.' });
   } catch (err) {
     console.error('Verify OTP error:', err);
@@ -265,16 +263,24 @@ const forgotPassword = async (req, res) => {
 
     const user = result.rows[0];
 
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const issued = await issueOtp({
+      purpose: 'pw_reset',
+      id: user.email,
+      send: (otp) =>
+        sendPasswordResetEmail({ email: user.email, name: user.name, otp }),
+    });
 
-    // key: pw_reset:<email>, TTL: 10 minutes
-    await redis.set(`pw_reset:${user.email}`, otp, 'EX', 600);
-
-    await sendPasswordResetEmail({ email: user.email, name: user.name, otp });
+    if (!issued.sent) {
+      return res.status(429).json({
+        success: false,
+        retryAfter: issued.retryAfter,
+        message: `Please wait ${issued.retryAfter} seconds before asking for a new code.`,
+      });
+    }
 
     res.json({
       success: true,
-      message: 'If that email exists, a reset code has been sent.',
+      message: 'A reset code has been sent to your email.',
     });
   } catch (err) {
     console.error('Forgot password error:', err);
@@ -310,19 +316,16 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    const storedOtp = await redis.get(`pw_reset:${email.toLowerCase()}`);
+    const check = await checkOtp({
+      purpose: 'pw_reset',
+      id: String(email).trim().toLowerCase(),
+      otp,
+    });
 
-    if (!storedOtp) {
-      return res.status(400).json({
-        success: false,
-        message: 'Reset code has expired. Please request a new one.',
-      });
-    }
-
-    if (String(storedOtp) !== String(otp)) {
+    if (!check.ok) {
       return res
         .status(400)
-        .json({ success: false, message: 'Incorrect reset code.' });
+        .json({ success: false, message: OTP_MESSAGES[check.reason] });
     }
 
     const result = await pool.query(
@@ -342,9 +345,6 @@ const resetPassword = async (req, res) => {
       hashedPassword,
       email.toLowerCase(),
     ]);
-
-    // delete OTP immediately after successful reset so it can't be reused
-    await redis.del(`pw_reset:${email.toLowerCase()}`);
 
     res.json({ success: true, message: 'Password reset successfully.' });
   } catch (err) {
