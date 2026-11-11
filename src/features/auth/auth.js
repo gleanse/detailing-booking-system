@@ -95,7 +95,6 @@ if (isLoginPage) {
     },
     password: (val) => {
       if (!val) return 'Password is required';
-      if (val.length < 6) return 'Password must be at least 6 characters';
       return '';
     },
   };
@@ -138,7 +137,7 @@ if (isLoginPage) {
       if (data.success) {
         showMessage('success', 'Login successful! Redirecting...');
         setTimeout(() => {
-          window.location.href = data.redirect || '/admin/dashboard.html';
+          window.location.replace(data.redirect || '/admin');
         }, 1000);
         return;
       }

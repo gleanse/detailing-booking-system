@@ -20,6 +20,11 @@ async function logAudit(userId, action, details) {
 }
 
 router.get('/login', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const u = req.session?.user;
+  if (u) {
+    return res.redirect(u.role === 'admin' ? '/admin' : '/staff');
+  }
   res.sendFile(path.join(__dirname, 'login.html'));
 });
 
