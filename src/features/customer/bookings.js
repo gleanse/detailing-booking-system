@@ -354,9 +354,6 @@ async function loadBookings() {
           <div class="bg-neutral-900 border border-white/6 rounded-2xl p-6 text-center">
             <i class="ph ph-calendar-blank text-3xl text-white/20 mb-2 block"></i>
             <p class="text-white/30 text-sm">No active bookings.</p>
-            <a href="/customer/services" class="inline-flex items-center gap-1.5 text-red-400 hover:text-red-300 text-xs mt-3 transition-colors">
-              <i class="ph ph-calendar-plus"></i> Book a service
-            </a>
           </div>`;
   } else {
     activeContainer.innerHTML = active.map(renderActiveBooking).join('');

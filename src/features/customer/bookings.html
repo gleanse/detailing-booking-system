@@ -10,7 +10,7 @@
 </head>
 <body class="bg-neutral-950 min-h-screen text-white overflow-x-hidden">
 
-  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 pb-28 sm:py-10 sm:pb-28">
     <h1 class="text-4xl sm:text-5xl font-bold tracking-wide mb-8 animate-fadeUp"
       style="font-family:'Bebas Neue',sans-serif;">My Bookings</h1>
 
@@ -35,6 +35,13 @@
       </div>
     </section>
   </main>
+
+  <a href="/customer/services"
+    class="fixed bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-red-600 px-6 py-3.5 text-sm font-semibold text-white shadow-glow-sm transition-colors hover:bg-red-700"
+    style="margin-bottom: env(safe-area-inset-bottom);">
+    <i class="ph ph-calendar-plus text-lg"></i>
+    Book now
+  </a>
 
   <div id="modal-booking"
     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">

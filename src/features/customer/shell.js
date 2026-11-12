@@ -5,6 +5,7 @@
   ];
 
   const MENU_ITEMS = [
+    { label: 'Services', href: '/customer/services', icon: 'ph-sparkle' },
     {
       label: 'My bookings',
       href: '/customer/my-bookings',
@@ -12,9 +13,6 @@
     },
     { label: 'My account', href: '/customer/account', icon: 'ph-user' },
   ];
-
-  // pages where the Book now button would point at the current page
-  const HIDE_BOOK_ON = ['/customer/services', '/booking'];
 
   const escapeHtml = (value) =>
     String(value ?? '')
@@ -35,7 +33,7 @@
       .join('')
       .toUpperCase();
 
-    const showBook = !HIDE_BOOK_ON.some((p) => path.startsWith(p));
+    const firstName = user.name.split(' ')[0];
 
     const navLinks = CUSTOMER_NAV.map(
       (item) =>
@@ -53,33 +51,29 @@
       </a>`,
     ).join('');
 
-    const bookBtn = showBook
-      ? `<a href="/customer/services" class="flex items-center gap-1.5 rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-700 sm:px-5 sm:py-2.5 sm:text-sm">
-        <i class="ph ph-calendar-plus text-base"></i>Book now
-      </a>`
-      : '';
-
     const header = document.createElement('header');
     header.id = 'customer-header';
     header.className =
       'sticky top-0 z-50 border-b border-red-500/20 bg-neutral-950/95 backdrop-blur-md';
     header.innerHTML = `
     <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-      <a href="/customer/my-bookings" class="flex items-center gap-3">
-        <div class="h-7 w-0.75 rounded-full bg-red-500"></div>
-        <span class="text-xl uppercase tracking-widest text-white sm:text-2xl" style="font-family:'Bebas Neue',sans-serif;">
-          <span class="sm:hidden">Herco</span><span class="hidden sm:inline">Herco Detailing Garage</span>
+      <a href="/customer/my-bookings" class="flex items-center gap-2.5" aria-label="Herco Detailing Garage, my bookings">
+        <img src="/Images/herco-logo.jpeg" alt="" width="40" height="40" class="size-10 shrink-0 rounded-lg object-cover">
+        <span class="flex flex-col leading-none">
+          <span class="text-2xl uppercase tracking-wider text-white" style="font-family:'Bebas Neue',sans-serif;">Herco</span>
+          <span class="mt-0.5 text-xs text-white/60">Detailing Garage</span>
         </span>
       </a>
 
       <nav class="hidden items-center gap-7 md:flex">${navLinks}</nav>
 
       <div class="flex items-center gap-3">
-        ${bookBtn}
         <div class="relative">
           <button id="avatar-btn" type="button" aria-label="Account menu" aria-expanded="false"
-            class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-red-500/15 text-xs font-semibold text-red-400">
-            ${escapeHtml(initials)}
+            class="flex cursor-pointer items-center gap-2 rounded-full">
+            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/15 text-xs font-semibold text-red-400">${escapeHtml(initials)}</span>
+            <span class="hidden max-w-32 truncate text-sm text-white/70 sm:block">${escapeHtml(firstName)}</span>
+            <i id="avatar-caret" class="ph ph-caret-down hidden text-sm text-white/40 transition-transform sm:block"></i>
           </button>
           <div id="avatar-menu" class="absolute right-0 top-full z-50 mt-3 hidden w-56 overflow-hidden rounded-2xl border border-white/10 bg-neutral-900">
             <div class="border-b border-white/5 px-4 py-3">
@@ -104,6 +98,7 @@
     const setOpen = (open) => {
       menu.classList.toggle('hidden', !open);
       btn.setAttribute('aria-expanded', String(open));
+      btn.querySelector('#avatar-caret').classList.toggle('rotate-180', open);
     };
 
     btn.addEventListener('click', (e) => {
