@@ -1187,6 +1187,104 @@ router.get('/accounts', async (req, res) => {
   }
 });
 
+// I-paste ito sa admin.routes.js, sa ilalim ng `router.get('/accounts', ...)`
+// (hindi kailangan ng bagong require, gamit na ang pool at bcrypt)
+
+// PUT /api/admin/accounts/:id
+router.put('/accounts/:id', async (req, res) => {
+  try {
+    if (req.session?.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Only admins can edit accounts.' });
+    }
+
+    const { id } = req.params;
+    const { name, email, role, password } = req.body;
+
+    const cleanName = (name || '').trim();
+    const normalizedEmail = (email || '').trim().toLowerCase();
+
+    if (!cleanName || !normalizedEmail || !role) {
+      return res.status(400).json({ success: false, message: 'Name, email, and role are required' });
+    }
+    if (cleanName.length < 2 || cleanName.length > 255) {
+      return res.status(400).json({ success: false, message: 'Name must be 2 to 255 characters' });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({ success: false, message: 'Enter a valid email address' });
+    }
+    if (!['admin', 'staff'].includes(role)) {
+      return res.status(400).json({ success: false, message: 'Invalid role' });
+    }
+    if (password && password.length < 8) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
+    }
+
+    const existing = await pool.query(
+      `SELECT id, name, email, role FROM users WHERE id = $1 AND role IN ('admin','staff')`,
+      [id]
+    );
+    if (!existing.rows.length) {
+      return res.status(404).json({ success: false, message: 'Account not found' });
+    }
+    const old = existing.rows[0];
+
+    // Bawal baguhin ang sariling role (para hindi ma-lock out ang admin)
+    if (req.session.user.id === id && role !== old.role) {
+      return res.status(400).json({ success: false, message: 'You cannot change your own role.' });
+    }
+
+    // Email dapat unique
+    const dup = await pool.query(
+      'SELECT id FROM users WHERE email = $1 AND id <> $2',
+      [normalizedEmail, id]
+    );
+    if (dup.rows.length) {
+      return res.status(400).json({ success: false, message: 'Email already in use' });
+    }
+
+    let result;
+    if (password) {
+      const hashed = await bcrypt.hash(password, 10);
+      result = await pool.query(
+        `UPDATE users SET name = $1, email = $2, role = $3, password = $4
+         WHERE id = $5 RETURNING id, name, email, role`,
+        [cleanName, normalizedEmail, role, hashed, id]
+      );
+    } else {
+      result = await pool.query(
+        `UPDATE users SET name = $1, email = $2, role = $3
+         WHERE id = $4 RETURNING id, name, email, role`,
+        [cleanName, normalizedEmail, role, id]
+      );
+    }
+
+    // Audit log: ilista kung ano ang nabago (walang password na ilalagay)
+    const changes = [];
+    if (old.name !== cleanName)            changes.push(`name: "${old.name}" → "${cleanName}"`);
+    if (old.email !== normalizedEmail)     changes.push(`email: ${old.email} → ${normalizedEmail}`);
+    if (old.role !== role)                 changes.push(`role: ${old.role} → ${role}`);
+    if (password)                          changes.push('password reset');
+
+    await pool.query(
+      `INSERT INTO audit_logs (user_id, action, target_table, target_id, details)
+       VALUES ($1, 'Updated account', 'users', $2, $3)`,
+      [
+        req.session.user.id,
+        id,
+        `Account "${old.name}": ${changes.length ? changes.join(', ') : 'no changes'}`,
+      ]
+    );
+
+    res.json({ success: true, message: 'Account updated successfully', user: result.rows[0] });
+  } catch (err) {
+    console.error('Update account error:', err);
+    if (err.code === '23505') {
+      return res.status(400).json({ success: false, message: 'Email already in use' });
+    }
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // GET /api/admin/payments
 router.get('/payments', async (req, res) => {
   try {

@@ -1,203 +1,298 @@
- AdminLayout.init({ activePage: 'staff', breadcrumb: 'Users Accounts' });
+AdminLayout.init({ activePage: 'staff', breadcrumb: 'Users Accounts' });
 
-  const { statusBadge, formatDate, skeletonTableRows } = AdminLayout;
+const { statusBadge, formatDate, skeletonTableRows } = AdminLayout;
 
-  //  Helpers 
-  function openOverlay(id)  { document.getElementById(id).classList.remove('hidden'); }
-  function closeOverlay(id) { document.getElementById(id).classList.add('hidden'); }
+// State
+let accounts      = [];     // cache ng laman ng table
+let editingId     = null;   // null = Add mode, may id = Edit mode
+let currentUserId = null;   // para ma-protektahan ang sariling account
 
-  function showMsg(type, text) {
-    const el = document.getElementById('addStaffMsg');
-    el.className = 'modal-msg ' + type;
-    el.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${text}`;
+// Helpers
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function openOverlay(id)  { document.getElementById(id).classList.remove('hidden'); }
+function closeOverlay(id) { document.getElementById(id).classList.add('hidden'); }
+
+function showMsg(type, text) {
+  const el = document.getElementById('addStaffMsg');
+  el.className = 'modal-msg ' + type;
+  el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${escapeHtml(text)}`;
+}
+function hideMsg() { document.getElementById('addStaffMsg').className = 'modal-msg'; }
+
+function setErr(id, msg) {
+  const el = document.getElementById(id + 'Err');
+  if (el) el.textContent = msg;
+  const input = document.getElementById(id);
+  if (input) input.classList.toggle('is-error', !!msg);
+}
+function clearErr(id) { setErr(id, ''); }
+
+function setSaveLabel(loading) {
+  const btn = document.getElementById('addStaffModalSave');
+  btn.disabled = loading;
+  if (loading) {
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${editingId ? 'Saving...' : 'Creating...'}`;
+  } else {
+    btn.innerHTML = editingId
+      ? '<i class="fas fa-save"></i> Save Changes'
+      : '<i class="fas fa-user-plus"></i> Create Account';
   }
-  function hideMsg() { document.getElementById('addStaffMsg').className = 'modal-msg'; }
+}
 
-  function setErr(id, msg) {
-    const el = document.getElementById(id + 'Err');
-    if (el) el.textContent = msg;
-    const input = document.getElementById(id);
-    if (input) input.classList.toggle('is-error', !!msg);
-  }
-  function clearErr(id) { setErr(id, ''); }
+function resetPasswordStrength() {
+  const fill = document.getElementById('staffStrengthFill');
+  fill.className = 'strength-fill';
+  fill.style.width = '0%';
+  document.getElementById('staffStrengthLabel').textContent = 'Password strength';
+}
 
-  //  Password Strength 
-  document.getElementById('staff_password').addEventListener('input', function () {
-    const val = this.value;
-    const fill  = document.getElementById('staffStrengthFill');
-    const label = document.getElementById('staffStrengthLabel');
-    let score = 0;
-    if (val.length >= 8)         score++;
-    if (/[A-Z]/.test(val))       score++;
-    if (/[0-9]/.test(val))       score++;
-    if (/[^A-Za-z0-9]/.test(val)) score++;
+// Password strength
+document.getElementById('staff_password').addEventListener('input', function () {
+  const val   = this.value;
+  const fill  = document.getElementById('staffStrengthFill');
+  const label = document.getElementById('staffStrengthLabel');
+  let score = 0;
+  if (val.length >= 8)          score++;
+  if (/[A-Z]/.test(val))        score++;
+  if (/[0-9]/.test(val))        score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
 
-    if (!val) { fill.className = 'strength-fill'; fill.style.width='0%'; label.textContent='Password strength'; return; }
-    if (score <= 1) { fill.className='strength-fill weak';   label.textContent='Weak'; }
-    else if (score<=2){ fill.className='strength-fill medium'; label.textContent='Medium'; }
-    else              { fill.className='strength-fill strong'; label.textContent='Strong'; }
-  });
+  if (!val) { resetPasswordStrength(); return; }
+  if (score <= 1)      { fill.className = 'strength-fill weak';   label.textContent = 'Weak'; }
+  else if (score <= 2) { fill.className = 'strength-fill medium'; label.textContent = 'Medium'; }
+  else                 { fill.className = 'strength-fill strong'; label.textContent = 'Strong'; }
+});
 
-  //  Password Toggle 
-  document.getElementById('toggleStaffPw').addEventListener('click', function () {
-    const input = document.getElementById('staff_password');
-    const icon  = document.getElementById('staffPwIcon');
-    const isHidden = input.type === 'password';
-    input.type = isHidden ? 'text' : 'password';
-    icon.className = isHidden ? 'fas fa-eye-slash' : 'fas fa-eye';
-  });
+// Password toggle
+document.getElementById('toggleStaffPw').addEventListener('click', function () {
+  const input = document.getElementById('staff_password');
+  const icon  = document.getElementById('staffPwIcon');
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  icon.className = isHidden ? 'fas fa-eye-slash' : 'fas fa-eye';
+});
 
-  //  Load Staff Table 
-  async function loadStaff() {
-    const tbody = document.getElementById('staffTableBody');
-    const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
+// Load table
+async function loadStaff() {
+  const tbody = document.getElementById('staffTableBody');
+  const cancelSkeleton = AdminLayout.delayedSkeleton(() => {
     tbody.innerHTML = skeletonTableRows(5, 5);
-    });
-    try {
-      const res  = await fetch('/api/admin/accounts'); 
-      const data = await res.json();
-      cancelSkeleton();
-      if (!data.success || !data.data.length) {
-        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-users"></i><p>No staff accounts found. Click "Add Account" to create one.</p></div></td></tr>`;
-        return;
-      }
-      tbody.innerHTML = data.data.map(u => `
-        <tr>
-          <td>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div class="user-avatar" style="width:32px;height:32px;font-size:12px;border-radius:8px;">
-                ${(u.name || '?')[0].toUpperCase()}
-              </div>
-              <strong>${u.name}</strong>
+  });
+  try {
+    const res  = await fetch('/api/admin/accounts');
+    const data = await res.json();
+    cancelSkeleton();
+    if (!data.success || !data.data.length) {
+      accounts = [];
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-users"></i><p>No staff accounts found. Click "Add Account" to create one.</p></div></td></tr>`;
+      return;
+    }
+    accounts = data.data;
+    tbody.innerHTML = accounts.map(u => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="user-avatar" style="width:32px;height:32px;font-size:12px;border-radius:8px;">
+              ${escapeHtml((u.name || '?')[0].toUpperCase())}
             </div>
-          </td>
-          <td>${u.email}</td>
-          <td>${statusBadge(u.role)}</td>
-          <td>${formatDate(u.created_at)}</td>
-          <td>
-            <button class="action-btn danger"
-              onclick="openDeleteStaff('${u.id}', '${(u.name||'').replace(/'/g,"\\'")}')">
-              <i class="fas fa-user-times"></i> Remove
-            </button>
-          </td>
-        </tr>`).join('');
-    } catch (err) {
-      cancelSkeleton();
-      console.error('Load staff error:', err);
-      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load staff</p></div></td></tr>`;
-    }
+            <strong>${escapeHtml(u.name)}</strong>
+          </div>
+        </td>
+        <td>${escapeHtml(u.email)}</td>
+        <td>${statusBadge(u.role)}</td>
+        <td>${formatDate(u.created_at)}</td>
+        <td>
+          <button class="action-btn" data-action="edit" data-id="${escapeHtml(u.id)}">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button class="action-btn danger" data-action="delete" data-id="${escapeHtml(u.id)}">
+            <i class="fas fa-user-times"></i> Remove
+          </button>
+        </td>
+      </tr>`).join('');
+  } catch (err) {
+    cancelSkeleton();
+    console.error('Load staff error:', err);
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load staff</p></div></td></tr>`;
+  }
+}
+
+// Row buttons (Edit / Remove)
+document.getElementById('staffTableBody').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const account = accounts.find(a => String(a.id) === btn.dataset.id);
+  if (!account) return;
+  if (btn.dataset.action === 'edit')   openEditModal(account);
+  if (btn.dataset.action === 'delete') openDeleteStaff(account.id, account.name);
+});
+
+// Open modal (Add / Edit)
+function prepareModal(mode) {
+  ['staff_name', 'staff_email', 'staff_password', 'staff_confirm'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('staff_role').value = '';
+  document.getElementById('staff_role').disabled = false;
+  ['staff_name', 'staff_email', 'staff_role', 'staff_password', 'staff_confirm'].forEach(clearErr);
+  resetPasswordStrength();
+  document.getElementById('staff_password').type = 'password';
+  document.getElementById('staffPwIcon').className = 'fas fa-eye';
+  hideMsg();
+
+  const isEdit = mode === 'edit';
+  document.getElementById('staffModalTitle').innerHTML = isEdit
+    ? '<i class="fas fa-user-edit"></i> Edit Account'
+    : '<i class="fas fa-user-plus"></i> Add Account';
+  document.getElementById('pwRequired').style.display      = isEdit ? 'none' : '';
+  document.getElementById('confirmRequired').style.display = isEdit ? 'none' : '';
+  document.getElementById('pwOptional').style.display      = isEdit ? '' : 'none';
+  document.getElementById('staff_password').placeholder    = isEdit ? 'Leave blank to keep current' : 'Min. 8 characters';
+  setSaveLabel(false);
+}
+
+document.getElementById('addStaffBtn').addEventListener('click', () => {
+  editingId = null;
+  prepareModal('add');
+  openOverlay('addStaffModal');
+  document.getElementById('staff_name').focus();
+});
+
+function openEditModal(account) {
+  editingId = account.id;
+  prepareModal('edit');
+  document.getElementById('staff_name').value  = account.name || '';
+  document.getElementById('staff_email').value = account.email || '';
+  document.getElementById('staff_role').value  = account.role || '';
+  // bawal baguhin ang sariling role (para hindi ma-lock out ang sarili)
+  if (currentUserId && String(account.id) === String(currentUserId)) {
+    document.getElementById('staff_role').disabled = true;
+  }
+  openOverlay('addStaffModal');
+  document.getElementById('staff_name').focus();
+}
+
+['addStaffModalClose', 'addStaffModalCancel'].forEach(id => {
+  document.getElementById(id).addEventListener('click', () => closeOverlay('addStaffModal'));
+});
+document.getElementById('addStaffModal').addEventListener('click', e => {
+  if (e.target.id === 'addStaffModal') closeOverlay('addStaffModal');
+});
+
+// Save (Create / Update)
+document.getElementById('addStaffModalSave').addEventListener('click', async () => {
+  const isEdit   = !!editingId;
+  const name     = document.getElementById('staff_name').value.trim();
+  const email    = document.getElementById('staff_email').value.trim();
+  const roleEl   = document.getElementById('staff_role');
+  const role     = roleEl.value;
+  const password = document.getElementById('staff_password').value;
+  const confirm  = document.getElementById('staff_confirm').value;
+
+  let valid = true;
+
+  if (!name || name.length < 2) { setErr('staff_name', 'Name must be at least 2 characters'); valid = false; } else clearErr('staff_name');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('staff_email', 'Enter a valid email address'); valid = false; } else clearErr('staff_email');
+  if (!role) { setErr('staff_role', 'Please select a role'); valid = false; } else clearErr('staff_role');
+
+  // Password: required kapag Add, optional kapag Edit
+  if (!isEdit || password) {
+    if (!password || password.length < 8) { setErr('staff_password', 'Password must be at least 8 characters'); valid = false; } else clearErr('staff_password');
+    if (!confirm)                         { setErr('staff_confirm', 'Please confirm the password'); valid = false; }
+    else if (confirm !== password)        { setErr('staff_confirm', 'Passwords do not match'); valid = false; }
+    else clearErr('staff_confirm');
+  } else {
+    clearErr('staff_password');
+    clearErr('staff_confirm');
   }
 
-  //  Open Add Modal 
-  document.getElementById('addStaffBtn').addEventListener('click', () => {
-    // Reset form
-    ['staff_name','staff_email','staff_password','staff_confirm'].forEach(id => {
-      document.getElementById(id).value = '';
-      document.getElementById(id).classList.remove('is-error');
+  if (!valid) return;
+
+  setSaveLabel(true);
+
+  try {
+    const url    = isEdit ? `/api/admin/accounts/${editingId}` : '/api/admin/accounts';
+    const method = isEdit ? 'PUT' : 'POST';
+    const body   = { name, email: email.toLowerCase(), role };
+    if (password) body.password = password;
+
+    const res  = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
-    document.getElementById('staff_role').value = '';
-    ['staff_name','staff_email','staff_role','staff_password','staff_confirm'].forEach(id => clearErr(id));
-    document.getElementById('staffStrengthFill').className = 'strength-fill';
-    document.getElementById('staffStrengthFill').style.width = '0%';
-    document.getElementById('staffStrengthLabel').textContent = 'Password strength';
-    // Reset pw toggle
-    document.getElementById('staff_password').type = 'password';
-    document.getElementById('staffPwIcon').className = 'fas fa-eye';
-    hideMsg();
-    openOverlay('addStaffModal');
-    document.getElementById('staff_name').focus();
-  });
+    const data = await res.json();
 
-  ['addStaffModalClose','addStaffModalCancel'].forEach(id => {
-    document.getElementById(id).addEventListener('click', () => closeOverlay('addStaffModal'));
-  });
-  document.getElementById('addStaffModal').addEventListener('click', e => {
-    if (e.target.id === 'addStaffModal') closeOverlay('addStaffModal');
-  });
-
-  //  Save New Account 
-  document.getElementById('addStaffModalSave').addEventListener('click', async () => {
-    const name     = document.getElementById('staff_name').value.trim();
-    const email    = document.getElementById('staff_email').value.trim();
-    const role     = document.getElementById('staff_role').value;
-    const password = document.getElementById('staff_password').value;
-    const confirm  = document.getElementById('staff_confirm').value;
-
-    let valid = true;
-
-    if (!name || name.length < 2)              { setErr('staff_name',     'Name must be at least 2 characters'); valid=false; } else clearErr('staff_name');
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('staff_email', 'Enter a valid email address'); valid=false; } else clearErr('staff_email');
-    if (!role)                                 { setErr('staff_role',     'Please select a role');              valid=false; } else clearErr('staff_role');
-    if (!password || password.length < 8)      { setErr('staff_password', 'Password must be at least 8 characters'); valid=false; } else clearErr('staff_password');
-    if (!confirm)                              { setErr('staff_confirm',  'Please confirm the password');       valid=false; }
-    else if (confirm !== password)             { setErr('staff_confirm',  'Passwords do not match');            valid=false; }
-    else                                         clearErr('staff_confirm');
-
-    if (!valid) return;
-
-    const btn = document.getElementById('addStaffModalSave');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
-
-    try {
-      const res  = await fetch('/api/admin/accounts', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email: email.toLowerCase(), role, password }),
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        showMsg('success', `Account for ${name} created successfully!`);
-        setTimeout(() => { closeOverlay('addStaffModal'); loadStaff(); }, 1000);
-      } else {
-        showMsg('error', data.message || 'Failed to create account.');
-      }
-    } catch (err) {
-      showMsg('error', 'Network error. Please try again.');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+    if (data.success) {
+      showMsg('success', isEdit
+        ? `Account for ${name} updated successfully!`
+        : `Account for ${name} created successfully!`);
+      setTimeout(() => { closeOverlay('addStaffModal'); loadStaff(); }, 1000);
+    } else {
+      showMsg('error', data.message || 'Failed to save account.');
     }
-  });
-
-  //  Delete Staff 
-  let deletingStaffId = null;
-
-  function openDeleteStaff(id, name) {
-    deletingStaffId = id;
-    document.getElementById('deleteStaffMsg').textContent =
-      `Remove the account for "${name}"? This cannot be undone.`;
-    openOverlay('deleteStaffModal');
+  } catch (err) {
+    showMsg('error', 'Network error. Please try again.');
+  } finally {
+    setSaveLabel(false);
   }
+});
 
-  document.getElementById('deleteStaffCancel').addEventListener('click', () => closeOverlay('deleteStaffModal'));
-  document.getElementById('deleteStaffModal').addEventListener('click', e => {
-    if (e.target.id === 'deleteStaffModal') closeOverlay('deleteStaffModal');
-  });
+// Delete
+let deletingStaffId = null;
 
-  document.getElementById('deleteStaffConfirm').addEventListener('click', async () => {
-    if (!deletingStaffId) return;
-    const btn = document.getElementById('deleteStaffConfirm');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
+function openDeleteStaff(id, name) {
+  deletingStaffId = id;
+  document.getElementById('deleteStaffMsg').textContent =
+    `Remove the account for "${name}"? This cannot be undone.`;
+  openOverlay('deleteStaffModal');
+}
 
-    try {
-      const res  = await fetch(`/api/admin/accounts/${deletingStaffId}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        closeOverlay('deleteStaffModal');
-        loadStaff();
-      } else {
-        alert('Failed to remove: ' + (data.message || 'Unknown error'));
-      }
-    } catch (err) {
-      alert('Network error. Try again.');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-user-times"></i> Remove';
-      deletingStaffId = null;
+document.getElementById('deleteStaffCancel').addEventListener('click', () => closeOverlay('deleteStaffModal'));
+document.getElementById('deleteStaffModal').addEventListener('click', e => {
+  if (e.target.id === 'deleteStaffModal') closeOverlay('deleteStaffModal');
+});
+
+document.getElementById('deleteStaffConfirm').addEventListener('click', async () => {
+  if (!deletingStaffId) return;
+  const btn = document.getElementById('deleteStaffConfirm');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
+
+  try {
+    const res  = await fetch(`/api/admin/accounts/${deletingStaffId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      closeOverlay('deleteStaffModal');
+      loadStaff();
+    } else {
+      alert('Failed to remove: ' + (data.message || 'Unknown error'));
     }
-  });
+  } catch (err) {
+    alert('Network error. Try again.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-user-times"></i> Remove';
+    deletingStaffId = null;
+  }
+});
 
+// Init
+async function init() {
+  try {
+    const res  = await fetch('/api/auth/me');
+    const data = await res.json();
+    if (data.success && data.user) currentUserId = data.user.id;
+  } catch (_) {}
   loadStaff();
+}
+
+init();

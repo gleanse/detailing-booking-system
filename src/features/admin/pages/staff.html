@@ -39,10 +39,11 @@
   </div>
 </div>
 
+<!-- Add / Edit modal (shared) -->
 <div class="modal-overlay hidden" id="addStaffModal">
   <div class="staff-modal">
     <div class="staff-modal-header">
-      <h3><i class="fas fa-user-plus"></i> Add Account</h3>
+      <h3 id="staffModalTitle"><i class="fas fa-user-plus"></i> Add Account</h3>
       <button class="modal-close" id="addStaffModalClose"><i class="fas fa-times"></i></button>
     </div>
     <div class="staff-modal-body">
@@ -71,7 +72,11 @@
       </div>
 
       <div class="m-field">
-        <label><i class="fas fa-lock"></i> Password <span style="color:var(--color-admin-danger, #dc2626)">*</span></label>
+        <label>
+          <i class="fas fa-lock"></i> Password
+          <span id="pwRequired" style="color:var(--color-admin-danger, #dc2626)">*</span>
+          <span id="pwOptional" style="display:none;font-size:10px;color:var(--color-admin-dim);text-transform:none;font-weight:400;">(leave blank to keep current)</span>
+        </label>
         <div class="pw-wrap">
           <input type="password" id="staff_password" placeholder="Min. 8 characters" autocomplete="new-password">
           <button type="button" class="pw-toggle" id="toggleStaffPw">
@@ -86,7 +91,7 @@
       </div>
 
       <div class="m-field">
-        <label><i class="fas fa-lock"></i> Confirm Password <span style="color:var(--color-admin-danger, #dc2626)">*</span></label>
+        <label><i class="fas fa-lock"></i> Confirm Password <span id="confirmRequired" style="color:var(--color-admin-danger, #dc2626)">*</span></label>
         <div class="pw-wrap">
           <input type="password" id="staff_confirm" placeholder="Repeat password" autocomplete="new-password">
         </div>
