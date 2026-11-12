@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/styles/custom.css">
   <link rel="stylesheet" href="/phosphor/regular/style.css">
 </head>
-<body class="bg-[#0a0a0a] min-h-screen text-white overflow-x-hidden">
+<body class="bg-neutral-950 min-h-screen text-white overflow-x-hidden">
 
   <!-- MAIN -->
   <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -35,16 +35,16 @@
             </div>
           </div>
 
-          <div class="flex flex-col gap-3 mb-6">
+          <div class="flex flex-col gap-3">
             <div class="flex items-center gap-3 bg-white/3 rounded-xl px-4 py-3">
-              <i class="ph ph-phone text-red-500 text-sm flex-shrink-0"></i>
+              <i class="ph ph-phone text-red-500 text-sm shrink-0"></i>
               <div>
                 <p class="text-white/30 text-xs uppercase tracking-widest">Phone</p>
                 <p id="profile-phone" class="text-white text-sm font-medium">-</p>
               </div>
             </div>
             <div class="flex items-center gap-3 bg-white/3 rounded-xl px-4 py-3">
-              <i class="ph ph-envelope text-red-500 text-sm flex-shrink-0"></i>
+              <i class="ph ph-envelope text-red-500 text-sm shrink-0"></i>
               <div>
                 <p class="text-white/30 text-xs uppercase tracking-widest">Email</p>
                 <p id="profile-email-2" class="text-white text-sm font-medium">-</p>
@@ -116,7 +116,7 @@
                 <p class="text-white/30 text-xs mb-1">Enter the 6-digit code sent to your new email.</p>
                 <p id="otp-expires-in" class="text-yellow-400 text-xs mb-3"></p>
                 <input id="otp-input" type="text" maxlength="6"
-                  class="w-full bg-white/4 border border-white/8 focus:border-red-500 outline-none rounded-xl px-4 py-3 text-white text-sm tracking-[0.3em] text-center transition-colors duration-200"
+                  class="w-full bg-white/4 border border-white/8 focus:border-red-500 outline-none rounded-xl px-4 py-3 text-white text-sm tracking-widest text-center transition-colors duration-200" 
                   placeholder="000000" />
                 <p id="email-step2-error" class="hidden text-red-400 text-xs mt-1"></p>
                 <p id="email-step2-success" class="hidden text-green-400 text-xs mt-1"></p>

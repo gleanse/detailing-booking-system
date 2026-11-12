@@ -165,6 +165,9 @@ async function verifyOtp() {
   document.getElementById('profile-email').textContent = json.user.email;
   document.getElementById('profile-email-2').textContent = json.user.email;
   resetEmailChangeForm();
+  const done = document.getElementById('email-step1-success');
+  done.textContent = 'Email updated successfully.';
+  done.classList.remove('hidden');
 }
 
 document.getElementById('btn-send-otp').addEventListener('click', sendOtp);

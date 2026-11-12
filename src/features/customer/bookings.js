@@ -58,7 +58,7 @@ function renderActiveBooking(b) {
       : statusBadge(b.status);
 
   return `
-        <div class="bg-[#111] border border-red-500/20 rounded-2xl p-5 cursor-pointer hover:border-red-500/40 transition-all duration-200 booking-card" data-ref="${
+        <div class="bg-neutral-900 border border-red-500/20 rounded-2xl p-5 cursor-pointer hover:border-red-500/40 transition-all duration-200 booking-card" data-ref="${
           b.reference_code
         }">
           <div class="flex items-start justify-between gap-3 mb-4">
@@ -102,7 +102,7 @@ function renderHistoryBooking(b) {
     ? `<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">Expired</span>`
     : statusBadge(b.status);
   return `
-        <div class="bg-[#111] border border-white/6 rounded-2xl p-4 ${
+        <div class="bg-neutral-900 border border-white/6 rounded-2xl p-4 ${
           isExpired
             ? 'opacity-50 cursor-default'
             : 'cursor-pointer hover:border-white/14 booking-card'
@@ -351,7 +351,7 @@ async function loadBookings() {
 
   if (active.length === 0) {
     activeContainer.innerHTML = `
-          <div class="bg-[#111] border border-white/6 rounded-2xl p-6 text-center">
+          <div class="bg-neutral-900 border border-white/6 rounded-2xl p-6 text-center">
             <i class="ph ph-calendar-blank text-3xl text-white/20 mb-2 block"></i>
             <p class="text-white/30 text-sm">No active bookings.</p>
             <a href="/customer/services" class="inline-flex items-center gap-1.5 text-red-400 hover:text-red-300 text-xs mt-3 transition-colors">
