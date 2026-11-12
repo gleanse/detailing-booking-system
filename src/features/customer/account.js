@@ -308,13 +308,9 @@ function resetPasswordForm() {
 document
   .getElementById('btn-save-password')
   .addEventListener('click', async () => {
-    const currentPassword = document
-      .getElementById('current-password')
-      .value.trim();
-    const newPassword = document.getElementById('new-password').value.trim();
-    const confirmPassword = document
-      .getElementById('confirm-password')
-      .value.trim();
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
 
     const errorCurrent = document.getElementById('error-current-password');
     const errorNew = document.getElementById('error-new-password');
