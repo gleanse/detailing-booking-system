@@ -16,6 +16,10 @@ const getAccountPage = (req, res) => {
   res.sendFile(path.join(__dirname, 'account.html'));
 };
 
+const getServicesPage = (req, res) => {
+  res.sendFile(path.join(__dirname, 'services.html'));
+};
+
 const getBookingsPage = (req, res) => {
   res.sendFile(path.join(__dirname, 'bookings.html'));
 };
@@ -291,6 +295,7 @@ const changePassword = async (req, res) => {
 module.exports = {
   getAccountPage,
   getBookingsPage,
+  getServicesPage,
   getBookings,
   getBooking,
   updateProfile,

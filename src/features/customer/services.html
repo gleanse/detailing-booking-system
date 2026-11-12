@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book a Service - Herco Detailing Garage</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="/styles/custom.css">
+  <link rel="stylesheet" href="/phosphor/regular/style.css">
+</head>
+<body class="bg-neutral-950 min-h-screen text-white overflow-x-hidden">
+
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+    <div class="mb-8 animate-fadeUp">
+      <div class="flex items-center gap-2 text-xs text-white/45">
+        <span class="flex gap-1">
+          <i class="block h-0.75 w-5 rounded-full bg-red-500"></i>
+          <i class="block h-0.75 w-5 rounded-full bg-white/15"></i>
+        </span>
+        Step 1 of 2
+      </div>
+      <h1 class="mt-2 text-4xl sm:text-5xl font-bold tracking-wide"
+        style="font-family:'Bebas Neue',sans-serif;">Book a Service</h1>
+      <p class="mt-1 text-sm font-light text-white/50">Choose what your motorcycle needs</p>
+    </div>
+
+    <div id="services" class="flex flex-col gap-3">
+      <div class="skeleton-line h-24 rounded-2xl"></div>
+      <div class="skeleton-line h-24 rounded-2xl"></div>
+      <div class="skeleton-line h-24 rounded-2xl"></div>
+    </div>
+  </main>
+
+  <script src="/customer/shell.js"></script>
+  <script src="/customer/services.js"></script>
+</body>
+</html>
