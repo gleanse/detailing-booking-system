@@ -1,147 +1,87 @@
-.hero-glow {
-  background: radial-gradient(
-    ellipse 680px 420px at 82% 10%,
-    rgba(229, 53, 53, 0.1),
-    transparent 60%
+html {
+  scroll-behavior: smooth;
+}
+
+.site-header {
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+.site-header.is-scrolled {
+  background-color: rgb(10 10 10 / 0.85);
+  border-bottom-color: rgb(255 255 255 / 0.1);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+#mobile-menu.open {
+  max-height: 28rem;
+}
+
+.hero-dots {
+  background-image: radial-gradient(
+    rgb(255 255 255 / 0.09) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+  -webkit-mask-image: radial-gradient(
+    ellipse at 75% 25%,
+    #000,
+    transparent 70%
+  );
+  mask-image: radial-gradient(ellipse at 75% 25%, #000, transparent 70%);
+}
+
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
   );
 }
-
-.pulse-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #e53535;
-  display: inline-block;
-  animation: pulse-dot-anim 2s ease-in-out infinite;
-}
-@keyframes pulse-dot-anim {
-  0%,
-  100% {
-    opacity: 1;
-    box-shadow: 0 0 0 0 rgba(229, 53, 53, 0.4);
-  }
-  50% {
-    opacity: 0.6;
-    box-shadow: 0 0 0 4px rgba(229, 53, 53, 0);
-  }
-}
-
-/* TICKET STUB HERO VISUAL */
-.ticket-stub {
-  position: relative;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  backdrop-filter: blur(6px);
-}
-.ticket-top {
-  padding: 26px 26px 0;
-}
-.ticket-bottom {
-  padding: 0 26px 26px;
-}
-.perf-line {
-  position: relative;
-  border-top: 1px dashed rgba(255, 255, 255, 0.14);
-  margin: 20px 0;
-}
-.perf-line::before,
-.perf-line::after {
-  content: '';
-  position: absolute;
-  top: -9px;
-  width: 18px;
-  height: 18px;
-  background: #0a0a0a;
-  border-radius: 50%;
-}
-.perf-line::before {
-  left: -9px;
-}
-.perf-line::after {
-  right: -9px;
-}
-
-.qr-box {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+.marquee-track {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  width: max-content;
+  animation: marquee 50s linear infinite;
 }
-
-/* STEPPER */
-.stepper-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0;
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
 }
-@media (max-width: 800px) {
-  .stepper-row {
-    flex-direction: column;
-    gap: 36px;
-    align-items: center;
-  }
-}
-.stepper-step {
-  flex: 1;
-  max-width: 260px;
-  text-align: center;
-}
-.stepper-circle {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 19px;
-  font-weight: 600;
-  margin: 0 auto;
-  background: linear-gradient(135deg, #e53535, #b91c1c);
-  box-shadow: 0 0 0 4px rgba(229, 53, 53, 0.1);
-}
-.stepper-line {
-  flex: 0 0 64px;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgba(229, 53, 53, 0.4),
-    rgba(229, 53, 53, 0.05)
-  );
-  margin-top: 23px;
-}
-@media (max-width: 1000px) {
-  .stepper-line {
-    display: none;
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
   }
 }
 
-/* SERVICE CARD THUMB WATERMAK (landing preview cards placeholder for now) */
-.card-img-wrap {
-  background: linear-gradient(180deg, #3a3a3a 0%, #161616 100%);
+.compare {
+  --pos: 50%;
 }
-.card-watermark {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 30px;
-  color: rgba(255, 255, 255, 0.25);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  position: relative;
-  z-index: 2;
+.compare-before {
+  clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+}
+.compare-handle {
+  left: var(--pos);
 }
 
-/* CTA BAND PADDING */
-.cta-band {
-  padding: 48px 40px;
-}
-@media (max-width: 760px) {
-  .cta-band {
-    padding: 36px 24px;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .marquee {
+    overflow-x: auto;
+  }
+  .marquee-track {
+    animation: none;
   }
 }

@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Herco Detailing Garage - Motorcycle Detailing, Booked in Minutes</title>
+  <meta name="description" content="Ceramic and powder coating for your motorcycle in Valenzuela. Pick a service, book a slot online, and track your bike from drop-off to pickup.">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:title" content="Herco Detailing Garage">
+  <meta property="og:description" content="Ceramic and powder coating for your motorcycle. Book online and track your bike.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/jpeg" href="/Images/herco-logo.jpeg">
   <link rel="stylesheet" href="/css/output.css">
   <link rel="stylesheet" href="/styles/custom.css">
   <link rel="stylesheet" href="/phosphor/regular/style.css">
@@ -14,331 +20,472 @@
 <body class="bg-ink-black min-h-screen text-white overflow-x-hidden">
 
   <!-- NAVBAR -->
-  <header
-    class="sticky top-0 z-50 border-b border-white/10 bg-ink-black/80 backdrop-blur-lg animate-slideDown"
-  >
+  <header class="site-header fixed inset-x-0 top-0 z-50">
     <div class="max-w-6xl mx-auto px-5 sm:px-6">
       <div class="flex items-center justify-between h-16">
-        <a
-          href="/"
-          class="flex items-center gap-2.5"
-          aria-label="Herco Detailing Garage home"
-        >
-          <svg
-            class="size-9 shrink-0 text-brand"
-            viewBox="0 0 36 36"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M18 2l14 8v16l-14 8L4 26V10z"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M12.5 11v14M23.5 11v14M12.5 18h11"
-              class="stroke-white"
-              stroke-width="3"
-              stroke-linecap="round"
-            />
+        <a href="/" class="flex items-center gap-2.5" aria-label="Herco Detailing Garage home">
+          <img src="/Images/herco-logo.jpeg" alt="" width="40" height="40" class="size-10 shrink-0 rounded-lg object-cover">
+            <path d="M18 2l14 8v16l-14 8L4 26V10z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            <path d="M12.5 11v14M23.5 11v14M12.5 18h11" class="stroke-white" stroke-width="3" stroke-linecap="round" />
           </svg>
           <span class="flex flex-col leading-none">
-            <span
-              class="font-heading text-2xl font-extrabold tracking-wider text-white"
-              >HERCO</span
-            >
-            <span class="text-xs text-white/50 mt-0.5">Detailing Garage</span>
+            <span class="font-heading text-2xl font-extrabold tracking-wider text-white">HERCO</span>
+            <span class="text-xs text-white/60 mt-0.5">Detailing Garage</span>
           </span>
         </a>
 
         <nav class="hidden md:flex items-center gap-8">
-          <a
-            href="/services"
-            class="nav-link text-sm text-white/60 hover:text-white transition-colors duration-200"
-            >Services</a
-          >
-          <a
-            href="/track"
-            class="nav-link text-sm text-white/60 hover:text-white transition-colors duration-200"
-            >Track booking</a
-          >
-          <a
-            href="/customer/login"
-            class="nav-link text-sm text-white/60 hover:text-white transition-colors duration-200"
-            >Sign in</a
-          >
+          <a href="#services" class="nav-link text-sm text-white/70 hover:text-white transition-colors duration-200">Services</a>
+          <a href="#about" class="nav-link text-sm text-white/70 hover:text-white transition-colors duration-200">About</a>
+          <a href="/track" class="nav-link text-sm text-white/70 hover:text-white transition-colors duration-200">Track booking</a>
+          <a href="/customer/login" class="nav-link text-sm text-white/70 hover:text-white transition-colors duration-200">Sign in</a>
         </nav>
 
-        <a
-          href="/services"
-          class="hidden md:flex book-now-btn items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-2.5 text-sm font-semibold text-white shadow-glow-sm transition-colors duration-200"
-        >
-          <i class="ph ph-calendar-plus text-base"></i>
+        <a href="/services" class="hidden md:inline-flex items-center gap-2 rounded-xl bg-brand hover:bg-brand-dark px-5 py-2.5 text-sm font-semibold text-white shadow-glow-sm transition-colors duration-200">
+          <i class="ph ph-calendar-plus text-base" aria-hidden="true"></i>
           Book now
         </a>
 
-        <button
-          id="menu-toggle"
-          class="md:hidden size-11 -mr-2 flex flex-col items-center justify-center gap-1.25 cursor-pointer"
-          aria-label="Open menu"
-          aria-controls="mobile-menu"
-        >
-          <span class="w-5 h-px bg-white/70" id="bar1"></span>
-          <span class="w-5 h-px bg-white/70" id="bar2"></span>
-          <span class="w-5 h-px bg-white/70" id="bar3"></span>
+        <button id="menu-toggle" class="md:hidden size-11 -mr-2 flex flex-col items-center justify-center gap-1.25 cursor-pointer" aria-label="Open menu" aria-controls="mobile-menu">
+          <span class="w-5 h-px bg-white/80" id="bar1"></span>
+          <span class="w-5 h-px bg-white/80" id="bar2"></span>
+          <span class="w-5 h-px bg-white/80" id="bar3"></span>
         </button>
       </div>
     </div>
 
     <div id="mobile-menu" class="md:hidden border-t border-white/10 bg-ink-900">
       <div class="max-w-6xl mx-auto px-5 py-3 flex flex-col">
-        <a
-          href="/services"
-          class="py-4 text-base text-white/70 hover:text-white border-b border-white/5 transition-colors"
-          >Services</a
-        >
-        <a
-          href="/track"
-          class="py-4 text-base text-white/70 hover:text-white border-b border-white/5 transition-colors"
-          >Track booking</a
-        >
-        <a
-          href="/customer/login"
-          class="py-4 text-base text-white/70 hover:text-white border-b border-white/5 transition-colors"
-          >Sign in</a
-        >
-        <a
-          href="/services"
-          class="mt-3 flex h-12 items-center justify-center rounded-xl bg-red-600 hover:bg-red-700 text-base font-semibold text-white shadow-glow-sm transition-colors"
-          >Book now</a
-        >
+        <a href="#services" class="py-4 text-base text-white/80 hover:text-white border-b border-white/5 transition-colors">Services</a>
+        <a href="#about" class="py-4 text-base text-white/80 hover:text-white border-b border-white/5 transition-colors">About</a>
+        <a href="/track" class="py-4 text-base text-white/80 hover:text-white border-b border-white/5 transition-colors">Track booking</a>
+        <a href="/customer/login" class="py-4 text-base text-white/80 hover:text-white border-b border-white/5 transition-colors">Sign in</a>
+        <a href="/services" class="mt-3 flex h-12 items-center justify-center rounded-xl bg-brand hover:bg-brand-dark text-base font-semibold text-white transition-colors">Book now</a>
       </div>
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="relative overflow-hidden">
-    <div
-      class="pointer-events-none absolute -top-32 -right-24 size-120 rounded-full bg-brand/20 blur-3xl"
-      aria-hidden="true"
-    ></div>
-    <span
-      data-sheen
-      class="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-linear-to-r from-transparent via-white/5 to-transparent"
-      aria-hidden="true"
-    ></span>
-    <div class="max-w-6xl mx-auto px-5 sm:px-6 relative z-10">
-      <div class="pt-14 pb-24 md:pt-24 md:pb-32">
-        <h1
-          class="font-heading leading-none text-white"
-          aria-label="Detailing for your motorcycle, booked in minutes."
-        >
-          <span
-            data-split
-            aria-hidden="true"
-            class="block text-7xl sm:text-8xl xl:text-9xl font-extrabold"
-            >Detailing</span
-          >
-          <span
-            data-split
-            aria-hidden="true"
-            class="block my-2 text-3xl sm:text-5xl font-medium text-white/50"
-            >for your motorcycle,</span
-          >
-          <span
-            data-split
-            aria-hidden="true"
-            class="block text-7xl sm:text-8xl xl:text-9xl font-extrabold"
-            >booked in minutes.</span
-          >
-        </h1>
-        <p
-          data-reveal
-          class="mt-6 max-w-md text-base leading-relaxed text-white/60"
-        >
-          Pick a service, choose a slot, and follow your motorcycle from
-          drop-off to pickup.
-        </p>
-        <div data-reveal class="mt-8 flex flex-col sm:flex-row gap-3">
-          <a
-            href="#services"
-            class="book-now-btn flex h-13 items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-7 text-base font-semibold text-white shadow-glow transition-colors duration-200"
-          >
-            <i class="ph ph-calendar-plus text-lg"></i>
-            Choose a service
-          </a>
-          <a
-            href="/track"
-            class="flex h-13 items-center justify-center rounded-xl border border-white/15 hover:border-white/30 px-7 text-base font-semibold text-white transition-colors duration-200"
-          >
-            Track a booking
-          </a>
-        </div>
-        <p
-          data-reveal
-          class="mt-5 flex items-center gap-2 text-sm text-white/50"
-        >
-          <i class="ph ph-lightning text-brand"></i>
-          Slots update in real time, so no double bookings.
-        </p>
-      </div>
-    </div>
-  </section>
+  <main>
 
-  <main class="max-w-6xl mx-auto px-6 relative z-10">
+    <!-- HERO -->
+    <section class="relative isolate overflow-hidden">
+      <div class="grain pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -top-40 -right-32 -z-10 size-120 rounded-full bg-brand/15 blur-3xl" aria-hidden="true"></div>
 
-    <!-- HOW IT WORKS SECTION -->
-    <div id="how" class="py-24 border-t border-white/5">
-      <div class="text-center max-w-lg mx-auto mb-16">
-        <p class="text-red-400 text-xs uppercase tracking-[0.2em] mb-2 font-medium">How it works</p>
-        <h2 class="text-4xl font-bold tracking-wide mb-3" style="font-family:'Bebas Neue',sans-serif;">
-          Three steps, no phone calls
-        </h2>
-        <p class="text-white/40 text-sm">The same flow your booking already runs on.</p>
-      </div>
+      <div class="max-w-6xl mx-auto px-5 sm:px-6 pt-28 pb-20 md:pt-36 md:pb-28 grid lg:grid-cols-12 items-center gap-14 lg:gap-12">
 
-      <div class="stepper-row">
-        <div class="stepper-step animate-card card-1">
-          <div class="stepper-circle">1</div>
-          <h3 class="font-semibold text-sm mb-2 mt-4">Pick a service &amp; date</h3>
-          <p class="text-white/40 text-xs leading-relaxed">Browse services, choose an available date, confirm your slot.
+        <div class="lg:col-span-7">
+          <h1 class="font-heading leading-none text-white" aria-label="Detailing for your motorcycle, booked in minutes.">
+            <span data-split aria-hidden="true" class="block text-6xl sm:text-8xl xl:text-9xl font-extrabold">Detailing</span>
+            <span data-split aria-hidden="true" class="block my-2 text-2xl sm:text-4xl font-medium text-white/60">for your motorcycle,</span>
+            <span data-split aria-hidden="true" class="block text-6xl sm:text-8xl xl:text-9xl font-extrabold">booked in minutes.</span>
+          </h1>
+          <p data-reveal class="mt-6 max-w-md text-base leading-relaxed text-white/70">
+            Pick a service, choose a slot, and follow your motorcycle from drop-off to pickup.
+          </p>
+          <div data-reveal class="mt-8 flex flex-col sm:flex-row gap-3">
+            <a href="/services" class="inline-flex h-13 items-center justify-center gap-2 rounded-xl bg-brand hover:bg-brand-dark px-7 text-base font-semibold text-white shadow-glow transition-colors duration-200">
+              <i class="ph ph-calendar-plus text-lg" aria-hidden="true"></i>
+              Book now
+            </a>
+            <a href="/track" class="inline-flex h-13 items-center justify-center rounded-xl border border-white/20 hover:border-white/40 px-7 text-base font-semibold text-white transition-colors duration-200">
+              Track a booking
+            </a>
+          </div>
+          <p data-reveal class="mt-5 flex items-center gap-2 text-sm text-white/60">
+            <i class="ph ph-lightning text-brand" aria-hidden="true"></i>
+            Slots update in real time, so no double bookings.
           </p>
         </div>
-        <div class="stepper-line"></div>
-        <div class="stepper-step animate-card card-2">
-          <div class="stepper-circle">2</div>
-          <h3 class="font-semibold text-sm mb-2 mt-4">Get your reference code</h3>
-          <p class="text-white/40 text-xs leading-relaxed">Receive a booking reference by email - your ticket to track
-            and check in.</p>
+
+        <div data-reveal class="lg:col-span-5 relative pb-10">
+          <div data-hero-slides class="relative aspect-4/3 overflow-hidden rounded-3xl border border-white/10 bg-ink-850">
+            <div data-slide class="absolute inset-0 opacity-100 transition-opacity duration-1000">
+              <div class="flex size-full flex-col items-center justify-center gap-2 bg-ink-850 text-white/40">
+                <i class="ph ph-image text-4xl" aria-hidden="true"></i>
+                <span class="text-sm">Hero photo 1</span>
+              </div>
+            </div>
+            <div data-slide class="absolute inset-0 opacity-0 transition-opacity duration-1000">
+              <div class="flex size-full flex-col items-center justify-center gap-2 bg-ink-800 text-white/40">
+                <i class="ph ph-image text-4xl" aria-hidden="true"></i>
+                <span class="text-sm">Hero photo 2</span>
+              </div>
+            </div>
+            <div data-slide class="absolute inset-0 opacity-0 transition-opacity duration-1000">
+              <div class="flex size-full flex-col items-center justify-center gap-2 bg-ink-900 text-white/40">
+                <i class="ph ph-image text-4xl" aria-hidden="true"></i>
+                <span class="text-sm">Hero photo 3</span>
+              </div>
+            </div>
+            <div class="absolute right-2 top-2 flex">
+              <button type="button" data-dot aria-label="Show photo 1" class="flex size-6 items-center justify-center cursor-pointer"><span class="block size-2 rounded-full bg-white"></span></button>
+              <button type="button" data-dot aria-label="Show photo 2" class="flex size-6 items-center justify-center cursor-pointer"><span class="block size-2 rounded-full bg-white/40"></span></button>
+              <button type="button" data-dot aria-label="Show photo 3" class="flex size-6 items-center justify-center cursor-pointer"><span class="block size-2 rounded-full bg-white/40"></span></button>
+            </div>
+          </div>
+
+          <div data-status-card class="absolute bottom-0 left-3 right-3 sm:right-auto sm:w-80 rounded-2xl border border-white/15 bg-ink-900 p-4">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-white/60">Booking status</span>
+              <span class="flex items-center gap-2 text-white">
+                <span data-status-dot class="size-2 rounded-full bg-green-400"></span>
+                <span data-status-label>Booking confirmed</span>
+              </span>
+            </div>
+            <div class="mt-3 flex gap-1.5">
+              <button type="button" data-step class="group flex-1 py-3.5 sm:py-1.5 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60" aria-label="Booking confirmed">
+                <span data-bar class="block h-1 rounded-full bg-green-400"></span>
+                <span data-step-label class="mt-2 hidden text-xs sm:block text-white transition-colors group-hover:text-white">Confirmed</span>
+              </button>
+              <button type="button" data-step class="group flex-1 py-3.5 sm:py-1.5 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60" aria-label="In progress">
+                <span data-bar class="block h-1 rounded-full bg-white/15"></span>
+                <span data-step-label class="mt-2 hidden text-xs sm:block text-white/50 transition-colors group-hover:text-white">In progress</span>
+              </button>
+              <button type="button" data-step class="group flex-1 py-3.5 sm:py-1.5 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60" aria-label="Service complete">
+                <span data-bar class="block h-1 rounded-full bg-white/15"></span>
+                <span data-step-label class="mt-2 hidden text-xs sm:block text-white/50 transition-colors group-hover:text-white">Complete</span>
+              </button>
+              <button type="button" data-step class="group flex-1 py-3.5 sm:py-1.5 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60" aria-label="Picked up">
+                <span data-bar class="block h-1 rounded-full bg-white/15"></span>
+                <span data-step-label class="mt-2 hidden text-xs sm:block text-white/50 transition-colors group-hover:text-white">Picked up</span>
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="stepper-line"></div>
-        <div class="stepper-step animate-card card-3">
-          <div class="stepper-circle">3</div>
-          <h3 class="font-semibold text-sm mb-2 mt-4">Track &amp; pick up</h3>
-          <p class="text-white/40 text-xs leading-relaxed">Check your status anytime - in queue, in progress, or ready.
-          </p>
+
+      </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <section aria-label="Recent work" class="border-y border-white/5 bg-ink-900 py-8">
+      <div class="marquee">
+        <div class="marquee-track">
+          <div class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-3xl" aria-hidden="true"></i></div></div>
+          <div class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-800 text-white/40"><i class="ph ph-image text-3xl" aria-hidden="true"></i></div></div>
+          <div class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-3xl" aria-hidden="true"></i></div></div>
+          <div class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-800 text-white/40"><i class="ph ph-image text-3xl" aria-hidden="true"></i></div></div>
+          <div class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-3xl" aria-hidden="true"></i></div></div>
+          <div class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-800 text-white/40"><i class="ph ph-image text-3xl" aria-hidden="true"></i></div></div>
+          <div class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-3xl" aria-hidden="true"></i></div></div>
+          <div class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-800 text-white/40"><i class="ph ph-image text-3xl" aria-hidden="true"></i></div></div>
+
+          <div aria-hidden="true" class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-3xl"></i></div></div>
+          <div aria-hidden="true" class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-800 text-white/40"><i class="ph ph-image text-3xl"></i></div></div>
+          <div aria-hidden="true" class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-3xl"></i></div></div>
+          <div aria-hidden="true" class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-800 text-white/40"><i class="ph ph-image text-3xl"></i></div></div>
+          <div aria-hidden="true" class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-3xl"></i></div></div>
+          <div aria-hidden="true" class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-800 text-white/40"><i class="ph ph-image text-3xl"></i></div></div>
+          <div aria-hidden="true" class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-3xl"></i></div></div>
+          <div aria-hidden="true" class="mr-4 aspect-4/3 w-64 sm:w-80 shrink-0 overflow-hidden rounded-2xl border border-white/10"><div class="flex size-full items-center justify-center bg-ink-800 text-white/40"><i class="ph ph-image text-3xl"></i></div></div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- SERVICES PREVIEW -->
-    <div id="services" class="py-24 border-t border-white/5">
-      <p class="text-red-400 text-xs uppercase tracking-[0.2em] mb-2 font-medium">Our Services</p>
-      <h2 class="text-4xl font-bold tracking-wide mb-10" style="font-family:'Bebas Neue',sans-serif;">
-        Choose a service to get started
-      </h2>
+    <!-- WHAT WE DO -->
+    <section id="services" class="scroll-mt-20 py-20 sm:py-28">
+      <div class="max-w-6xl mx-auto px-5 sm:px-6">
+        <div data-scroll class="max-w-xl mb-12">
+          <p class="mb-3 text-sm font-medium uppercase tracking-widest text-brand">What we do</p>
+          <h2 class="font-heading text-4xl sm:text-6xl font-extrabold">Ceramic and powder coating</h2>
+          <p class="mt-4 text-base leading-relaxed text-white/70">Two core services for your motorcycle. Options and estimated prices are on the booking page.</p>
+        </div>
 
-      <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-        <div class="service-card animate-card card-1 relative rounded-2xl overflow-hidden">
-          <div class="card-img-wrap relative h-32 flex items-center justify-center">
-            <span class="card-watermark">Detailing</span>
-          </div>
-          <div class="p-5 relative z-10">
-            <div class="card-title text-white font-bold text-base mb-1 flex items-center gap-2">
-              <i class="ph ph-wrench text-red-400"></i> Detailing
+        <div class="grid md:grid-cols-2 gap-6">
+          <article data-scroll class="overflow-hidden rounded-3xl border border-white/10 bg-ink-900">
+            <div class="flex aspect-16/9 items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-4xl" aria-hidden="true"></i></div>
+            <div class="p-6 sm:p-8">
+              <h3 class="flex items-center gap-3 font-heading text-3xl font-extrabold">
+                <i class="ph ph-drop text-brand" aria-hidden="true"></i>
+                Ceramic coating
+              </h3>
+              <p class="mt-3 text-base leading-relaxed text-white/70">A protective coating for your motorcycle's fairings. Graphene coating is layered over ceramic for stronger heat and rain protection and easier maintenance.</p>
+              <div class="mt-5 flex flex-wrap gap-2">
+                <span class="rounded-full border border-white/15 px-3 py-1 text-sm text-white/80">Ceramic</span>
+                <span class="rounded-full border border-white/15 px-3 py-1 text-sm text-white/80">Graphene</span>
+              </div>
             </div>
-            <p class="text-white/40 text-xs leading-relaxed mb-4">Full paint correction and buffing service from matte
-              to glossy finish.</p>
-            <p class="text-red-400 text-sm font-semibold mb-4">Starting at ₱500.00</p>
-            <a href="/services"
-              class="book-btn w-full bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200">
-              <i class="ph ph-calendar-plus"></i> Book Now
-            </a>
-          </div>
-        </div>
+          </article>
 
-        <div class="service-card animate-card card-2 relative rounded-2xl overflow-hidden">
-          <div class="card-img-wrap relative h-32 flex items-center justify-center">
-            <span class="card-watermark">Ceramic</span>
-          </div>
-          <div class="p-5 relative z-10">
-            <div class="card-title text-white font-bold text-base mb-1 flex items-center gap-2">
-              <i class="ph ph-wrench text-red-400"></i> Ceramic Coating
+          <article data-scroll class="overflow-hidden rounded-3xl border border-white/10 bg-ink-900">
+            <div class="flex aspect-16/9 items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-4xl" aria-hidden="true"></i></div>
+            <div class="p-6 sm:p-8">
+              <h3 class="flex items-center gap-3 font-heading text-3xl font-extrabold">
+                <i class="ph ph-paint-brush-broad text-brand" aria-hidden="true"></i>
+                Powder coating
+              </h3>
+              <p class="mt-3 text-base leading-relaxed text-white/70">A durable finish for metal parts like mags, swing arms, and crankcases. Choose the high-gloss topcoat for a tougher, shinier result. Metal parts only.</p>
+              <div class="mt-5 flex flex-wrap gap-2">
+                <span class="rounded-full border border-white/15 px-3 py-1 text-sm text-white/80">Powder coat</span>
+                <span class="rounded-full border border-white/15 px-3 py-1 text-sm text-white/80">High-gloss topcoat</span>
+              </div>
             </div>
-            <p class="text-white/40 text-xs leading-relaxed mb-4">Professional ceramic coating for long-lasting paint
-              protection and shine.</p>
-            <p class="text-red-400 text-sm font-semibold mb-4">Starting at ₱1500.00</p>
-            <a href="/services"
-              class="book-btn w-full bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200">
-              <i class="ph ph-calendar-plus"></i> Book Now
-            </a>
-          </div>
+          </article>
         </div>
 
-        <div class="service-card animate-card card-3 relative rounded-2xl overflow-hidden">
-          <div class="card-img-wrap relative h-32 flex items-center justify-center">
-            <span class="card-watermark">Powder</span>
-          </div>
-          <div class="p-5 relative z-10">
-            <div class="card-title text-white font-bold text-base mb-1 flex items-center gap-2">
-              <i class="ph ph-wrench text-red-400"></i> Powder Coating
-            </div>
-            <p class="text-white/40 text-xs leading-relaxed mb-4">Durable powder coating for mags and metal parts with
-              color customization.</p>
-            <p class="text-red-400 text-sm font-semibold mb-4">Starting at ₱800.00</p>
-            <a href="/services"
-              class="book-btn w-full bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200">
-              <i class="ph ph-calendar-plus"></i> Book Now
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CTA BAND -->
-    <div class="py-24 border-t border-white/5">
-      <div
-        class="track-card cta-band flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
-        <div>
-          <h2 class="text-3xl font-bold tracking-wide mb-2" style="font-family:'Bebas Neue',sans-serif;">Ready to book
-            your slot?</h2>
-          <p class="text-white/40 text-sm">Placeholder CTA copy - pairs with your existing booking flow.</p>
-        </div>
-        <div class="flex flex-wrap justify-center gap-3">
-          <a href="/services"
-            class="book-now-btn bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-colors duration-200 flex items-center gap-2">
-            <i class="ph ph-calendar-plus"></i> Book Now
+        <div data-scroll class="mt-8">
+          <a href="/services" class="inline-flex items-center gap-2 text-base font-semibold text-white hover:text-brand transition-colors">
+            See all services and estimated prices
+            <i class="ph ph-arrow-right" aria-hidden="true"></i>
           </a>
-          <a href="/track"
-            class="border border-white/10 hover:border-white/25 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-colors duration-200 flex items-center gap-2">
-            <i class="ph ph-magnifying-glass"></i> Track Booking
+        </div>
+      </div>
+    </section>
+
+    <!-- BEFORE AND AFTER -->
+    <section id="work" class="scroll-mt-20 border-t border-white/5 py-20 sm:py-28">
+      <div class="max-w-6xl mx-auto px-5 sm:px-6">
+        <div data-scroll class="max-w-xl mb-12">
+          <p class="mb-3 text-sm font-medium uppercase tracking-widest text-brand">Our work</p>
+          <h2 class="font-heading text-4xl sm:text-6xl font-extrabold">See the difference</h2>
+          <p class="mt-4 text-base leading-relaxed text-white/70">Real results from the shop, before and after.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div data-scroll data-compare class="compare relative aspect-4/3 select-none overflow-hidden rounded-3xl border border-white/10">
+            <div class="absolute inset-0 flex items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-4xl" aria-hidden="true"></i></div>
+            <div class="compare-before absolute inset-0 flex items-center justify-center bg-ink-800 text-white/40"><i class="ph ph-image text-4xl" aria-hidden="true"></i></div>
+            <span class="absolute left-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-medium uppercase tracking-widest text-white">Before</span>
+            <span class="absolute right-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-medium uppercase tracking-widest text-white">After</span>
+            <div class="compare-handle absolute inset-y-0 w-px -translate-x-1/2 bg-white">
+              <span class="absolute left-1/2 top-1/2 flex size-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink-black shadow-glow-sm">
+                <i class="ph ph-arrows-left-right text-lg" aria-hidden="true"></i>
+              </span>
+            </div>
+          </div>
+
+          <div data-scroll data-compare class="compare relative aspect-4/3 select-none overflow-hidden rounded-3xl border border-white/10">
+            <div class="absolute inset-0 flex items-center justify-center bg-ink-850 text-white/40"><i class="ph ph-image text-4xl" aria-hidden="true"></i></div>
+            <div class="compare-before absolute inset-0 flex items-center justify-center bg-ink-800 text-white/40"><i class="ph ph-image text-4xl" aria-hidden="true"></i></div>
+            <span class="absolute left-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-medium uppercase tracking-widest text-white">Before</span>
+            <span class="absolute right-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-medium uppercase tracking-widest text-white">After</span>
+            <div class="compare-handle absolute inset-y-0 w-px -translate-x-1/2 bg-white">
+              <span class="absolute left-1/2 top-1/2 flex size-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink-black shadow-glow-sm">
+                <i class="ph ph-arrows-left-right text-lg" aria-hidden="true"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="scroll-mt-20 border-t border-white/5 py-20 sm:py-28">
+      <div class="max-w-6xl mx-auto px-5 sm:px-6 grid lg:grid-cols-2 items-center gap-12 lg:gap-16">
+
+        <div>
+          <div data-scroll class="mb-10">
+            <p class="mb-3 text-sm font-medium uppercase tracking-widest text-brand">How it works</p>
+            <h2 class="font-heading text-4xl sm:text-6xl font-extrabold">Book online, track every step</h2>
+          </div>
+
+          <ol class="flex flex-col gap-8">
+            <li data-scroll class="flex gap-5">
+              <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand font-heading text-xl font-extrabold">1</span>
+              <div>
+                <h3 class="text-lg font-semibold">Choose your service and a date</h3>
+                <p class="mt-1 text-base leading-relaxed text-white/70">Pick the coating you want, see an estimated price, and choose an available date.</p>
+              </div>
+            </li>
+            <li data-scroll class="flex gap-5">
+              <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand font-heading text-xl font-extrabold">2</span>
+              <div>
+                <h3 class="text-lg font-semibold">Reserve with a down payment</h3>
+                <p class="mt-1 text-base leading-relaxed text-white/70">Pay the down payment online on a secure payment page to hold your slot. It is deducted from your final price.</p>
+              </div>
+            </li>
+            <li data-scroll class="flex gap-5">
+              <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand font-heading text-xl font-extrabold">3</span>
+              <div>
+                <h3 class="text-lg font-semibold">Get your reference code and QR</h3>
+                <p class="mt-1 text-base leading-relaxed text-white/70">A confirmation email arrives with your reference code and QR code. That is your ticket.</p>
+              </div>
+            </li>
+            <li data-scroll class="flex gap-5">
+              <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand font-heading text-xl font-extrabold">4</span>
+              <div>
+                <h3 class="text-lg font-semibold">Drop off, inspection, and tracking</h3>
+                <p class="mt-1 text-base leading-relaxed text-white/70">Show your QR at the shop. We inspect your bike and confirm the final price, then you follow its status until pickup.</p>
+              </div>
+            </li>
+          </ol>
+
+          <div data-scroll class="mt-10 flex gap-3 rounded-2xl border border-white/10 bg-ink-900 p-5">
+            <i class="ph ph-info mt-0.5 shrink-0 text-xl text-brand" aria-hidden="true"></i>
+            <p class="text-sm leading-relaxed text-white/70">The price shown when you book is an estimate. The final price is confirmed with you in the shop after we inspect your bike.</p>
+          </div>
+        </div>
+
+        <div data-scroll class="aspect-4/5 overflow-hidden rounded-3xl border border-white/10">
+          <div class="flex size-full flex-col items-center justify-center gap-2 bg-ink-850 text-white/40">
+            <i class="ph ph-image text-4xl" aria-hidden="true"></i>
+            <span class="text-sm">Photo placeholder</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ABOUT AND FIND US -->
+    <section id="about" class="scroll-mt-20 border-t border-white/5 py-20 sm:py-28">
+      <div class="max-w-6xl mx-auto px-5 sm:px-6 grid lg:grid-cols-2 gap-12 lg:gap-16">
+
+        <div>
+          <div data-scroll class="mb-10">
+            <p class="mb-3 text-sm font-medium uppercase tracking-widest text-brand">About</p>
+            <h2 class="font-heading text-4xl sm:text-6xl font-extrabold">About Herco Detailing Garage</h2>
+            <p class="mt-4 text-base leading-relaxed text-white/70">We specialize in ceramic and powder coating. Every job is booked by schedule, so we don't take on more bikes than we can handle.</p>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div data-scroll class="rounded-2xl border border-white/10 bg-ink-900 p-5">
+              <i class="ph ph-magnifying-glass text-2xl text-brand" aria-hidden="true"></i>
+              <h3 class="mt-3 text-base font-semibold">Inspected first</h3>
+              <p class="mt-1 text-sm leading-relaxed text-white/70">We check your bike when it arrives and explain the work it needs.</p>
+            </div>
+            <div data-scroll class="rounded-2xl border border-white/10 bg-ink-900 p-5">
+              <i class="ph ph-seal-check text-2xl text-brand" aria-hidden="true"></i>
+              <h3 class="mt-3 text-base font-semibold">No hidden charges</h3>
+              <p class="mt-1 text-sm leading-relaxed text-white/70">Prices online are estimates, and we confirm the final price with you in the shop.</p>
+            </div>
+            <div data-scroll class="rounded-2xl border border-white/10 bg-ink-900 p-5">
+              <i class="ph ph-calendar-check text-2xl text-brand" aria-hidden="true"></i>
+              <h3 class="mt-3 text-base font-semibold">Booked by schedule</h3>
+              <p class="mt-1 text-sm leading-relaxed text-white/70">Strict scheduling keeps every job on track and avoids overbooking.</p>
+            </div>
+            <div data-scroll class="rounded-2xl border border-white/10 bg-ink-900 p-5">
+              <i class="ph ph-users text-2xl text-brand" aria-hidden="true"></i>
+              <h3 class="mt-3 text-base font-semibold">Trained in-house</h3>
+              <p class="mt-1 text-sm leading-relaxed text-white/70">Our staff learn the craft on the job, so every detailer knows the process.</p>
+            </div>
+          </div>
+        </div>
+
+        <div data-scroll class="flex flex-col gap-6">
+          <div class="aspect-16/9 overflow-hidden rounded-3xl border border-white/10">
+            <div class="flex size-full flex-col items-center justify-center gap-2 bg-ink-850 text-white/40">
+              <i class="ph ph-image text-4xl" aria-hidden="true"></i>
+              <span class="text-sm">Shop photo placeholder</span>
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-white/10 bg-ink-900 p-6 sm:p-8">
+            <h3 class="font-heading text-3xl font-extrabold">Find us</h3>
+            <ul class="mt-5 flex flex-col gap-4 text-base">
+              <li>
+                <a href="https://www.google.com/maps/search/?api=1&query=4494+G+Bamboo+Street+Valenzuela+Philippines+1442" target="_blank" rel="noopener noreferrer" class="flex items-start gap-3 text-white/80 hover:text-white transition-colors">
+                  <i class="ph ph-map-pin mt-0.5 shrink-0 text-xl text-brand" aria-hidden="true"></i>
+                  <span>4494 G Bamboo Street, Valenzuela, Philippines, 1442</span>
+                </a>
+              </li>
+              <li>
+                <a href="tel:+639936935697" class="flex items-center gap-3 text-white/80 hover:text-white transition-colors">
+                  <i class="ph ph-phone shrink-0 text-xl text-brand" aria-hidden="true"></i>
+                  <span>0993 693 5697</span>
+                </a>
+              </li>
+              <li>
+                <a href="mailto:hercoprojects@gmail.com" class="flex items-center gap-3 text-white/80 hover:text-white transition-colors">
+                  <i class="ph ph-envelope-simple shrink-0 text-xl text-brand" aria-hidden="true"></i>
+                  <span>hercoprojects@gmail.com</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.facebook.com/profile.php?id=100085045826929" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-white/80 hover:text-white transition-colors">
+                  <i class="ph ph-messenger-logo shrink-0 text-xl text-brand" aria-hidden="true"></i>
+                  <span>Message us on Facebook</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section id="reviews" class="scroll-mt-20 border-t border-white/5 py-20 sm:py-28">
+      <div class="max-w-6xl mx-auto px-5 sm:px-6">
+        <div data-scroll class="max-w-xl mb-12">
+          <p class="mb-3 text-sm font-medium uppercase tracking-widest text-brand">Reviews</p>
+          <h2 class="font-heading text-4xl sm:text-6xl font-extrabold">What our customers say</h2>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <figure data-scroll class="flex flex-col rounded-3xl border border-white/10 bg-ink-900 p-6">
+            <i class="ph ph-quotes text-3xl text-brand" aria-hidden="true"></i>
+            <blockquote class="mt-4 grow text-base leading-relaxed text-white/80">[ review text ]</blockquote>
+            <figcaption class="mt-6 text-sm text-white/60">[ name ]</figcaption>
+          </figure>
+          <figure data-scroll class="flex flex-col rounded-3xl border border-white/10 bg-ink-900 p-6">
+            <i class="ph ph-quotes text-3xl text-brand" aria-hidden="true"></i>
+            <blockquote class="mt-4 grow text-base leading-relaxed text-white/80">[ review text ]</blockquote>
+            <figcaption class="mt-6 text-sm text-white/60">[ name ]</figcaption>
+          </figure>
+          <figure data-scroll class="flex flex-col rounded-3xl border border-white/10 bg-ink-900 p-6">
+            <i class="ph ph-quotes text-3xl text-brand" aria-hidden="true"></i>
+            <blockquote class="mt-4 grow text-base leading-relaxed text-white/80">[ review text ]</blockquote>
+            <figcaption class="mt-6 text-sm text-white/60">[ name ]</figcaption>
+          </figure>
+        </div>
+
+        <div data-scroll class="mt-8">
+          <a href="https://www.facebook.com/profile.php?id=100085045826929" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-base font-semibold text-white hover:text-brand transition-colors">
+            Read all reviews on Facebook
+            <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
           </a>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- FOOTER -->
-    <div class="border-t border-white/5 py-12">
-      <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-        <div>
-          <div class="font-bold text-sm uppercase tracking-wide mb-3">Herco Detailing Garage</div>
-          <p class="text-white/25 text-xs leading-relaxed">[ placeholder address ]<br>[ placeholder city ]</p>
-        </div>
-        <div>
-          <div class="text-white/25 text-[11px] uppercase tracking-widest mb-3 font-semibold">Navigate</div>
-          <a href="/services" class="block text-white/40 hover:text-red-400 text-xs mb-2 transition-colors">Services</a>
-          <a href="#how" class="block text-white/40 hover:text-red-400 text-xs mb-2 transition-colors">How it works</a>
-          <a href="/track" class="block text-white/40 hover:text-red-400 text-xs transition-colors">Track Booking</a>
-        </div>
-        <div>
-          <div class="text-white/25 text-[11px] uppercase tracking-widest mb-3 font-semibold">Contact</div>
-          <a href="#" class="block text-white/40 hover:text-red-400 text-xs mb-2 transition-colors">[ placeholder phone
-            ]</a>
-          <a href="#" class="block text-white/40 hover:text-red-400 text-xs transition-colors">[ placeholder email ]</a>
-        </div>
-        <div>
-          <div class="text-white/25 text-[11px] uppercase tracking-widest mb-3 font-semibold">Hours</div>
-          <p class="text-white/25 text-xs">[ placeholder hours ]</p>
+    <!-- FINAL CTA -->
+    <section class="border-t border-white/5 py-20 sm:py-28">
+      <div class="max-w-6xl mx-auto px-5 sm:px-6">
+        <div data-scroll class="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-ink-900 px-6 py-12 sm:px-12 sm:py-16 text-center">
+          <div class="pointer-events-none absolute -top-32 left-1/2 -z-10 size-96 -translate-x-1/2 rounded-full bg-brand/15 blur-3xl" aria-hidden="true"></div>
+          <h2 class="font-heading text-4xl sm:text-6xl font-extrabold">Ready to book your slot?</h2>
+          <p class="mx-auto mt-4 max-w-md text-base leading-relaxed text-white/70">Choose a service, pick a date, and we will see you at the shop.</p>
+          <div class="mt-8 flex flex-col sm:flex-row justify-center gap-3">
+            <a href="/services" class="inline-flex h-13 items-center justify-center gap-2 rounded-xl bg-brand hover:bg-brand-dark px-7 text-base font-semibold text-white shadow-glow transition-colors duration-200">
+              <i class="ph ph-calendar-plus text-lg" aria-hidden="true"></i>
+              Book now
+            </a>
+            <a href="/track" class="inline-flex h-13 items-center justify-center gap-2 rounded-xl border border-white/20 hover:border-white/40 px-7 text-base font-semibold text-white transition-colors duration-200">
+              <i class="ph ph-magnifying-glass text-lg" aria-hidden="true"></i>
+              Track booking
+            </a>
+          </div>
         </div>
       </div>
-      <div class="flex flex-wrap justify-between gap-3 pt-6 border-t border-white/5 text-[11px] text-white/20">
-        <span>© 2026 Herco Detailing Garage. Capstone project.</span>
-        <span class="text-red-500/50">Content &amp; branding pending client sign-off</span>
-      </div>
-    </div>
+    </section>
 
   </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5 py-12">
+    <div class="max-w-6xl mx-auto px-5 sm:px-6">
+      <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-10">
+        <div>
+          <img src="/Images/herco-logo.jpeg" alt="Herco Detailing Garage" width="112" height="112" loading="lazy" class="size-28 rounded-2xl object-cover">
+          <p class="mt-4 max-w-xs text-sm leading-relaxed text-white/60">Ceramic and powder coating for your motorcycle in Valenzuela.</p>
+        </div>
+        <div>
+          <p class="mb-3 text-sm font-medium uppercase tracking-widest text-white/60">Navigate</p>
+          <a href="#services" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">Services</a>
+          <a href="#about" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">About</a>
+          <a href="/services" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">Book now</a>
+          <a href="/track" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">Track booking</a>
+        </div>
+        <div>
+          <p class="mb-3 text-sm font-medium uppercase tracking-widest text-white/60">Contact</p>
+          <a href="tel:+639936935697" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">0993 693 5697</a>
+          <a href="mailto:hercoprojects@gmail.com" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">hercoprojects@gmail.com</a>
+          <a href="https://www.facebook.com/profile.php?id=100085045826929" target="_blank" rel="noopener noreferrer" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">Facebook</a>
+        </div>
+      </div>
+      <p class="mt-10 border-t border-white/5 pt-6 text-center text-sm text-white/50">&copy; 2026 Herco Detailing Garage</p>
+    </div>
+  </footer>
 
   <script src="/gsap/gsap.min.js"></script>
   <script src="/gsap/ScrollTrigger.min.js"></script>
