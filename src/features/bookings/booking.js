@@ -1538,7 +1538,8 @@ function updateNavForUser(user) {
     if (signInLink) {
       signInLink.href = '/customer/account';
       signInLink.textContent = `Hi, ${user.name.split(' ')[0]}`;
-      signInLink.className = 'text-sm text-white py-3 border-b border-white/5';
+      signInLink.className =
+        'py-4 text-base text-white border-b border-white/5';
     }
   }
 }

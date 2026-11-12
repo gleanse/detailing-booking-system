@@ -228,7 +228,7 @@ async function updateNav() {
         accountLink.href = '/customer/account';
         accountLink.textContent = `Hi, ${firstName}`;
         accountLink.className =
-          'text-sm text-white py-3 border-b border-white/5';
+          'py-4 text-base text-white border-b border-white/5';
       }
     }
 
