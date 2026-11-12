@@ -19,7 +19,7 @@ A booking system built for a vehicle detailing garage, developed as a capstone p
 
 ## Third-party services
 
-Supabase, Cloudinary, Xendit, Brevo, Render. See [`EXTERNAL SERVICES`](docs/EXTERNAL-SERVICES.md) for how each is configured and used.
+Supabase, Upstash Redis, Cloudinary, Xendit, Brevo, Render, Cloudflare. See [`EXTERNAL SERVICES`](docs/EXTERNAL-SERVICES.md) for how each is configured and used.
 
 ## Getting started
 
@@ -31,7 +31,15 @@ This project supports both a Docker and a non-Docker local dev workflow. See [`S
 - [`docs/EXTERNAL-SERVICES.md`](docs/EXTERNAL-SERVICES.md) - external service configuration (database, storage, payments, email)
 - [`docs/TECH-STACK.md`](docs/TECH-STACK.md) - core stack and supporting libraries
 - [`docs/SUPABASE-DATABASE-GUIDE.md`](docs/SUPABASE-DATABASE-GUIDE.md) - production migrations, rollback and troubleshooting
+- [`docs/SECURITY.md`](docs/SECURITY.md) - protections by area, with known trade-offs
+- [`docs/DOUBLE-BOOKING-TEST-REPORT.md`](docs/DOUBLE-BOOKING-TEST-REPORT.md) - double booking and payment safety test evidence
+- [`CHANGELOG.md`](CHANGELOG.md) - release history
 
 ## Status
 
-![Status](https://img.shields.io/badge/status-in%20active%20development-yellow?style=flat)
+![Version](https://img.shields.io/badge/version-1.4.0-blue?style=flat)
+
+
+
+
+![Status](https://img.shields.io/badge/status-stable-brightgreen?style=flat)
