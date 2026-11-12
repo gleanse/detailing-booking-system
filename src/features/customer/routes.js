@@ -18,6 +18,7 @@ const {
 } = require('./controller');
 const {
   getAccountPage,
+  getBookingsPage,
   getBookings,
   getBooking,
   updateProfile,
@@ -36,6 +37,14 @@ router.get('/customer-auth.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'customer-auth.js'));
 });
 
+router.get('/shell.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'shell.js'));
+});
+
+router.get('/bookings.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'bookings.js'));
+});
+
 router.get('/account.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'account.js'));
 });
@@ -44,6 +53,7 @@ router.get('/account.js', (req, res) => {
 router.get('/login', getLoginPage);
 router.get('/register', getRegisterPage);
 router.get('/account', isCustomer, getAccountPage);
+router.get('/my-bookings', isCustomer, getBookingsPage);
 
 // API ROUTES
 router.post('/register', register);

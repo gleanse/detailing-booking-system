@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bookings - Herco Detailing Garage</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="/styles/custom.css">
+  <link rel="stylesheet" href="/phosphor/regular/style.css">
+</head>
+<body class="bg-neutral-950 min-h-screen text-white overflow-x-hidden">
+
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+    <h1 class="text-4xl sm:text-5xl font-bold tracking-wide mb-8 animate-fadeUp"
+      style="font-family:'Bebas Neue',sans-serif;">My Bookings</h1>
+
+    <section class="mb-8 animate-fadeUp">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-1.5 h-5 bg-red-500 rounded-full"></div>
+        <h2 class="text-sm font-semibold text-white uppercase tracking-widest">Active</h2>
+      </div>
+      <div id="active-bookings-container">
+        <div class="skeleton-line h-28 rounded-2xl"></div>
+      </div>
+    </section>
+
+    <section class="animate-fadeUp">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-1.5 h-5 bg-white/20 rounded-full"></div>
+        <h2 class="text-sm font-semibold text-white/50 uppercase tracking-widest">History</h2>
+      </div>
+      <div id="history-bookings-container">
+        <div class="skeleton-line h-20 rounded-2xl mb-3"></div>
+        <div class="skeleton-line h-20 rounded-2xl"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-booking"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="bg-neutral-900 border border-white/10 rounded-2xl w-full max-w-2xl max-h-full flex flex-col animate-fadeUp">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-white/5 shrink-0">
+        <div>
+          <p class="text-white/30 text-xs uppercase tracking-widest mb-0.5">Booking Details</p>
+          <h3 id="modal-ref" class="text-white font-semibold"></h3>
+        </div>
+        <button id="modal-close"
+          class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/40 hover:text-white transition-all duration-200">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+      <div class="overflow-y-auto scrollbar-hide flex-1">
+        <div class="p-6" id="modal-content">
+          <div class="skeleton-line h-40 rounded-xl"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/customer/shell.js"></script>
+  <script src="/customer/bookings.js"></script>
+</body>
+</html>
