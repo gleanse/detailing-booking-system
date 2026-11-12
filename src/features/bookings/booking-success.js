@@ -231,6 +231,11 @@ async function updateNav() {
           'text-sm text-white py-3 border-b border-white/5';
       }
     }
+
+    document.querySelectorAll('a[href="/track"]').forEach((link) => {
+      link.href = '/customer/my-bookings';
+      link.textContent = 'My bookings';
+    });
   } catch {
     // fail silently
   }

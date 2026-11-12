@@ -189,6 +189,18 @@
               'text-sm text-white py-3 border-b border-white/5';
           }
         }
+
+        document.querySelectorAll('a[href="/track"]').forEach((link) => {
+          link.href = '/customer/my-bookings';
+          link.textContent = 'My bookings';
+        });
+
+        const homeButton = document.querySelector('main a[href="/"]');
+        if (homeButton) {
+          homeButton.href = '/customer/my-bookings';
+          homeButton.innerHTML =
+            '<i class="ph ph-list-bullets"></i> My bookings';
+        }
       } catch {
         // fail silently
       }

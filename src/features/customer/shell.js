@@ -2,7 +2,6 @@
   const CUSTOMER_NAV = [
     { label: 'Services', href: '/customer/services' },
     { label: 'My bookings', href: '/customer/my-bookings' },
-    { label: 'Track', href: '/track' },
   ];
 
   const MENU_ITEMS = [
@@ -12,7 +11,6 @@
       icon: 'ph-list-bullets',
     },
     { label: 'My account', href: '/customer/account', icon: 'ph-user' },
-    { label: 'Track booking', href: '/track', icon: 'ph-magnifying-glass' },
   ];
 
   // pages where the Book now button would point at the current page
