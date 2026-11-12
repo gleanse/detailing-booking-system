@@ -449,8 +449,12 @@
 
 /* DESKTOP */
 @media (min-width: 900px) {
+  .auth-shell {
+    flex-direction: row;
+  }
+
   .auth-stage {
-    flex: 1.15;
+    flex: 0.85;
     flex-direction: column;
     justify-content: center;
     align-items: stretch;
@@ -475,7 +479,7 @@
 
   .auth-hero h2 {
     margin-bottom: 20px;
-    font-size: clamp(64px, 7vw, 104px);
+    font-size: clamp(56px, 6vw, 92px);
     line-height: 0.92;
     letter-spacing: 0.02em;
   }
@@ -518,6 +522,8 @@
 
   .auth-view {
     width: 100%;
+    max-width: 420px;
+    margin-inline: auto;
   }
 
   .auth-edge {
