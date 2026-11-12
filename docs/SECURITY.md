@@ -1,6 +1,6 @@
 # Security
 
-What the system protects, how, and where it lives in the code. This describes the `stable-v1` line at v1.3.0. Test evidence for the booking and payment parts is in [DOUBLE-BOOKING-TEST-REPORT.md](DOUBLE-BOOKING-TEST-REPORT.md).
+What the system protects, how, and where it lives in the code. This describes the `stable-v1` line at v1.4.0. Test evidence for the booking and payment parts is in [DOUBLE-BOOKING-TEST-REPORT.md](DOUBLE-BOOKING-TEST-REPORT.md).
 
 Each protection has a title that names the kind of security, then what it protects against, how it works, where it lives, and the known trade-offs we accept with the reason we accept them. Gaps that are not trade-offs of something we built are in the last section.
 
@@ -144,6 +144,8 @@ Each protection has a title that names the kind of security, then what it protec
 - **How it works:** a paid notice confirms the booking even if it had expired. Paid, failed and refunded payment records are never purged.
 - **Where:** `bookings/confirm.js`, `bookings/purge.js`
 - **Known trade-offs:**
+  - A late paid notice confirms the booking without rechecking capacity, so a date can rarely go over its limit.
+    - Why accepted: refusing a customer who already paid is worse, and the shop can handle one extra job.
   - Payment records pile up and are never cleaned.
     - Why accepted: they are financial history and are needed for refunds.
 
