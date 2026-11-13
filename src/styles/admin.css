@@ -619,7 +619,7 @@
     border-left: 3px solid #dc2626;
   }
 
-  /* ===== WALK-IN: PRINTABLE REFERENCE SLIP (intentionally light/white, not dark theme) ===== */
+    /* ===== WALK-IN: PRINTABLE REFERENCE SLIP (black & white only) ===== */
   .slip-overlay {
     @apply fixed inset-0 z-[300] flex items-center justify-center p-5;
     background: rgba(0,0,0,0.88);
@@ -629,7 +629,7 @@
 
   .slip-card {
     @apply rounded-2xl w-full max-w-[360px] font-body;
-    background: #fff; color: #111;
+    background: #fff; color: #000;
     padding: 24px 22px;
     box-shadow: 0 32px 80px rgba(0,0,0,0.7);
     animation: slideInAdmin 0.25s ease;
@@ -637,51 +637,53 @@
 
   .slip-hdr {
     @apply flex items-start justify-between mb-[18px] pb-4;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 2px solid #000;
   }
-  .slip-brand { font-family: var(--font-display); font-size: 28px; letter-spacing: 3px; color: #111; line-height: 1; }
-  .slip-brand-sub { @apply text-[10px] uppercase tracking-wide mt-0.5; color: #888; }
+  .slip-brand { font-family: var(--font-display); font-size: 28px; letter-spacing: 3px; color: #000; line-height: 1; }
+  .slip-brand-sub { @apply text-[10px] uppercase tracking-wide mt-0.5; color: #000; }
   .slip-type-badge {
-    @apply text-white text-[10px] font-bold tracking-wide uppercase px-2.5 py-1 rounded-full;
-    background: #dc2626;
+    @apply text-[10px] font-bold tracking-wide uppercase px-2.5 py-1 rounded-full;
+    background: #fff; color: #000; border: 1.5px solid #000;
   }
 
   .slip-queue {
     @apply text-center mb-[18px] rounded-xl p-3.5;
-    background: #fef2f2; border: 2px dashed #fecaca;
+    background: #fff; border: 2px dashed #000;
   }
-  .slip-q-label { @apply text-[9px] uppercase tracking-widest mb-1; color: #9ca3af; }
-  .slip-q-num { font-family: var(--font-display); font-size: 72px; color: #dc2626; line-height: 1; }
-  .slip-q-date { @apply text-[11px] mt-1; color: #6b7280; }
+  .slip-q-label { @apply text-[9px] uppercase tracking-widest mb-1; color: #000; }
+  .slip-q-num { font-family: var(--font-display); font-size: 72px; color: #000; line-height: 1; }
+  .slip-q-date { @apply text-[11px] mt-1; color: #000; }
 
   .slip-rows { @apply mb-4; }
   .slip-row {
     @apply flex justify-between items-start py-2 text-xs gap-2.5;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid #000;
   }
   .slip-row:last-child { @apply border-b-0; }
-  .slip-row .sl { @apply uppercase tracking-wide text-[10px] whitespace-nowrap pt-px shrink-0; color: #9ca3af; }
-  .slip-row .sv { @apply font-semibold text-right break-words; color: #111; }
+  .slip-row .sl { @apply uppercase tracking-wide text-[10px] whitespace-nowrap pt-px shrink-0; color: #000; }
+  .slip-row .sv { @apply font-semibold text-right break-words; color: #000; }
 
   .slip-pay {
     @apply rounded-[10px] px-3.5 py-3 mb-4;
-    background: #f0fdf4; border: 1px solid #bbf7d0;
+    background: #fff; border: 1px solid #000;
   }
-  .slip-pay-hdr { @apply text-[10px] font-bold uppercase tracking-wide mb-2 flex items-center gap-1.5; color: #16a34a; }
-  .slip-pay-row { @apply flex justify-between text-xs mb-1; color: #374151; }
-  .slip-pay-row:last-child { @apply mb-0 pt-1.5 font-bold text-[13px]; border-top: 1px solid #bbf7d0; color: #111; }
+  .slip-pay-hdr { @apply text-[10px] font-bold uppercase tracking-wide mb-2 flex items-center gap-1.5; color: #000; }
+  .slip-pay-row { @apply flex justify-between text-xs mb-1; color: #000; }
+  .slip-pay-row:last-child { @apply mb-0 pt-1.5 font-bold text-[13px]; border-top: 1px solid #000; color: #000; }
 
-  .slip-foot { @apply text-center pt-3; border-top: 2px dashed #e5e7eb; }
-  .slip-foot p { @apply text-[10px] mb-0.5; color: #9ca3af; }
+  .slip-foot { @apply text-center pt-3; border-top: 2px dashed #000; }
+  .slip-foot p { @apply text-[10px] mb-0.5; color: #000; }
 
   .slip-actions { @apply flex gap-2.5 mt-3.5; }
   .slip-actions button {
     @apply flex-1 py-2.5 rounded-lg cursor-pointer font-body text-[13px] font-semibold flex items-center justify-center gap-1.5 transition-all duration-150;
   }
-  .slip-btn-print { @apply text-white border-none; background: #dc2626; }
-  .slip-btn-print:hover { background: #b91c1c; }
-  .slip-btn-close { @apply border-[1.5px]; background: #fff; color: #374151; border-color: #e5e7eb; }
-  .slip-btn-close:hover { background: #f9fafb; }
+  .slip-btn-print { @apply border-none; background: #000; color: #fff; }
+  .slip-btn-print:hover { background: #222; }
+  .slip-btn-close { @apply border-[1.5px]; background: #fff; color: #000; border-color: #000; }
+  .slip-btn-close:hover { background: #f2f2f2; }
+
+
 
   @media print {
     body > *:not(.slip-overlay) { display: none !important; }
