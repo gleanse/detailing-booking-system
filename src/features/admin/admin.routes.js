@@ -1526,23 +1526,59 @@ router.put('/availability/:id', async (req, res) => {
   }
 });
 
+// Palitan ang buong `router.delete('/availability/:id', ...)` sa admin.routes.js ng code na ito
+
 // DELETE /api/admin/availability/:id
 router.delete('/availability/:id', async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Bawal i-delete kung may booking na naka-link (kahit cancelled/expired, kasi history yun)
+    const linked = await pool.query(
+      `SELECT
+         COUNT(*) AS total,
+         COUNT(*) FILTER (WHERE booking_status IN ('locked','confirmed')) AS active
+       FROM bookings
+       WHERE availability_id = $1`,
+      [id]
+    );
+    const total  = parseInt(linked.rows[0].total);
+    const active = parseInt(linked.rows[0].active);
+
+    if (total > 0) {
+      return res.status(400).json({
+        success: false,
+        code: 'HAS_BOOKINGS',
+        message: active > 0
+          ? `Cannot delete: ${active} active booking(s) are scheduled on this date. Reschedule or cancel them first, or use Edit to close this slot instead.`
+          : `Cannot delete: this date has ${total} past booking record(s). Use Edit and set the status to Closed instead.`,
+      });
+    }
+
     const result = await pool.query(
-      `DELETE FROM availability WHERE id = $1 RETURNING id`,
+      `DELETE FROM availability WHERE id = $1 RETURNING id, to_char(date, 'YYYY-MM-DD') AS date`,
       [id]
     );
     if (!result.rows.length) {
       return res.status(404).json({ success: false, message: 'Availability entry not found' });
     }
+
+    const staffId = req.session?.user?.id || null;
+    if (staffId) {
+      await pool.query(
+        `INSERT INTO audit_logs (user_id, action, target_table, target_id, details)
+         VALUES ($1, 'Deleted availability', 'availability', $2, $3)`,
+        [staffId, id, `Availability entry for ${result.rows[0].date} deleted`]
+      ).catch(e => console.error('Audit log error:', e));
+    }
+
     res.json({ success: true, message: 'Availability entry deleted' });
   } catch (err) {
     console.error('Delete availability error:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
+
 
 // POST /api/admin/closed-dates
 router.post('/closed-dates', async (req, res) => {
