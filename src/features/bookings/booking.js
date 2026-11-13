@@ -915,8 +915,17 @@ function selectVariant(card, variant) {
 }
 
 // Step 2 - Calendar
+const manilaToday = () => {
+  const [y, m, d] = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Manila',
+  })
+    .format(new Date())
+    .split('-');
+  return new Date(y, m - 1, d);
+};
+
 let calendarData = {};
-let calendarMonth = new Date();
+let calendarMonth = manilaToday();
 calendarMonth.setDate(1);
 
 async function loadDates() {
@@ -946,8 +955,7 @@ async function loadDates() {
     });
   }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = manilaToday();
   calendarMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
   // restore selected date display if coming back from a saved session
@@ -988,8 +996,7 @@ function renderCalendar() {
     year: 'numeric',
   });
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = manilaToday();
   const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   prevBtn.disabled = calendarMonth <= currentMonth;
 

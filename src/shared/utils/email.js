@@ -18,11 +18,14 @@ const sendBookingConfirmationEmail = async (booking) => {
     qr_code,
   } = booking;
 
-  const formattedDate = new Date(booking_date).toLocaleDateString('en-PH', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const formattedDate = new Date(booking_date + 'T00:00:00').toLocaleDateString(
+    'en-PH',
+    {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    },
+  );
 
   const formattedAmountPaid = `₱${parseFloat(amount_paid).toLocaleString(
     'en-PH',

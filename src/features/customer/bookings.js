@@ -1,5 +1,10 @@
 const ACTIVE_STATUSES = ['pending', 'in_progress', 'done'];
 
+const todayInManila = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' }).format(
+    new Date(),
+  );
+
 function formatDate(dateStr) {
   const [y, m, d] = dateStr.split('-');
   return new Date(y, m - 1, d).toLocaleDateString('en-PH', {
@@ -46,11 +51,7 @@ function statusBadge(status) {
 function renderActiveBooking(b) {
   const isDownPayment = !b.is_fully_paid && b.remaining_balance > 0;
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const [y, m, d] = b.booking_date.split('-');
-  const bookingDate = new Date(y, m - 1, d);
-  const isToday = bookingDate.getTime() === today.getTime();
+  const isToday = b.booking_date === todayInManila();
 
   const badge =
     b.status === 'pending' && !isToday
@@ -166,6 +167,7 @@ function renderStatusTimeline(logs) {
                   ? `<p class="text-white/30 text-xs mt-0.5">${new Date(
                       log.created_at,
                     ).toLocaleString('en-PH', {
+                      timeZone: 'Asia/Manila',
                       month: 'short',
                       day: 'numeric',
                       hour: '2-digit',
