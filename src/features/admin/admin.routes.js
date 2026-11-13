@@ -32,9 +32,9 @@ function saveBase64Image(base64String, oldImageUrl) {
     const data     = matches[2];
 
     // Validation - image files lang
-    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     if (!allowedMimeTypes.includes(mimeType)) {
-      throw new Error(`Invalid file type: ${mimeType}. Images only (JPEG, PNG, WEBP, GIF).`);
+      throw new Error(`Invalid file type: ${mimeType}. Images only (JPEG, PNG,).`);
     }
 
     const ext      = mimeType.split('/')[1].replace('jpeg', 'jpg');
