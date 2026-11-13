@@ -11,10 +11,6 @@ router.get('/landing.css', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'css', 'landing.css'));
 });
 
-router.get('/hero-animation.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'css', 'hero-animation.css'));
-});
-
 router.get('/nav.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'js', 'nav.js'));
 });
@@ -23,8 +19,8 @@ router.get('/motion.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'js', 'motion.js'));
 });
 
-router.get('/hero-animation.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'js', 'hero-animation.js'));
+router.get('/before-after.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'js', 'before-after.js'));
 });
 
 module.exports = router;
