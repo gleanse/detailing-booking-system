@@ -1,7 +1,6 @@
 // BOOKING QUERIES
 const pool = require('../../config/database');
-const cloudinary = require('../../config/cloudinary');
-const QRCode = require('qrcode');
+const { saveBookingQr } = require('../../shared/utils/qr');
 
 const getServiceById = async (serviceId) => {
   const result = await pool.query(
@@ -315,40 +314,7 @@ const confirmBooking = async ({ bookingId, xenditInvoiceId }) => {
   const booking = result.rows[0];
   if (!booking) return null;
 
-  const qrDataUrl = await QRCode.toDataURL(
-    `${process.env.APP_URL}/track/${booking.reference_code}`,
-    {
-      width: 300,
-      margin: 2,
-      color: { dark: '#000000', light: '#ffffff' },
-    },
-  );
-
-  let qrUrl;
-
-  if (process.env.NODE_ENV === 'production') {
-    // LIVE: upload to Cloudinary
-    const cloudinary = require('../../config/cloudinary');
-    const uploaded = await cloudinary.uploader.upload(qrDataUrl, {
-      folder: 'herco-qr',
-      public_id: booking.reference_code,
-      overwrite: true,
-    });
-    qrUrl = uploaded.secure_url;
-  } else {
-    // LOCAL: save to /public/uploads/qr/
-    const fs = require('fs');
-    const path = require('path');
-    const qrDir = path.join(__dirname, '../../../public/uploads/qr');
-    if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir, { recursive: true });
-    const qrFilename = `${booking.reference_code}.png`;
-    const base64Data = qrDataUrl.replace('data:image/png;base64,', '');
-    fs.writeFileSync(
-      path.join(qrDir, qrFilename),
-      Buffer.from(base64Data, 'base64'),
-    );
-    qrUrl = `${process.env.APP_URL}/uploads/qr/${qrFilename}`;
-  }
+  const qrUrl = await saveBookingQr(booking.reference_code);
 
   // Store URL in DB
   await pool.query(`UPDATE bookings SET qr_code = $2 WHERE id = $1`, [

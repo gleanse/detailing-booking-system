@@ -11,7 +11,7 @@ const {
   updateStaffEmail,
   updateStaffDetails,
 } = require('./staff.queries');
-const QRCode = require('qrcode');
+const { saveBookingQr } = require('../../shared/utils/qr');
 const PDFDocument = require('pdfkit');
 const {
   getUpcomingBookings,
@@ -489,9 +489,7 @@ const postWalkIn = async (req, res) => {
     const queueNumber = await getNextQueueNumber(availability.id);
     const referenceCode =
       'HRC-' + crypto.randomBytes(4).toString('hex').toUpperCase();
-    const qrData = `${process.env.APP_URL}/staff/scan/${referenceCode}`;
-    const qrPath = `public/uploads/qr/${referenceCode}.png`;
-    await QRCode.toFile(qrPath, qrData, { width: 300, margin: 2 });
+    const qrUrl = await saveBookingQr(referenceCode);
 
     const booking = await createWalkInBooking({
       amountPaid: payment.amountPaid,
@@ -507,7 +505,7 @@ const postWalkIn = async (req, res) => {
       motorcycleDescription,
       queueNumber,
       referenceCode,
-      qrCode: `/uploads/qr/${referenceCode}.png`,
+      qrCode: qrUrl,
       staffId,
     });
 
@@ -526,7 +524,7 @@ const postWalkIn = async (req, res) => {
         ...booking,
         referenceCode,
         queueNumber,
-        qrCode: `/uploads/qr/${referenceCode}.png`,
+        qrCode: qrUrl,
       },
     });
   } catch (err) {
