@@ -20,7 +20,7 @@
 <body class="bg-ink-black min-h-screen text-white overflow-x-hidden">
 
   <!-- NAVBAR -->
-  <header class="site-header fixed inset-x-0 top-0 z-50">
+  <header class="sticky top-0 z-50 border-b border-white/10 bg-ink-black/80 backdrop-blur-lg animate-slideDown">
     <div class="max-w-6xl mx-auto px-5 sm:px-6">
       <div class="flex items-center justify-between h-16">
         <a href="/" class="flex items-center gap-2.5" aria-label="Herco Detailing Garage home">
@@ -32,7 +32,7 @@
         </a>
 
         <nav class="hidden md:flex items-center gap-8">
-          <a href="#services" class="nav-link text-sm text-white/70 hover:text-white transition-colors duration-200">Services</a>
+          <a href="/services" class="nav-link text-sm text-white/70 hover:text-white transition-colors duration-200">Services</a>
           <a href="#about" class="nav-link text-sm text-white/70 hover:text-white transition-colors duration-200">About</a>
           <a href="/track" class="nav-link text-sm text-white/70 hover:text-white transition-colors duration-200">Track booking</a>
           <a href="/customer/login" class="nav-link text-sm text-white/70 hover:text-white transition-colors duration-200">Sign in</a>
@@ -53,7 +53,7 @@
 
     <div id="mobile-menu" class="md:hidden border-t border-white/10 bg-ink-900">
       <div class="max-w-6xl mx-auto px-5 py-3 flex flex-col">
-        <a href="#services" class="py-4 text-base text-white/80 hover:text-white border-b border-white/5 transition-colors">Services</a>
+        <a href="/services" class="py-4 text-base text-white/80 hover:text-white border-b border-white/5 transition-colors">Services</a>
         <a href="#about" class="py-4 text-base text-white/80 hover:text-white border-b border-white/5 transition-colors">About</a>
         <a href="/track" class="py-4 text-base text-white/80 hover:text-white border-b border-white/5 transition-colors">Track booking</a>
         <a href="/customer/login" class="py-4 text-base text-white/80 hover:text-white border-b border-white/5 transition-colors">Sign in</a>
@@ -69,7 +69,7 @@
       <div class="grain pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
       <div class="pointer-events-none absolute -top-40 -right-32 -z-10 size-120 rounded-full bg-brand/15 blur-3xl" aria-hidden="true"></div>
 
-      <div class="max-w-6xl mx-auto px-5 sm:px-6 pt-28 pb-20 md:pt-36 md:pb-28 grid lg:grid-cols-12 items-center gap-14 lg:gap-12">
+      <div class="max-w-6xl mx-auto px-5 sm:px-6 pt-14 pb-20 md:pt-24 md:pb-28 grid lg:grid-cols-12 items-center gap-14 lg:gap-12">
 
         <div class="lg:col-span-7">
           <h1 class="font-heading leading-none text-white" aria-label="Detailing for your motorcycle, booked in minutes.">
@@ -468,7 +468,7 @@
         </div>
         <div>
           <p class="mb-3 text-sm font-medium uppercase tracking-widest text-white/60">Navigate</p>
-          <a href="#services" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">Services</a>
+          <a href="/services" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">Services</a>
           <a href="#about" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">About</a>
           <a href="/services" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">Book now</a>
           <a href="/track" class="block py-1 text-sm text-white/70 hover:text-white transition-colors">Track booking</a>

@@ -2,35 +2,8 @@ html {
   scroll-behavior: smooth;
 }
 
-.site-header {
-  border-bottom: 1px solid transparent;
-  transition:
-    background-color 0.3s ease,
-    border-color 0.3s ease;
-}
-.site-header.is-scrolled {
-  background-color: rgb(10 10 10 / 0.85);
-  border-bottom-color: rgb(255 255 255 / 0.1);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-}
-
 #mobile-menu.open {
   max-height: 28rem;
-}
-
-.hero-dots {
-  background-image: radial-gradient(
-    rgb(255 255 255 / 0.09) 1px,
-    transparent 1px
-  );
-  background-size: 28px 28px;
-  -webkit-mask-image: radial-gradient(
-    ellipse at 75% 25%,
-    #000,
-    transparent 70%
-  );
-  mask-image: radial-gradient(ellipse at 75% 25%, #000, transparent 70%);
 }
 
 .marquee {
@@ -84,4 +57,9 @@ html {
   .marquee-track {
     animation: none;
   }
+}
+.grain {
+  --grain-opacity: 0.06;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
