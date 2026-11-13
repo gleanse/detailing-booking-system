@@ -1494,9 +1494,6 @@ async function loadUserAutofill() {
       if (u.name) document.getElementById('input-name').value = u.name;
       if (u.email) document.getElementById('input-email').value = u.email;
       if (u.phone) document.getElementById('input-phone').value = u.phone;
-
-      // update navbar for logged in state
-      updateNavForUser(u);
     }
 
     if (lastJson.success && lastJson.data) {
@@ -1513,34 +1510,6 @@ async function loadUserAutofill() {
     }
   } catch {
     // fail silently, autofill is not critical
-  }
-}
-
-function updateNavForUser(user) {
-  // desktop nav
-  const desktopNav = document.querySelector('nav.hidden.md\\:flex');
-  if (desktopNav) {
-    const signInLink = desktopNav.querySelector('a[href="/customer/login"]');
-    if (signInLink) {
-      signInLink.href = '/customer/account';
-      signInLink.innerHTML = `<i class="ph ph-user-circle text-red-500 text-base"></i> ${
-        user.name.split(' ')[0]
-      }`;
-      signInLink.className =
-        'nav-link text-sm tracking-wide flex items-center gap-1.5';
-    }
-  }
-
-  // mobile menu
-  const mobileMenu = document.getElementById('mobile-menu');
-  if (mobileMenu) {
-    const signInLink = mobileMenu.querySelector('a[href="/customer/login"]');
-    if (signInLink) {
-      signInLink.href = '/customer/account';
-      signInLink.textContent = `Hi, ${user.name.split(' ')[0]}`;
-      signInLink.className =
-        'py-4 text-base text-white border-b border-white/5';
-    }
   }
 }
 

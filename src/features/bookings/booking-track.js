@@ -280,39 +280,3 @@ function renderTimeline(logs, currentStatus) {
 }
 
 load();
-
-async function updateNav() {
-  try {
-    const res = await fetch('/api/customer/me');
-    const json = await res.json();
-    if (!json.success) return;
-    const u = json.user;
-    const firstName = u.name.split(' ')[0];
-
-    const desktopNav = document.querySelector('nav.hidden.md\\:flex');
-    if (desktopNav) {
-      const accountLink = desktopNav.querySelector('a[href="/customer/login"]');
-      if (accountLink) {
-        accountLink.href = '/customer/account';
-        accountLink.innerHTML = `<i class="ph ph-user-circle text-red-500 text-base"></i> ${firstName}`;
-        accountLink.className =
-          'nav-link text-sm tracking-wide flex items-center gap-1.5';
-      }
-    }
-
-    const mobileMenu = document.getElementById('mobile-menu');
-    if (mobileMenu) {
-      const accountLink = mobileMenu.querySelector('a[href="/customer/login"]');
-      if (accountLink) {
-        accountLink.href = '/customer/account';
-        accountLink.textContent = `Hi, ${firstName}`;
-        accountLink.className =
-          'py-4 text-base text-white border-b border-white/5';
-      }
-    }
-  } catch {
-    // fail silently
-  }
-}
-
-updateNav();
