@@ -19,9 +19,18 @@ const imgPreviewWrap = document.getElementById('imgPreviewWrap');
 const imgPreview     = document.getElementById('imgPreview');
 const imgClearBtn    = document.getElementById('imgClearBtn');
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png'];
+
 imgFileInput.addEventListener('change', function () {
   const file = this.files[0];
   if (!file) return;
+
+  // JPEG / PNG lang
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    showModalMsg('serviceModalMsg', 'error', 'Invalid file type. Please choose a JPG or PNG image.');
+    this.value = '';
+    return;
+  }
 
   // 5MB limit
   if (file.size > 5 * 1024 * 1024) {
@@ -29,6 +38,8 @@ imgFileInput.addEventListener('change', function () {
     this.value = '';
     return;
   }
+
+  hideModalMsg('serviceModalMsg');
 
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -90,6 +101,18 @@ function closeOverlay(id) { document.getElementById(id).classList.add('hidden');
 function escHtml(str) {
   return String(str||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
 }
+
+// Duration: whole number 1-24 lang (max 2 digits)
+function isValidDuration(value) {
+  return /^\d{1,2}$/.test(value) && +value >= 1 && +value <= 24;
+}
+
+['svc_duration', 'v_duration'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function () {
+    this.value = this.value.replace(/\D/g, '').slice(0, 2);
+    if (this.value && parseInt(this.value, 10) > 24) this.value = '24';
+  });
+});
 
 // ── Load Services ──
 async function loadServices() {
@@ -221,6 +244,12 @@ document.getElementById('serviceModalSave').addEventListener('click', async () =
   if (!downPayment || isNaN(parseFloat(downPayment)) || parseFloat(downPayment) <= 0) {
     showModalMsg('serviceModalMsg', 'error', 'Please enter a down payment greater than 0.');
     document.getElementById('svc_down_payment').focus();
+    return;
+  }
+
+  if (duration && !isValidDuration(duration)) {
+    showModalMsg('serviceModalMsg', 'error', 'Duration must be 1 to 24 hours.');
+    document.getElementById('svc_duration').focus();
     return;
   }
 
@@ -382,6 +411,10 @@ document.getElementById('addVariantBtn').addEventListener('click', async () => {
   }
   if (isNaN(parseFloat(price)) || parseFloat(price) < 0) {
     showModalMsg('variantsModalMsg', 'error', 'Enter a valid price.');
+    return;
+  }
+  if (duration && !isValidDuration(duration)) {
+    showModalMsg('variantsModalMsg', 'error', 'Duration must be 1 to 24 hours.');
     return;
   }
 
