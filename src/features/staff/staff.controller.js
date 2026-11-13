@@ -11,7 +11,7 @@ const {
   updateStaffEmail,
   updateStaffDetails,
 } = require('./staff.queries');
-const { saveBookingQr } = require('../../shared/utils/qr');
+const { saveBookingQr, getBookingQrBuffer } = require('../../shared/utils/qr');
 const PDFDocument = require('pdfkit');
 const {
   getUpcomingBookings,
@@ -545,6 +545,7 @@ const downloadSlip = async (req, res) => {
         .json({ success: false, message: 'Booking not found' });
     }
 
+    const qrBuffer = await getBookingQrBuffer(booking.reference_code);
     const doc = new PDFDocument({ size: 'A5', margin: 40 });
     const filename = `slip-${booking.reference_code}.pdf`;
 
@@ -578,6 +579,10 @@ const downloadSlip = async (req, res) => {
     doc.moveTo(40, doc.y).lineTo(555, doc.y).stroke('#eee');
     doc.moveDown(0.5);
 
+    const qrTopY = doc.y;
+    doc.image(qrBuffer, 295, qrTopY, { width: 84 });
+    doc.y = qrTopY;
+
     const field = (label, value) => {
       doc
         .fontSize(9)
@@ -588,7 +593,7 @@ const downloadSlip = async (req, res) => {
         .fontSize(10)
         .font('Helvetica')
         .fillColor('#000')
-        .text(value || '-');
+        .text(value || '-', { width: 245 });
       doc.moveDown(0.3);
     };
 
