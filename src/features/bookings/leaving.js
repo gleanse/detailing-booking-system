@@ -5,10 +5,39 @@ const { releaseSlot } = require('./queries');
 const LEAVING_KEY = 'leaving';
 const GRACE_SECONDS = 60;
 
-const markLeaving = (bookingId) =>
-  redis.zadd(LEAVING_KEY, Date.now(), bookingId);
+// the newest page load that reported back, kept per booking
+const STAY_TTL_SECONDS = 20 * 60;
+const stayKey = (bookingId) => `staying:${bookingId}`;
 
-const clearLeaving = (bookingId) => redis.zrem(LEAVING_KEY, bookingId);
+const toVisit = (visit) => {
+  const number = Number(visit);
+  return Number.isFinite(number) && number > 0 ? number : null;
+};
+
+const latestStay = async (bookingId) =>
+  Number(await redis.get(stayKey(bookingId))) || 0;
+
+// a leaving report from a page older than the newest page that came back is stale, so it is ignored
+// a page without a visit number is treated as the newest, like before
+const markLeaving = async (bookingId, visit) => {
+  const at = toVisit(visit) ?? Date.now();
+  if (at < (await latestStay(bookingId))) return;
+
+  await redis.zadd(LEAVING_KEY, Date.now(), bookingId);
+
+  // a newer page may have reported back while this ran
+  if (at < (await latestStay(bookingId))) {
+    await redis.zrem(LEAVING_KEY, bookingId);
+  }
+};
+
+const clearLeaving = async (bookingId, visit) => {
+  const at = toVisit(visit);
+  if (at && at > (await latestStay(bookingId))) {
+    await redis.set(stayKey(bookingId), at, 'EX', STAY_TTL_SECONDS);
+  }
+  await redis.zrem(LEAVING_KEY, bookingId);
+};
 
 // frees holds whose page stayed gone past the grace period, same strike as an expired hold
 const releaseAbandonedBookings = async ({ onReleased }) => {

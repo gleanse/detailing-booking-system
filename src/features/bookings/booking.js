@@ -544,6 +544,9 @@ function handleTimerExpired() {
   );
 }
 
+// every page load gets its own number so the server can tell which report is newer when the page is refreshed quickly
+const PAGE_VISIT = Date.now();
+
 // tells the server the customer is still here so a refresh is not treated as leaving
 function keepBooking() {
   if (!state.bookingId || !state.bookingToken) return;
@@ -553,6 +556,7 @@ function keepBooking() {
     body: JSON.stringify({
       bookingId: state.bookingId,
       bookingToken: state.bookingToken,
+      visit: PAGE_VISIT,
     }),
     keepalive: true,
   }).catch(() => {});
@@ -570,6 +574,7 @@ window.addEventListener('pagehide', () => {
         JSON.stringify({
           bookingId: state.bookingId,
           bookingToken: state.bookingToken,
+          visit: PAGE_VISIT,
         }),
       ],
       { type: 'application/json' },
