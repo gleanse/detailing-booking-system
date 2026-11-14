@@ -269,42 +269,6 @@ const cleanup = async () => {
       strikes.length === 1,
   );
 
-  // reports that arrive out of order when the page is refreshed quickly
-  const callVisit = async (handler, h, visit) => {
-    const res = fakeRes();
-    await handler(
-      { body: { bookingId: h.id, bookingToken: h.token, visit } },
-      res,
-    );
-    return res;
-  };
-
-  const o = await hold();
-  const base = Date.now();
-  await callVisit(keepBooking, o, base + 2000);
-  await callVisit(markBookingLeaving, o, base + 1000);
-  check('a late leaving report from an older page is ignored', !marked(o.id));
-  check(
-    'so a refreshed page keeps its hold',
-    (await sweep()) === 0 && (await status(o.id)) === 'locked',
-  );
-
-  await callVisit(keepBooking, o, base + 500);
-  await callVisit(markBookingLeaving, o, base + 1500);
-  check('an older back report does not lower the newest page', !marked(o.id));
-
-  await callVisit(markBookingLeaving, o, base + 3000);
-  check('a leaving report from the newest page still marks', marked(o.id));
-
-  await callVisit(keepBooking, o, base + 3000);
-  check('and coming back from that page clears it', !marked(o.id));
-
-  const legacy = await hold();
-  await call(markBookingLeaving, legacy.id, legacy.token);
-  check('a page without a visit number still marks', marked(legacy.id));
-  await call(keepBooking, legacy.id, legacy.token);
-  check('and still clears it when it comes back', !marked(legacy.id));
-
   // block wording
   const blockedMessage = async (seconds) => {
     const ip = `10.13.1.${++ipCounter}`;

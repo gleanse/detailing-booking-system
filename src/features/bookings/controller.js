@@ -521,7 +521,7 @@ const markBookingLeaving = async (req, res) => {
 
     // a hold with a payment is never marked, xendit decides what happens to it
     const held = await getUnpaidHeldBooking(bookingId);
-    if (held) await markLeaving(bookingId, req.body.visit);
+    if (held) await markLeaving(bookingId);
 
     res.status(204).end();
   } catch (error) {
@@ -539,7 +539,7 @@ const keepBooking = async (req, res) => {
       return res.status(403).json(notAllowed);
     }
 
-    await clearLeaving(bookingId, req.body.visit);
+    await clearLeaving(bookingId);
     res.status(204).end();
   } catch (error) {
     console.error('Keep booking error:', error);
