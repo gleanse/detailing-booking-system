@@ -694,9 +694,10 @@ async function tryRestoreSession() {
       return false;
     }
 
-    const expiresAt = new Date(json.data.expires_at);
-    const now = new Date();
-    const remainingSeconds = Math.floor((expiresAt - now) / 1000);
+    // the seconds left come from the server clock, so a wrong device clock cannot end the hold
+    const remainingSeconds = Number.isFinite(json.data.remaining_seconds)
+      ? json.data.remaining_seconds
+      : Math.floor((new Date(json.data.expires_at) - new Date()) / 1000);
 
     if (remainingSeconds <= 0) {
       return 'expired';

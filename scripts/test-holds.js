@@ -62,6 +62,7 @@ const {
 const {
   lockBookingSlot,
   releaseBookingSlot,
+  getBookingSession,
 } = require('../src/features/bookings/controller');
 const { signBookingToken } = require('../src/features/bookings/booking-token');
 
@@ -267,6 +268,34 @@ const cleanup = async () => {
   check(
     'a logged in customer on that same network still gets through',
     r.code === 200,
+  );
+
+  // the time left comes from the server clock so a wrong device clock cannot end a hold
+  r = await lock('10.11.9.1');
+  const sessionRes = fakeRes();
+  await getBookingSession(
+    { params: { bookingId: r.body.data.id } },
+    sessionRes,
+  );
+  const left = sessionRes.body.data.remaining_seconds;
+  check(
+    'the session endpoint returns the seconds left from the server clock',
+    sessionRes.code === 200 && left > 590 && left <= 600,
+    `${left} seconds`,
+  );
+
+  await pool.query(
+    `UPDATE bookings SET expires_at = NOW() - INTERVAL '1 minute' WHERE id = $1`,
+    [r.body.data.id],
+  );
+  const lateRes = fakeRes();
+  await getBookingSession(
+    { params: { bookingId: r.body.data.id } },
+    lateRes,
+  );
+  check(
+    'a hold past its time reports 0 seconds left, never a negative number',
+    lateRes.body.data.remaining_seconds === 0,
   );
 
   // blocks, strikes still land on both but each side only checks its own

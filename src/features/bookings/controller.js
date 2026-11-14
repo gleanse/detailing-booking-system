@@ -493,7 +493,9 @@ const getBookingSession = async (req, res) => {
   try {
     const { bookingId } = req.params;
     const result = await pool.query(
-      `SELECT booking_status, expires_at FROM bookings WHERE id = $1`,
+      `SELECT booking_status, expires_at,
+              GREATEST(0, FLOOR(EXTRACT(EPOCH FROM (expires_at - NOW()))))::int AS remaining_seconds
+       FROM bookings WHERE id = $1`,
       [bookingId],
     );
 
