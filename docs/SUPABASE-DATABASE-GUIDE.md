@@ -10,7 +10,8 @@ Supabase's own services (Auth, Storage, the auto-generated API, `supabase-js`) a
 |---|---|---|
 | `DATABASE_URL` | Render dashboard (Environment tab) and local `.env` | Supabase connection string used by the app and the scripts in production mode |
 | `SUPABASE_DATABASE_PASS` | local `.env` | The database password, kept for reference |
-| `NODE_ENV` | `.env` / Render | `production` makes the app and every script in `scripts/` use `DATABASE_URL`; anything else uses the local `DB_*` variables |
+| `DB_SSL` | Render dashboard (Environment tab) | `true` turns on ssl for the app's database connection. Required for Supabase, leave unset for local and self-hosted postgres |
+| `NODE_ENV` | `.env` / Render | `production` or `development` mode only. It no longer selects the database: the app and every script in `scripts/` use `DATABASE_URL` when it is set, otherwise the local `DB_*` variables |
 
 Never commit these values or paste them in chats. Anyone with `DATABASE_URL` has full access to the database.
 

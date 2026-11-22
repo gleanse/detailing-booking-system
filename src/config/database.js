@@ -1,32 +1,25 @@
 const { Pool, types } = require('pg');
 require('dotenv').config();
 types.setTypeParser(1082, (v) => v);
-// NOTE: if migrating from supabase to a self-hosted vps (fully dockerized),
-// update this branch so 'production' also supports db_host/db_port/etc.
-// instead of only DATABASE_URL - otherwise docker's production target
-// will still try to reach supabase via DATABASE_URL.
-const pool = new Pool(
-  process.env.NODE_ENV === 'production'
-    ? {
-        // SUPABASE DATABASE
-        connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false },
-        max: 20,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 2000,
-      }
-    : {
-        // LOCAL POSTGRES DATABASE
-        host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 5432,
-        database: process.env.DB_NAME || 'detailing_booking_db',
-        user: process.env.DB_USER || process.env.USER,
-        password: process.env.DB_PASSWORD || '',
-        max: 20,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 2000,
-      },
-);
+// DATABASE_URL set = hosted db (supabase), otherwise DB_* vars (local dev, vps container)
+// DB_SSL=true turns ssl on, anything else leaves it off
+const connection = process.env.DATABASE_URL
+  ? { connectionString: process.env.DATABASE_URL }
+  : {
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT || 5432,
+      database: process.env.DB_NAME || 'detailing_booking_db',
+      user: process.env.DB_USER || process.env.USER,
+      password: process.env.DB_PASSWORD || '',
+    };
+
+const pool = new Pool({
+  ...connection,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
 
 // connection status
 pool.on('connect', (client) => {

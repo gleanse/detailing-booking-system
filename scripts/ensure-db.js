@@ -1,11 +1,9 @@
 require('dotenv').config();
 const { Client } = require('pg');
 
-const isProduction = process.env.NODE_ENV === 'production';
-
-const connectionString = isProduction
-  ? process.env.DATABASE_URL
-  : `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
+const connectionString =
+  process.env.DATABASE_URL ||
+  `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
 
 async function ensureDatabase() {
   const dbUrl = new URL(connectionString);
