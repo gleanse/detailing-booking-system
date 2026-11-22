@@ -8,7 +8,7 @@ Supabase's own services (Auth, Storage, the auto-generated API, `supabase-js`) a
 
 | Variable | Where it lives | Purpose |
 |---|---|---|
-| `DATABASE_URL` | Render dashboard (Environment tab) and local `.env` | Supabase connection string used by the app and the scripts in production mode |
+| `DATABASE_URL` | Render dashboard (Environment tab) and local `.env` | Supabase connection string. When set, the app and the scripts in `scripts/` use it instead of the `DB_*` variables |
 | `SUPABASE_DATABASE_PASS` | local `.env` | The database password, kept for reference |
 | `DB_SSL` | Render dashboard (Environment tab) | `true` turns on ssl for the app's database connection. Required for Supabase, leave unset for local and self-hosted postgres |
 | `NODE_ENV` | `.env` / Render | `production` or `development` mode only. It no longer selects the database: the app and every script in `scripts/` use `DATABASE_URL` when it is set, otherwise the local `DB_*` variables |
