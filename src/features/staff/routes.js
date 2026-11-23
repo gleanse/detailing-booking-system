@@ -29,26 +29,26 @@ const {
   requestStaffEmailChange,
   verifyStaffEmailChange,
   updateStaffProfile,
-} = require('./staff.controller');
+} = require('./controller');
 
 // STATIC ASSETS
 router.get('/staff.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'staff.css'));
+  res.sendFile(path.join(__dirname, 'views', 'staff.css'));
 });
 router.get('/scan.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'scan.js'));
+  res.sendFile(path.join(__dirname, 'views', 'scan.js'));
 });
 router.get('/dashboard.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dashboard.js'));
+  res.sendFile(path.join(__dirname, 'views', 'dashboard.js'));
 });
 router.get('/walkin.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'walkin.js'));
+  res.sendFile(path.join(__dirname, 'views', 'walkin.js'));
 });
 router.get('/shell.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'shell.js'));
+  res.sendFile(path.join(__dirname, 'views', 'shell.js'));
 });
 router.get('/account.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'account.js'));
+  res.sendFile(path.join(__dirname, 'views', 'account.js'));
 });
 
 // PAGE ROUTES
@@ -58,7 +58,7 @@ router.get('/scan', isStaff, getScanPage);
 router.get('/scan/:ref', isStaff, getScanPage);
 router.get('/walkin', isStaff, getWalkinPage);
 router.get('/account', isStaff, (req, res) =>
-  res.sendFile(path.join(__dirname, 'account.html')),
+  res.sendFile(path.join(__dirname, 'views', 'account.html')),
 );
 
 // API ROUTES

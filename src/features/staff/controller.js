@@ -10,7 +10,7 @@ const {
   findEmailOwner,
   updateStaffEmail,
   updateStaffDetails,
-} = require('./staff.queries');
+} = require('./queries');
 const { saveBookingQr, getBookingQrBuffer } = require('../../shared/utils/qr');
 const PDFDocument = require('pdfkit');
 const {
@@ -34,7 +34,7 @@ const {
   logAudit,
   getDoneNotPickedUp,
   getVariantsForService,
-} = require('./staff.queries');
+} = require('./queries');
 const {
   sendBookingInProgressEmail,
   sendBookingDoneEmail,
@@ -46,15 +46,15 @@ const {
 const { todayInManila } = require('../../shared/utils/date');
 
 const getDashboardPage = (req, res) => {
-  res.sendFile(path.join(__dirname, 'dashboard.html'));
+  res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
 };
 
 const getWalkinPage = (req, res) => {
-  res.sendFile(path.join(__dirname, 'walkin.html'));
+  res.sendFile(path.join(__dirname, 'views', 'walkin.html'));
 };
 
 const getScanPage = (req, res) => {
-  res.sendFile(path.join(__dirname, 'scan.html'));
+  res.sendFile(path.join(__dirname, 'views', 'scan.html'));
 };
 
 const getMe = (req, res) => {
