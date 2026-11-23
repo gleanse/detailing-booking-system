@@ -101,7 +101,10 @@ pool.query('SELECT NOW()', (err, res) => {
 
 const singleSession = require('./shared/middlewares/singleSession');
 
+const demoNotice = require('./shared/middlewares/demoNotice');
+
 // PAGE routes
+app.use(demoNotice);
 app.use('/', pagesRouter);
 
 // single-session check (admin/staff API lang, hindi /api/auth)
