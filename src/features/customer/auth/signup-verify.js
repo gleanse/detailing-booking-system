@@ -1,4 +1,3 @@
-require('../../../config/redis');
 const crypto = require('crypto');
 const redis = require('../../../config/redis');
 const { sendEmailVerificationEmail } = require('../../../shared/utils/email');
