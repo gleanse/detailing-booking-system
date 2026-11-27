@@ -1,4 +1,4 @@
-const { getPaymentsByBooking } = require('./queries');
+const { getPaymentsByBooking } = require('../../bookings/queries');
 const { confirmPaidBooking } = require('./confirm');
 const { lookupInvoices, expireInvoice } = require('./xendit-lookup');
 

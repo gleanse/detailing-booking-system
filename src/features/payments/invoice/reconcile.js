@@ -3,7 +3,7 @@ const {
   getHeldBookingsWithPayments,
   getPaymentsByBooking,
   expireHeldBooking,
-} = require('./queries');
+} = require('../../bookings/queries');
 const { confirmPaidBooking } = require('./confirm');
 
 // decides one held booking from what xendit says about each of its payments

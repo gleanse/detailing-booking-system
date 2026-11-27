@@ -4,8 +4,8 @@ const pool = require('../../config/database');
 const { xenditInvoiceClient } = require('../../config/xendit');
 const redis = require('../../config/redis');
 const { incrementAbuseCounter } = require('../../shared/utils/cron');
-const { confirmPaidBooking } = require('./confirm');
-const { cancelHeldBooking } = require('./cancel');
+const { confirmPaidBooking } = require('../payments/invoice/confirm');
+const { cancelHeldBooking } = require('../payments/invoice/cancel');
 const { signBookingToken, hasValidBookingToken } = require('./booking-token');
 const { markLeaving, clearLeaving } = require('./leaving');
 const {

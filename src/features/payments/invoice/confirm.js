@@ -1,5 +1,8 @@
-const { confirmBooking, getBookingByPaymentId } = require('./queries');
-const { sendBookingConfirmationEmail } = require('../../shared/utils/email');
+const {
+  confirmBooking,
+  getBookingByPaymentId,
+} = require('../../bookings/queries');
+const { sendBookingConfirmationEmail } = require('../../../shared/utils/email');
 
 // confirms a paid booking and sends the email once, shared by the webhook and the reconcile job
 const confirmPaidBooking = async ({

@@ -1,4 +1,4 @@
-const { xenditInvoiceClient } = require('../../config/xendit');
+const { xenditInvoiceClient } = require('../../../config/xendit');
 
 const LOOKUP_TIMEOUT_MS = 10000;
 

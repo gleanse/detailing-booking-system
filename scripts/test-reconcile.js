@@ -63,7 +63,9 @@ stub('../src/config/xendit', {
 
 const pool = require('../src/config/database');
 const { lockSlot, createPayment } = require('../src/features/bookings/queries');
-const { confirmPaidBooking } = require('../src/features/bookings/confirm');
+const {
+  confirmPaidBooking,
+} = require('../src/features/payments/invoice/confirm');
 const {
   expireLockedBookings,
   reconcileBookings,

@@ -1,7 +1,9 @@
 const cron = require('node-cron');
 const pool = require('../../config/database');
 const redis = require('../../config/redis');
-const { reconcileHeldBookings } = require('../../features/bookings/reconcile');
+const {
+  reconcileHeldBookings,
+} = require('../../features/payments/invoice/reconcile');
 const { releaseAbandonedBookings } = require('../../features/bookings/leaving');
 const { purgeExpiredBookings } = require('../../features/bookings/purge');
 
