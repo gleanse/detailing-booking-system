@@ -60,7 +60,7 @@ const redis = {
 stub('../src/config/redis', redis);
 
 const pool = require('../src/config/database');
-const { createPayment } = require('../src/features/bookings/queries');
+const { createPayment } = require('../src/features/payments/invoice/queries');
 const {
   LEAVING_KEY,
   GRACE_SECONDS,

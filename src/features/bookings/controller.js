@@ -18,13 +18,15 @@ const {
   getUnpaidHeldBooking,
   expireHeldBooking,
   updateBookingDetails,
-  createPayment,
-  getInvoicedPayment,
-  saveInvoiceOnPayment,
   getBookingByPaymentId,
   getBookingByReferenceCode,
   getBookingSessionById,
 } = require('./queries');
+const {
+  createPayment,
+  getInvoicedPayment,
+  saveInvoiceOnPayment,
+} = require('../payments/invoice/queries');
 
 const getBookingPage = (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'booking.html'));

@@ -53,7 +53,8 @@ stub('../src/config/redis', {
 });
 
 const pool = require('../src/config/database');
-const { lockSlot, createPayment } = require('../src/features/bookings/queries');
+const { lockSlot } = require('../src/features/bookings/queries');
+const { createPayment } = require('../src/features/payments/invoice/queries');
 const { createInvoice } = require('../src/features/bookings/controller');
 const { signBookingToken } = require('../src/features/bookings/booking-token');
 

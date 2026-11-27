@@ -1,9 +1,9 @@
 const { lookupInvoices } = require('./xendit-lookup');
 const {
   getHeldBookingsWithPayments,
-  getPaymentsByBooking,
   expireHeldBooking,
 } = require('../../bookings/queries');
+const { getPaymentsByBooking } = require('./queries');
 const { confirmPaidBooking } = require('./confirm');
 
 // decides one held booking from what xendit says about each of its payments
