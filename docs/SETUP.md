@@ -122,7 +122,7 @@ npm run db:ensure           # create the database if it doesn't already exist
 
 **Docker container:**
 ```bash
-docker compose up --build   # build images and start (use after dockerfile changes)
+docker compose up --build   # build images and start (after a dependency change, run docker compose down first)
 docker compose up -d        # start (no rebuild)
 docker compose down         # stop
 docker compose down -v      # stop and wipe data (full reset)
@@ -132,13 +132,21 @@ docker ps                   # list running containers
 docker ps -a                # list all containers, including stopped ones
 ```
 
-**After adding or updating a dependency:** the app container keeps its own `node_modules` in a named volume, so a rebuild alone keeps the old packages. Remove that volume first, then rebuild:
+**After adding or updating a dependency:** the app container keeps its `node_modules` in an anonymous volume. When the container is recreated in place, that volume is carried over, so `docker compose up --build` alone can keep the old packages. Remove the container first so a fresh volume is created from the new image:
 
 ```bash
 docker compose down
-docker volume rm detailing-booking-system_node_modules
 docker compose up --build -d
 ```
+
+**Cleaning up leftover volumes:** each time the container is removed and recreated, the previous anonymous `node_modules` volume is left behind. These are harmless but use disk space. List the unused ones. The leftover node_modules volumes are the ones with a long random hexadecimal name. Never remove volumes named postgres_data or redis_data, since they hold the local database and cache data:
+
+```bash
+docker volume ls -f dangling=true
+docker volume rm <volume-name>
+```
+
+`docker volume prune` removes every unused anonymous volume on the machine, including ones from other projects, so check the list before using it. Do not use `docker compose down -v` for this, since it also deletes the database volume. This applies to the development compose file only: the production image bakes its packages in at build time, so there is nothing to clean there.
 
 ## Troubleshooting
 

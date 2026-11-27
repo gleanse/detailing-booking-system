@@ -36,7 +36,7 @@ services:
       - .env
     volumes:
       - .:/app
-      - node_modules:/app/node_modules
+      - /app/node_modules
     depends_on:
       - postgres
       - redis
@@ -44,4 +44,3 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  node_modules:
