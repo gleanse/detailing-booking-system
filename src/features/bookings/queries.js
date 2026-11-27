@@ -460,8 +460,19 @@ const expireHeldBooking = async (bookingId) => {
   return result.rowCount > 0;
 };
 
+const getBookingSessionById = async (bookingId) => {
+  const result = await pool.query(
+    `SELECT booking_status, expires_at,
+            GREATEST(0, FLOOR(EXTRACT(EPOCH FROM (expires_at - NOW()))))::int AS remaining_seconds
+     FROM bookings WHERE id = $1`,
+    [bookingId],
+  );
+  return result.rows[0] || null;
+};
+
 module.exports = {
   getServiceById,
+  getBookingSessionById,
   getAvailableDates,
   MAX_USER_HOLDS,
   MAX_GUEST_IP_HOLDS,

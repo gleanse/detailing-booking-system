@@ -23,6 +23,7 @@ const {
   saveInvoiceOnPayment,
   getBookingByPaymentId,
   getBookingByReferenceCode,
+  getBookingSessionById,
 } = require('./queries');
 
 const getBookingPage = (req, res) => {
@@ -492,20 +493,15 @@ const getPublicBookingDetails = async (req, res) => {
 const getBookingSession = async (req, res) => {
   try {
     const { bookingId } = req.params;
-    const result = await pool.query(
-      `SELECT booking_status, expires_at,
-              GREATEST(0, FLOOR(EXTRACT(EPOCH FROM (expires_at - NOW()))))::int AS remaining_seconds
-       FROM bookings WHERE id = $1`,
-      [bookingId],
-    );
+    const session = await getBookingSessionById(bookingId);
 
-    if (!result.rows.length) {
+    if (!session) {
       return res
         .status(404)
         .json({ success: false, message: 'Booking not found' });
     }
 
-    res.json({ success: true, data: result.rows[0] });
+    res.json({ success: true, data: session });
   } catch (error) {
     console.error('Get booking session error:', error);
     res.status(500).json({ success: false, message: error.message });
