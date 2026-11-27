@@ -15,7 +15,7 @@ const {
   forgotPassword,
   verifyOtp,
   resetPassword,
-} = require('./controller');
+} = require('./auth/controller');
 const {
   getAccountPage,
   getBookingsPage,
@@ -27,31 +27,31 @@ const {
   verifyEmailChange,
   getLastBooking,
   changePassword,
-} = require('./account.controller');
+} = require('./controller');
 
 // STATIC ASSETS
 router.get('/customer.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'customer.css'));
+  res.sendFile(path.join(__dirname, 'views', 'customer.css'));
 });
 
 router.get('/customer-auth.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'customer-auth.js'));
+  res.sendFile(path.join(__dirname, 'views', 'customer-auth.js'));
 });
 
 router.get('/shell.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'shell.js'));
+  res.sendFile(path.join(__dirname, 'views', 'shell.js'));
 });
 
 router.get('/services.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'services.js'));
+  res.sendFile(path.join(__dirname, 'views', 'services.js'));
 });
 
 router.get('/bookings.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'bookings.js'));
+  res.sendFile(path.join(__dirname, 'views', 'bookings.js'));
 });
 
 router.get('/account.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'account.js'));
+  res.sendFile(path.join(__dirname, 'views', 'account.js'));
 });
 
 // PAGE ROUTES

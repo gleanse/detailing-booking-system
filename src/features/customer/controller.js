@@ -1,52 +1,75 @@
-// CONTROLLER OF CUSTOMER AUTH
+// ACCOUNT CONTROLLER
 const path = require('path');
 const pool = require('../../config/database');
 const bcrypt = require('bcrypt');
-const { sendPasswordResetEmail } = require('../../shared/utils/email');
-const { issueCode, checkCode } = require('./signup-verify');
+const { sendEmailVerificationEmail } = require('../../shared/utils/email');
 const { issueOtp, checkOtp, OTP_MESSAGES } = require('./security/otp');
+const { revokeSessions } = require('./security/sessions');
 const {
-  checkLoginBlock,
-  recordLoginFailure,
-  clearLoginFailures,
-} = require('./security/login-limiter');
-const {
-  startSession,
-  endSession,
-  revokeSessions,
-} = require('./security/sessions');
+  getBookingsByUserId,
+  getBookingByReferenceCode,
+  updateUserEmail,
+  getLastBookingByUserId,
+} = require('./queries');
 
-const getLoginPage = (req, res) => {
-  // redirect to account if already logged in as customer
-  if (req.session?.user?.role === 'customer') {
-    return res.redirect('/customer/account');
-  }
-  res.sendFile(path.join(__dirname, 'login.html'));
+const getAccountPage = (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'account.html'));
 };
 
-const getRegisterPage = (req, res) => {
-  if (req.session?.user?.role === 'customer') {
-    return res.redirect('/customer/account');
-  }
-  res.sendFile(path.join(__dirname, 'register.html'));
+const getServicesPage = (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'services.html'));
 };
 
-const register = async (req, res) => {
+const getBookingsPage = (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'bookings.html'));
+};
+
+const getBookings = async (req, res) => {
   try {
-    const { name, email, phone, password } = req.body;
+    const userId = req.session.user.id;
+    const bookings = await getBookingsByUserId(userId);
+    res.json({ success: true, data: bookings });
+  } catch (err) {
+    console.error('Get bookings error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
+  }
+};
 
-    // validation
+const getBooking = async (req, res) => {
+  try {
+    const { referenceCode } = req.params;
+    const userId = req.session.user.id;
+    const booking = await getBookingByReferenceCode(referenceCode, userId);
+
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Booking not found.' });
+    }
+
+    res.json({ success: true, data: booking });
+  } catch (err) {
+    console.error('Get booking error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
+  }
+};
+
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { name, phone } = req.body;
+
     if (!name || name.trim().length < 2) {
       return res.status(400).json({
         success: false,
         message: 'Name must be at least 2 characters.',
       });
-    }
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Enter a valid email address.' });
     }
 
     if (!phone || !phone.trim()) {
@@ -62,152 +85,24 @@ const register = async (req, res) => {
       });
     }
 
-    if (!password || password.length < 8) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must be at least 8 characters.',
-      });
-    }
-
-    const normalized = email.trim().toLowerCase();
-
-    const existing = await pool.query(
-      'SELECT id, role, email_verified FROM users WHERE email = $1',
-      [normalized],
-    );
-    const found = existing.rows[0];
-
-    if (found && (found.email_verified || found.role !== 'customer')) {
-      return res.status(400).json({
-        success: false,
-        message: 'An account with this email already exists.',
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // an unverified account is only a pending sign up, so signing up again replaces it
-    if (found) {
-      await pool.query(
-        `UPDATE users SET name = $1, phone = $2, password = $3 WHERE id = $4`,
-        [name.trim(), phone.trim(), hashedPassword, found.id],
-      );
-    } else {
-      await pool.query(
-        `INSERT INTO users (name, email, phone, password, role)
-         VALUES ($1, $2, $3, $4, 'customer')`,
-        [name.trim(), normalized, phone.trim(), hashedPassword],
-      );
-    }
-
-    await issueCode({ email: normalized, name: name.trim() });
-
-    res.json({
-      success: true,
-      verify: true,
-      email: normalized,
-      message: 'We sent a 6 digit code to your email.',
-    });
-  } catch (err) {
-    console.error('Customer register error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Something went wrong. Please try again.',
-    });
-  }
-};
-
-const rejectLogin = async (res, status, { email, ip }) => {
-  const failure = await recordLoginFailure({ email, ip });
-
-  if (failure.locked) {
-    return res.status(429).json({
-      success: false,
-      retryAfter: failure.retryAfter,
-      message: failure.pairLocked
-        ? `Invalid email or password. You've used all ${failure.limit} attempts, so login is locked.`
-        : 'Too many failed login attempts.',
-    });
-  }
-
-  const left = failure.attemptsLeft;
-  const message =
-    left !== null && left <= 2
-      ? `Invalid email or password. ${left} ${left === 1 ? 'attempt' : 'attempts'} left before login is locked for 15 minutes.`
-      : 'Invalid email or password.';
-
-  return res.status(status).json({ success: false, message });
-};
-
-const login = async (req, res) => {
-  try {
-    const { email, password, rememberMe } = req.body;
-
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Email and password are required.' });
-    }
-
-    const normalizedEmail = email.toLowerCase();
-    const ip = req.ip;
-
-    const block = await checkLoginBlock({ email: normalizedEmail, ip });
-    if (block.blocked) {
-      return res.status(429).json({
-        success: false,
-        retryAfter: block.retryAfter,
-        message: 'Too many failed login attempts.',
-      });
-    }
-
     const result = await pool.query(
-      'SELECT id, name, email, phone, password, role, email_verified FROM users WHERE email = $1',
-      [normalizedEmail],
+      `UPDATE users SET name = $1, phone = $2 WHERE id = $3
+       RETURNING id, name, email, phone, role`,
+      [name.trim(), phone.trim(), userId],
     );
-
-    if (result.rows.length === 0) {
-      return rejectLogin(res, 401, { email: normalizedEmail, ip });
-    }
 
     const user = result.rows[0];
 
-    if (user.role !== 'customer') {
-      return rejectLogin(res, 403, { email: normalizedEmail, ip });
-    }
+    // update session with new details
+    req.session.user = {
+      ...req.session.user,
+      name: user.name,
+      phone: user.phone,
+    };
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return rejectLogin(res, 401, { email: normalizedEmail, ip });
-    }
-
-    await clearLoginFailures({ email: normalizedEmail, ip });
-
-    if (!user.email_verified) {
-      await issueCode({ email: user.email, name: user.name });
-      return res.status(403).json({
-        success: false,
-        needsVerification: true,
-        email: user.email,
-        message: 'Please verify your email first. We sent you a new code.',
-      });
-    }
-
-    await startSession(req, user, rememberMe);
-
-    res.json({
-      success: true,
-      message: 'Login successful.',
-      redirect: '/customer/account',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    res.json({ success: true, message: 'Profile updated.', user });
   } catch (err) {
-    console.error('Customer login error:', err);
+    console.error('Update profile error:', err);
     res.status(500).json({
       success: false,
       message: 'Something went wrong. Please try again.',
@@ -215,89 +110,54 @@ const login = async (req, res) => {
   }
 };
 
-const logout = async (req, res) => {
-  await endSession(req);
-  req.session.destroy((err) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ success: false, message: 'Logout failed.' });
-    }
-    res.json({ success: true, redirect: '/customer/login' });
-  });
-};
-
-const getMe = (req, res) => {
-  if (!req.session?.user) {
-    return res
-      .status(401)
-      .json({ success: false, message: 'Not authenticated.' });
-  }
-  res.json({ success: true, user: req.session.user });
-};
-
-const verifyOtp = async (req, res) => {
+const requestEmailChange = async (req, res) => {
   try {
-    const { email, otp } = req.body;
-
-    if (!email || !otp) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Email and code are required.' });
-    }
-
-    const check = await checkOtp({
-      purpose: 'pw_reset',
-      id: String(email).trim().toLowerCase(),
-      otp: String(otp).trim(),
-      consume: false,
-    });
-
-    if (!check.ok) {
-      return res
-        .status(400)
-        .json({ success: false, message: OTP_MESSAGES[check.reason] });
-    }
-
-    res.json({ success: true, message: 'Code verified.' });
-  } catch (err) {
-    console.error('Verify OTP error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Something went wrong. Please try again.',
-    });
-  }
-};
-
-const forgotPassword = async (req, res) => {
-  try {
+    const userId = req.session.user.id;
     const { email } = req.body;
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (!email || !email.trim()) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Email is required.' });
+    }
+
+    const normalized = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalized)) {
       return res
         .status(400)
         .json({ success: false, message: 'Enter a valid email address.' });
     }
 
-    const result = await pool.query(
-      'SELECT id, name, email, role FROM users WHERE email = $1',
-      [email.toLowerCase()],
+    // check if already taken by another user
+    const existing = await pool.query(
+      `SELECT id FROM users WHERE email = $1 AND id != $2`,
+      [normalized, userId],
     );
+    if (existing.rows.length) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Email is already in use.' });
+    }
 
-    if (result.rows.length === 0 || result.rows[0].role !== 'customer') {
-      return res.status(404).json({
+    // check if same as current email
+    if (normalized === req.session.user.email.toLowerCase()) {
+      return res.status(400).json({
         success: false,
-        message: 'No account found with that email address.',
+        message: 'This is already your current email.',
       });
     }
 
-    const user = result.rows[0];
-
     const issued = await issueOtp({
-      purpose: 'pw_reset',
-      id: user.email,
+      purpose: 'email_change',
+      id: userId,
+      payload: { newEmail: normalized },
       send: (otp) =>
-        sendPasswordResetEmail({ email: user.email, name: user.name, otp }),
+        sendEmailVerificationEmail({
+          email: normalized,
+          name: req.session.user.name,
+          otp,
+        }),
     });
 
     if (!issued.sent) {
@@ -310,10 +170,10 @@ const forgotPassword = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'A reset code has been sent to your email.',
+      message: 'Verification code sent to your new email.',
     });
   } catch (err) {
-    console.error('Forgot password error:', err);
+    console.error('Request email change error:', err);
     res.status(500).json({
       success: false,
       message: 'Something went wrong. Please try again.',
@@ -321,35 +181,21 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-const resetPassword = async (req, res) => {
+const verifyEmailChange = async (req, res) => {
   try {
-    const { email, otp, password } = req.body;
+    const userId = req.session.user.id;
+    const { otp } = req.body;
 
-    if (!email || !otp || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email, code, and new password are required.',
-      });
-    }
-
-    if (!/^\d{6}$/.test(otp)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Enter the 6-digit code from your email.',
-      });
-    }
-
-    if (password.length < 8) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must be at least 8 characters.',
-      });
+    if (!otp || !otp.trim()) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Verification code is required.' });
     }
 
     const check = await checkOtp({
-      purpose: 'pw_reset',
-      id: String(email).trim().toLowerCase(),
-      otp,
+      purpose: 'email_change',
+      id: userId,
+      otp: otp.trim(),
     });
 
     if (!check.ok) {
@@ -358,98 +204,16 @@ const resetPassword = async (req, res) => {
         .json({ success: false, message: OTP_MESSAGES[check.reason] });
     }
 
-    const result = await pool.query(
-      'SELECT id FROM users WHERE email = $1 AND role = $2',
-      [email.toLowerCase(), 'customer'],
-    );
-
-    if (result.rows.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Account not found.' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await pool.query('UPDATE users SET password = $1 WHERE email = $2', [
-      hashedPassword,
-      email.toLowerCase(),
-    ]);
-
-    await revokeSessions(result.rows[0].id);
-
-    res.json({ success: true, message: 'Password reset successfully.' });
-  } catch (err) {
-    console.error('Reset password error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Something went wrong. Please try again.',
-    });
-  }
-};
-
-const codeProblem = {
-  expired: 'This code has expired. Please request a new one.',
-  locked: 'Too many wrong codes. Please request a new one.',
-  wrong: 'Incorrect code. Please try again.',
-};
-
-const findPendingCustomer = async (email) => {
-  const result = await pool.query(
-    `SELECT id, name, email, phone, role FROM users
-     WHERE email = $1 AND role = 'customer' AND email_verified = false`,
-    [email],
-  );
-  return result.rows[0] || null;
-};
-
-const verifySignup = async (req, res) => {
-  try {
-    const email = String(req.body.email || '')
-      .trim()
-      .toLowerCase();
-    const otp = String(req.body.otp || '').trim();
-
-    if (!email || !/^\d{6}$/.test(otp)) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Enter the 6 digit code.' });
-    }
-
-    const user = await findPendingCustomer(email);
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'This email has nothing to verify. Please sign in.',
-      });
-    }
-
-    const check = await checkCode({ email, otp });
-    if (!check.ok) {
-      return res
-        .status(400)
-        .json({ success: false, message: codeProblem[check.reason] });
-    }
-
-    await pool.query('UPDATE users SET email_verified = true WHERE id = $1', [
-      user.id,
-    ]);
+    const user = await updateUserEmail(userId, check.payload.newEmail);
 
     req.session.user = {
-      id: user.id,
-      name: user.name,
+      ...req.session.user,
       email: user.email,
-      phone: user.phone,
-      role: user.role,
     };
 
-    res.json({
-      success: true,
-      message: 'Email verified.',
-      redirect: '/customer/account',
-    });
+    res.json({ success: true, message: 'Email updated successfully.', user });
   } catch (err) {
-    console.error('Verify signup error:', err);
+    console.error('Verify email change error:', err);
     res.status(500).json({
       success: false,
       message: 'Something went wrong. Please try again.',
@@ -457,32 +221,70 @@ const verifySignup = async (req, res) => {
   }
 };
 
-const resendSignupCode = async (req, res) => {
+const getLastBooking = async (req, res) => {
   try {
-    const email = String(req.body.email || '')
-      .trim()
-      .toLowerCase();
+    const userId = req.session.user.id;
+    const booking = await getLastBookingByUserId(userId);
+    res.json({ success: true, data: booking });
+  } catch (err) {
+    console.error('Get last booking error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
+  }
+};
 
-    const user = email ? await findPendingCustomer(email) : null;
-    if (!user) {
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'All fields are required.' });
+    }
+
+    if (newPassword.length < 8) {
       return res.status(400).json({
         success: false,
-        message: 'This email has nothing to verify. Please sign in.',
+        message: 'Password must be at least 8 characters.',
       });
     }
 
-    const result = await issueCode({ email, name: user.name });
-    if (!result.sent) {
-      return res.status(429).json({
+    const result = await pool.query(
+      'SELECT password FROM users WHERE id = $1',
+      [userId],
+    );
+
+    const user = result.rows[0];
+
+    if (!user || !user.password) {
+      return res.status(400).json({
         success: false,
-        retryAfter: result.retryAfter,
-        message: `Please wait ${result.retryAfter} seconds before asking for a new code.`,
+        message: 'Password change is not available for this account.',
       });
     }
 
-    res.json({ success: true, message: 'A new code was sent to your email.' });
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Current password is incorrect.' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [
+      hashed,
+      userId,
+    ]);
+
+    await revokeSessions(userId, req.sessionID);
+
+    res.json({ success: true, message: 'Password changed successfully.' });
   } catch (err) {
-    console.error('Resend signup code error:', err);
+    console.error('Change password error:', err);
     res.status(500).json({
       success: false,
       message: 'Something went wrong. Please try again.',
@@ -491,15 +293,14 @@ const resendSignupCode = async (req, res) => {
 };
 
 module.exports = {
-  getLoginPage,
-  getRegisterPage,
-  register,
-  verifySignup,
-  resendSignupCode,
-  login,
-  logout,
-  getMe,
-  forgotPassword,
-  verifyOtp,
-  resetPassword,
+  getAccountPage,
+  getBookingsPage,
+  getServicesPage,
+  getBookings,
+  getBooking,
+  updateProfile,
+  requestEmailChange,
+  verifyEmailChange,
+  getLastBooking,
+  changePassword,
 };

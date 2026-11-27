@@ -1,6 +1,7 @@
+require('../../../config/redis');
 const crypto = require('crypto');
-const redis = require('../../config/redis');
-const { sendEmailVerificationEmail } = require('../../shared/utils/email');
+const redis = require('../../../config/redis');
+const { sendEmailVerificationEmail } = require('../../../shared/utils/email');
 
 const CODE_TTL_SECONDS = 600;
 const RESEND_COOLDOWN_SECONDS = 60;

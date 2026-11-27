@@ -155,7 +155,7 @@ Each protection has a title that names the kind of security, then what it protec
 
 - **Protects against:** passwords being readable if the database leaks.
 - **How it works:** passwords are hashed with bcrypt.
-- **Where:** `customer/controller.js`, `auth/auth.routes.js`
+- **Where:** `customer/auth/controller.js`, `auth/auth.routes.js`
 - **Known trade-offs:**
   - The only password rule is a minimum of 8 characters, with no complexity rule and no check against common passwords.
     - Why accepted: a simple rule is easier for customers, and the login limiters slow down guessing.
@@ -164,7 +164,7 @@ Each protection has a title that names the kind of security, then what it protec
 
 - **Protects against:** accounts made with an inbox the person does not control, and guessing the code.
 - **How it works:** a 6 digit code is mailed on sign up, with an attempt limit and a resend cooldown. An unverified account cannot sign in.
-- **Where:** `customer/signup-verify.js`
+- **Where:** `customer/auth/signup-verify.js`
 - **Known trade-offs:**
   - Disposable inboxes pass verification.
     - Why accepted: verification proves the inbox exists, not who owns it, and blocking disposable domains means maintaining a list.
@@ -175,7 +175,7 @@ Each protection has a title that names the kind of security, then what it protec
 
 - **Protects against:** guessing the 6 digit code to take over an account, and flooding an inbox with codes.
 - **How it works:** the code expires in 10 minutes. 5 wrong tries kill it, and a new code cannot be requested for 60 seconds, enforced on the server and not only on the page. Codes come from `crypto.randomInt`. For an email change, the pending new email is stored together with the code.
-- **Where:** `customer/security/otp.js`, used by `customer/controller.js` and `customer/account.controller.js`
+- **Where:** `customer/security/otp.js`, used by `customer/auth/controller.js` and `customer/controller.js`
 - **Known trade-offs:**
   - Forgot password says whether an email has an account.
     - Why accepted: a clear message was chosen over a vague one, and the code limits stop guessing either way.
@@ -236,7 +236,7 @@ Each protection has a title that names the kind of security, then what it protec
 
 - **Protects against:** guessing passwords on customer accounts, and one machine trying one password across many accounts.
 - **How it works:** failed logins count against the email and network address pair, which locks at 5, and against the network address alone, which locks at 20. Each lock lasts 15 minutes and failures are remembered for 15 minutes from the first one. Unknown emails and non-customer accounts count the same as wrong passwords, so the lockout does not reveal which emails have accounts. The login page shows attempts left from the 3rd failure, says so on the 5th, and shows a live countdown. A correct login clears only the pair counter, so logging into your own account cannot reset the failures counted against your address. If Redis is down, logins are let through.
-- **Where:** `customer/security/login-limiter.js`, used by `customer/controller.js`, with the countdown in `customer/customer-auth.js`
+- **Where:** `customer/security/login-limiter.js`, used by `customer/auth/controller.js`, with the countdown in `customer/views/customer-auth.js`
 - **Known trade-offs:**
   - One network address can try about 80 passwords an hour across different emails before it is stopped, since each email only sees one failure.
     - Why accepted: customer accounts hold booking history and no stored cards, and a lower limit would lock out people sharing WiFi or a mobile carrier network.
@@ -255,7 +255,7 @@ Each protection has a title that names the kind of security, then what it protec
 
 - **Protects against:** leaking which accounts exist or what failed inside the server.
 - **How it works:** wrong email and wrong password give the same message. Server errors on sign up and in the customer account show a generic message, and the real error goes to the server log.
-- **Where:** `customer/controller.js`, `customer/account.controller.js`
+- **Where:** `customer/auth/controller.js`, `customer/controller.js`
 - **Known trade-offs:**
   - Other parts of the app still return raw error messages. See the last section.
 

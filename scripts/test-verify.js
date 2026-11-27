@@ -67,7 +67,7 @@ const {
   login,
   verifySignup,
   resendSignupCode,
-} = require('../src/features/customer/controller');
+} = require('../src/features/customer/auth/controller');
 
 const call = async (handler, body) => {
   const req = { body, session: { cookie: {} } };
