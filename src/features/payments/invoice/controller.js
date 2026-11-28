@@ -1,4 +1,3 @@
-const pool = require('../../../config/database');
 const { xenditInvoiceClient } = require('../../../config/xendit');
 const { confirmPaidBooking } = require('./confirm');
 const {
@@ -9,6 +8,9 @@ const {
   createPayment,
   getInvoicedPayment,
   saveInvoiceOnPayment,
+  getLockedBookingForInvoice,
+  extendHoldForPayment,
+  getPaymentById,
 } = require('./queries');
 
 const createInvoice = async (req, res) => {
@@ -26,25 +28,15 @@ const createInvoice = async (req, res) => {
     }
 
     // get booking details
-    const bookingResult = await pool.query(
-      `SELECT b.*, sv.price AS variant_price, s.price AS service_price, s.down_payment_amount, s.name AS service_name,
-              sv.name AS variant_name, u.email AS user_email, b.guest_email
-       FROM bookings b
-       JOIN services s ON s.id = b.service_id
-       LEFT JOIN service_variants sv ON sv.id = b.variant_id
-       LEFT JOIN users u ON u.id = b.user_id
-       WHERE b.id = $1 AND b.booking_status = 'locked'`,
-      [bookingId],
-    );
+    const booking = await getLockedBookingForInvoice(bookingId);
 
-    if (!bookingResult.rows.length) {
+    if (!booking) {
       return res.status(404).json({
         success: false,
         message: 'Booking not found or already confirmed',
       });
     }
 
-    const booking = bookingResult.rows[0];
     const totalPrice = parseFloat(
       booking.variant_price || booking.service_price,
     );
@@ -101,12 +93,7 @@ const createInvoice = async (req, res) => {
     });
 
     // payment started so push the hold out, the invoice stops taking payment a minute before it ends
-    await pool.query(
-      `UPDATE bookings
-       SET expires_at = NOW() + INTERVAL '16 minutes'
-       WHERE id = $1 AND booking_status = 'locked'`,
-      [bookingId],
-    );
+    await extendHoldForPayment(bookingId);
 
     res.json({
       success: true,
@@ -132,18 +119,14 @@ const handleWebhook = async (req, res) => {
     }
 
     // external_id is the payment id
-    const paymentResult = await pool.query(
-      'SELECT * FROM payments WHERE id = $1',
-      [external_id],
-    );
+    const payment = await getPaymentById(external_id);
 
-    if (!paymentResult.rows.length) {
+    if (!payment) {
       return res
         .status(404)
         .json({ success: false, message: 'Payment not found' });
     }
 
-    const payment = paymentResult.rows[0];
     await confirmPaidBooking({
       bookingId: payment.booking_id,
       paymentId: external_id,

@@ -8,9 +8,14 @@ const source = fs.readFileSync(
   'utf8',
 );
 
+const queries = fs.readFileSync(
+  path.join(__dirname, '../src/features/payments/invoice/queries.js'),
+  'utf8',
+);
+
 const invoiceSeconds = Number(/invoiceDuration:\s*(\d+)/.exec(source)?.[1]);
 const holdMinutes = Number(
-  /SET expires_at = NOW\(\) \+ INTERVAL '(\d+) minutes'/.exec(source)?.[1],
+  /SET expires_at = NOW\(\) \+ INTERVAL '(\d+) minutes'/.exec(queries)?.[1],
 );
 
 const invoiceMinutes = invoiceSeconds / 60;

@@ -101,10 +101,43 @@ const getPaymentsByBooking = async (bookingId) => {
   return result.rows;
 };
 
+const getLockedBookingForInvoice = async (bookingId) => {
+  const result = await pool.query(
+    `SELECT b.*, sv.price AS variant_price, s.price AS service_price, s.down_payment_amount, s.name AS service_name,
+            sv.name AS variant_name, u.email AS user_email, b.guest_email
+     FROM bookings b
+     JOIN services s ON s.id = b.service_id
+     LEFT JOIN service_variants sv ON sv.id = b.variant_id
+     LEFT JOIN users u ON u.id = b.user_id
+     WHERE b.id = $1 AND b.booking_status = 'locked'`,
+    [bookingId],
+  );
+  return result.rows[0] || null;
+};
+
+const extendHoldForPayment = async (bookingId) => {
+  await pool.query(
+    `UPDATE bookings
+     SET expires_at = NOW() + INTERVAL '16 minutes'
+     WHERE id = $1 AND booking_status = 'locked'`,
+    [bookingId],
+  );
+};
+
+const getPaymentById = async (paymentId) => {
+  const result = await pool.query('SELECT * FROM payments WHERE id = $1', [
+    paymentId,
+  ]);
+  return result.rows[0] || null;
+};
+
 module.exports = {
   getInvoicedPayment,
   saveInvoiceOnPayment,
   createPayment,
   confirmBooking,
   getPaymentsByBooking,
+  getLockedBookingForInvoice,
+  extendHoldForPayment,
+  getPaymentById,
 };
