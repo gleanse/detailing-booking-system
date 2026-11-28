@@ -45,7 +45,9 @@ stub('../src/config/redis', {
 const pool = require('../src/config/database');
 const { lockSlot } = require('../src/features/bookings/queries');
 const { createPayment } = require('../src/features/payments/invoice/queries');
-const { handleWebhook } = require('../src/features/bookings/controller');
+const {
+  handleWebhook,
+} = require('../src/features/payments/invoice/controller');
 
 const fakeRes = () => {
   const res = { code: 200, body: null };

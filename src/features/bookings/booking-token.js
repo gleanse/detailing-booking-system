@@ -30,4 +30,10 @@ const hasValidBookingToken = (bookingId, token) => {
   );
 };
 
-module.exports = { signBookingToken, hasValidBookingToken };
+const notAllowed = {
+  success: false,
+  message:
+    'This reservation could not be verified. Please refresh the page and start again.',
+};
+
+module.exports = { signBookingToken, hasValidBookingToken, notAllowed };

@@ -9,8 +9,6 @@ const {
   lockBookingSlot,
   releaseBookingSlot,
   updateBooking,
-  createInvoice,
-  handleWebhook,
   getBookingDetails,
   getPublicTrackingPage,
   getPublicBookingDetails,
@@ -50,8 +48,6 @@ router.patch('/release', releaseBookingSlot);
 router.post('/release', releaseBookingSlot);
 router.post('/leaving', markBookingLeaving);
 router.post('/staying', keepBooking);
-router.post('/pay', createInvoice);
-router.post('/webhook', handleWebhook);
 router.patch('/:bookingId', updateBooking);
 
 // PAGE route

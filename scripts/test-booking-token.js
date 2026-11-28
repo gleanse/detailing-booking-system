@@ -66,8 +66,10 @@ const {
   lockBookingSlot,
   releaseBookingSlot,
   updateBooking,
-  createInvoice,
 } = require('../src/features/bookings/controller');
+const {
+  createInvoice,
+} = require('../src/features/payments/invoice/controller');
 
 const fakeRes = () => {
   const res = { code: 200, body: null };

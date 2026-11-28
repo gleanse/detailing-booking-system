@@ -55,7 +55,9 @@ stub('../src/config/redis', {
 const pool = require('../src/config/database');
 const { lockSlot } = require('../src/features/bookings/queries');
 const { createPayment } = require('../src/features/payments/invoice/queries');
-const { createInvoice } = require('../src/features/bookings/controller');
+const {
+  createInvoice,
+} = require('../src/features/payments/invoice/controller');
 const { signBookingToken } = require('../src/features/bookings/booking-token');
 
 const fakeRes = () => {

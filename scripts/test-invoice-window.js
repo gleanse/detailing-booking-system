@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const source = fs.readFileSync(
-  path.join(__dirname, '../src/features/bookings/controller.js'),
+  path.join(__dirname, '../src/features/payments/invoice/controller.js'),
   'utf8',
 );
 

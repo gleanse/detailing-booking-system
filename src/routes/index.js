@@ -9,6 +9,7 @@ const {
 const servicesRoutes = require('../features/services/routes');
 const authRoutes = require('../features/auth/auth.routes');
 const bookingRoutes = require('../features/bookings/routes');
+const invoiceRoutes = require('../features/payments/invoice/routes');
 const adminRoutes = require('../features/admin/admin.routes');
 const adminPages = require('../features/admin/admin.pages');
 const trackRoutes = require('../features/track/routes');
@@ -31,6 +32,7 @@ pagesRouter.use('/staff', staffRoutes);
 const apiRouter = express.Router();
 apiRouter.use('/services', servicesRoutes);
 apiRouter.use('/auth', authRoutes);
+apiRouter.use('/booking', invoiceRoutes);
 apiRouter.use('/booking', bookingRoutes);
 apiRouter.use('/admin', isAdmin, adminRoutes);
 apiRouter.use('/customer', customerRoutes);
